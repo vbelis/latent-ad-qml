@@ -1,1 +1,11 @@
 qkmedians/.ipynb_checkpoints
+__pycache__
+._*
+*.pyc
+*DS_Store*
+
+# Output
+trained_qsvms/
+logs/
+*.log
+*.out
