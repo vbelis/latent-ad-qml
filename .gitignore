@@ -9,3 +9,7 @@ trained_qsvms/
 logs/
 *.log
 *.out
+
+# Data Files
+*.h5
+*.npy
