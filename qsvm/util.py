@@ -78,51 +78,6 @@ def load_qsvm(path: str) -> SVC:
     """
     return joblib.load(path)
 
-
-def get_data(args: dict) -> Tuple:
-    """
-    Loads the appropriate data for the qsvm training. Either a dataset specified
-    by a path (to a np.array object) or a latent representation of a dataset passed
-    through a pre-trained Autoencoder.
-
-    Args:
-        args: Dictionary with all the specification and parameters for the qsvm
-              training.
-    Returns:
-        The AE dataset or an external dataset. The dataset is a tuple !!!!!
-    """
-    if args["model_path"] is None: 
-        print(tcols.OKCYAN + "No AE model is loaded. Loading"
-              " a dataset directly..." + tcols.ENDC)
-        return get_external_data(args)
-    return get_ae_data(args)
-
-def get_external_data(args: dict) -> Tuple:
-    """
-    Loads an external dataset for the qsvm training. 
-    Args:
-        args: Dictionary with all the specification and parameters for the qsvm
-              training.
-    Returns:
-        A tuple with the data "loaders" (inspired by PyTorch jargon). Each loader
-        consists of the data vectors (features) and the corresponding labels.
-    """
-    print(tcols.OKCYAN + "Loading training and testing datasets..."
-          + tcols.ENDC)
-    train_features = np.load(f'{args["data_folder"]}x_data_train.npy')
-    train_labels = np.load(f'{args["data_folder"]}y_data_train.npy')
-    test_features = np.load(f'{args["data_folder"]}x_data_test.npy')
-    test_labels = np.load(f'{args["data_folder"]}y_data_test.npy')
-
-    print("Loaded training and testing datasets of shapes: "
-          f"{train_features.shape} and {test_features.shape} respectively.\n")
-    train_loader = [train_features[:args["ntrain"]], 
-                    train_labels[:args["ntrain"]]]
-    test_loader = [test_features[:args["ntest"]], test_labels[:args["ntest"]]]
-
-    return train_loader, test_loader
-
-
 def save_backend_properties(backend: Union[Backend, BaseBackend], path: str):
     """
     Saves a dictionary to file using Joblib. The dictionary contains quantum
@@ -244,7 +199,7 @@ def connect_quantum_computer(ibmq_api_config:dict, backend_name: str) -> IBMQBac
     return quantum_computer_backend
 
 
-def get_backend_configuration(backend) -> Tuple:
+def get_backend_configuration(backend: Backend) -> Tuple:
     """
     Gather backend configuration and properties from the calibration data.
     The output is used to build a noise model using the qiskit aer_simulator.
@@ -383,7 +338,7 @@ def save_scores_h5(scores: np.ndarray, ):
     Save the scores of a model to an .h5 file following the following convention.
     Data frame with keys 'classic_loss_qcd', classic_lo
     """
-    #FIXME depends on the convention we choose for the folds.
+    #FIXME depends on the convention we choose for the k-folds.
     
     parser = argparse.ArgumentParser(formatter_class=argparse.
                                      ArgumentDefaultsHelpFormatter)

@@ -13,8 +13,10 @@ import numpy as np
 from sklearn.svm import SVC
 
 from terminal_colors import tcols
+
 import util
 import test
+import prepare_qsvm_ready_data as preprocessing
 from feature_map_circuits import u2Reuploading
 
 # Warnings are suppressed since qiskit aqua obfuscates the output of this
@@ -27,7 +29,7 @@ algorithm_globals.random_seed = seed
 
 
 def main(args):
-    train_loader, test_loader = util.get_data(args)
+    train_loader, test_loader = preprocessing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
 
