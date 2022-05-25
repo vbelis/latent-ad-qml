@@ -13,6 +13,7 @@ def u2Reuploading(nqubits=8) -> QuantumCircuit:
 
     returns :: The quantum circuit object form qiskit.
     """
+    # TODO test with Hadamards in the beggining.
     nfeatures = 2*nqubits
     x = ParameterVector("x", nfeatures)
     qc = QuantumCircuit(nqubits)

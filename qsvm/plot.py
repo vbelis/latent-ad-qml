@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from sklearn import metrics
-from .terminal_colors import tcols
+from terminal_colors import tcols
 
 
 def roc_plot(scores, qdata_loader, test_fold_labels, output_folder, model_name):

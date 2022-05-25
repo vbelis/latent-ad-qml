@@ -1,14 +1,15 @@
 from time import perf_counter
 
-from .terminal_colors import tcols
+from terminal_colors import tcols
 import numpy as np
-from . import qdata as qd
-from . import plot
-from . import util
-from .feature_map_circuits import u2Reuploading
-
+import plot
+import util
+from sklearn.svm import SVC
 from qiskit_machine_learning.kernels import QuantumKernel
+from typing import Tuple
+from sklearn import metrics
 
+from feature_map_circuits import u2Reuploading
 
 def main(args):
     qdata = qd.qdata(
@@ -46,7 +47,7 @@ def main(args):
     )
 
 
-def compute_model_scores(
+def compute_qsvm_scores(
     model, kernel, x_train, data_folds, output_folder=None,
 ) -> np.ndarray:
     """
@@ -66,7 +67,6 @@ def compute_model_scores(
     model_scores = np.array(
         [
             model.decision_function(kernel.evaluate(x_vec=fold, y_vec=x_train))
-            #model.decision_function(fold)
             for fold in data_folds
         ]
     )
@@ -85,3 +85,40 @@ def compute_model_scores(
         np.save(path, model_scores)
 
     return model_scores
+
+def compute_svm_scores(
+    model:SVC, 
+    data_folds: np.ndarray, 
+    output_folde:str =None,
+) -> np.ndarray:
+    """
+    Compute the scores for the SVM model for the classical benchmark.
+    Args:
+        model: The trained classical SVM model.
+        data_folds: An array of shape (k, n_test) containg the k-folded test
+                    dataset.
+        output_folder: Path to save the model scores in .npy format.
+    Returns: 
+        An numpy array of the scores with shape (k, n_test).
+    """
+    pass #TODO
+
+def accuracy_from_scores(
+    scores: np.ndarray, 
+    truth_labels,
+) -> Tuple[float, np.ndarray]:
+    """
+    Given the decision_function scores of a model it produces the predicted 
+    label based on the sign of the score (one side for the decision boundary
+    vs. the other). Then, using the predictions it calculates the accuracy.
+
+    Args:
+        scores: 1d array with the scores to be transformed.
+    Returns:
+        A tuple of an array with 1's (sig) and 0's (bkg), if the score is positive and
+        negative, respectively, and the accuracy of the model.
+    """
+    scores[scores>0] = 1
+    scores[scores<0] = 0
+    accuracy = metrics.accuracy_score(truth_labels, scores)
+    return accuracy, scores

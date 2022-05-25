@@ -8,7 +8,7 @@ import sys
 import json
 sys.path.append("..")
 
-from qsvm.main import main
+from main import main
 
 
 parser = argparse.ArgumentParser(formatter_class=argparse.
@@ -44,15 +44,14 @@ parser.add_argument('--nvalid', type=int, default=0,
                          'not used for the QSVM).')
 parser.add_argument('--ntest', type=int, default=720,
                     help='Number of test events for the QSVM.')
+parser.add_argument('--kfolds', type=int, default=5,
+                    help='Number of k-test folds used.')  
 
 args = parser.parse_args()
 
 # Load private configuration file for ibmq_api_token and provider details.   
-try:
-    with open('private_config_vasilis.json') as pconfig:
-        private_configuration = json.load(pconfig)
-except:
-    print("Error in reading private config: Process aborted.")
+with open('private_config_vasilis.json') as pconfig:
+    private_configuration = json.load(pconfig)
 
 # Different configuration keyword arguments for the QuantumInstance depending 
 # on the run_type. They can be tweaked as desired before running.
