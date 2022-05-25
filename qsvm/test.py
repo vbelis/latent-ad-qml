@@ -12,19 +12,10 @@ from sklearn import metrics
 from feature_map_circuits import u2Reuploading
 
 def main(args):
-    qdata = qd.qdata(
-        args["data_folder"],
-        args["norm"],
-        args["nevents"],
-        args["model_path"],
-        train_events=args["ntrain"],
-        valid_events=args["nvalid"],
-        test_events=args["ntest"],
-        kfolds=args["kfolds"],
-        seed=args["seed"],
-    )
-    train_features = qdata.get_latent_space("train")
-    test_folds, test_folds_labels = qdata.get_kfolded_data("test")
+    train_loader, test_loader = util.get_data(args)
+    train_features, train_labels = train_loader[0], train_loader[1]
+    test_features, test_labels = test_loader[0], test_loader[1]
+    test_folds = [test_features] # FIXME implement code to do k-folds from .h5
 
     qsvm = util.load_qsvm(args["qsvm_model"] + "model")
     # TODO would be nice in to pass the feature map as an argument as well and
@@ -39,12 +30,12 @@ def main(args):
     )
     kernel = QuantumKernel(feature_map=feature_map, quantum_instance=quantum_instance)
 
-    scores = compute_model_scores(
+    scores = compute_qsvm_scores(
         qsvm, kernel, train_features, test_folds, args["qsvm_model"]
     )
-    plot.roc_plot(
-        scores, qdata, test_folds_labels, args["qsvm_model"], args["display_name"]
-    )
+    #plot.roc_plot(
+    #    scores, qdata, test_folds_labels, args["qsvm_model"], args["display_name"]
+    #)
 
 
 def compute_qsvm_scores(
@@ -101,13 +92,19 @@ def compute_svm_scores(
     Returns: 
         An numpy array of the scores with shape (k, n_test).
     """
+    print("\nComputing SVM scores...")
+    scores_time_init = perf_counter()
+    scores_time_fina = perf_counter()
+    exec_time = scores_time_fina - scores_time_init
     pass #TODO
 
 def accuracy_from_scores(
     scores: np.ndarray, 
     truth_labels,
 ) -> Tuple[float, np.ndarray]:
-    """
+    """ # TODO will make use of it if computing the decision function during training
+    and computing the k-folds in one go.
+
     Given the decision_function scores of a model it produces the predicted 
     label based on the sign of the score (one side for the decision boundary
     vs. the other). Then, using the predictions it calculates the accuracy.

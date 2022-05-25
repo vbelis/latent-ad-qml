@@ -4,19 +4,18 @@
 # Computes the ROC curve of the qsvm and the AUC, saves the ROC plot.
 import warnings
 from time import perf_counter
+from typing import Callable
 
 from qiskit.utils import algorithm_globals
 from qiskit_machine_learning.kernels import QuantumKernel
 import numpy as np
 
 from sklearn.svm import SVC
-from sklearn import metrics
 
-from .terminal_colors import tcols
-from . import qdata as qd
-from . import util
-from . import test
-from .feature_map_circuits import u2Reuploading
+from terminal_colors import tcols
+import util
+import test
+from feature_map_circuits import u2Reuploading
 
 # Warnings are suppressed since qiskit aqua obfuscates the output of this
 # script otherwise (IBM's fault not ours.)
@@ -52,24 +51,45 @@ def main(args):
     qsvm = SVC(kernel="precomputed", C=args["c_param"])
     out_path = util.create_output_folder(args, qsvm)
     np.save(out_path + "/kernel_matrix_elements", quantum_kernel_matrix)
-
-    print("Training the QSVM...", end="")
-    train_time_init = perf_counter()
-    qsvm.fit(quantum_kernel_matrix, train_labels)
-    train_time_fina = perf_counter()
-    print(f"Training completed in: {train_time_fina-train_time_init:.2e} s")
+    
+    time_and_train(qsvm.fit, quantum_kernel_matrix, train_labels)
     util.print_model_info(qsvm)
-
-    print(tcols.OKCYAN + "\nTesting the accuracy of the models..." + tcols.ENDC)
-    kernel_matrix_test = kernel.evaluate(x_vec=test_features, y_vec=train_features)
+    
+    print("Computing the test dataset accuracy of the models, quick check"
+          " for overtraining...")
+    test_time_init = perf_counter()
+    kernel_matrix_test = kernel.evaluate(x_vec=test_features, 
+                                     y_vec=train_features)
     train_acc = qsvm.score(quantum_kernel_matrix, train_labels)
     test_acc = qsvm.score(kernel_matrix_test, test_labels)
-    util.print_auc_scores(test_acc, train_acc)
-    util.save_qsvm(qsvm, out_path + "/model")
+    test_time_fina = perf_counter()
+    exec_time = test_time_fina - test_time_init  
+    print(f"Completed in: {exec_time:.2e} sec. or "f"{exec_time/60:.2e} min. "
+          + tcols.ROCKET)
+    util.print_accuracy_scores(test_acc, train_acc)
+    util.save_qsvm(qsvm, out_path)
     qc_transpiled = util.get_quantum_kernel_circuit(kernel, out_path)
     
-    # TODO add flag to check if I want to do test+train in one go?
+    #if args["compute_kfolds"]: 
+    #    test.main()
+    # TODO do the k-folding here in one go -> .h5 for ROC plotting with Kinga's script.
 
     if backend is not None:
         util.save_circuit_physical_layout(qc_transpiled, backend, out_path)
         util.save_backend_properties(backend, out_path + "/backend_properties_dict")
+
+def time_and_train(fit: Callable, *args):
+    """
+    Trains and times the training of the qsvm model.
+    Args:
+        fit: The training function object of the QSVM.
+        *args: Arguments required by the `fit` method.
+    """
+    print("Training the QSVM...", end="")
+    train_time_init = perf_counter()
+    fit(*args)
+    train_time_fina = perf_counter()
+    exec_time = train_time_fina-train_time_init
+    print(f"Training completed in: {exec_time:.2e} sec. or "
+          f"{exec_time/60:.2e} min.")
+    

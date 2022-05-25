@@ -32,7 +32,7 @@ def print_accuracy_scores(test_acc: float, train_acc: float):
         train_acc: The accuracy of the trained model on the train dataset.
     """
     print(tcols.OKGREEN + f"Training accuracy = {train_acc}")
-    print(f"Testing accuracy     = {test_acc}" + tcols.ENDC)
+    print(f"Testing accuracy = {test_acc}" + tcols.ENDC)
 
 
 def create_output_folder(args: dict, qsvm: SVC) -> str:
