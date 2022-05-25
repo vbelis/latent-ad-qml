@@ -2,7 +2,6 @@ from time import perf_counter
 
 from terminal_colors import tcols
 import numpy as np
-import plot
 import util
 from sklearn.svm import SVC
 from qiskit_machine_learning.kernels import QuantumKernel
