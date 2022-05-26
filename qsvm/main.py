@@ -16,7 +16,7 @@ from terminal_colors import tcols
 
 import util
 import test
-import prepare_qsvm_ready_data as preprocessing
+import preprocessing
 from feature_map_circuits import u2Reuploading
 
 # Warnings are suppressed since qiskit aqua obfuscates the output of this
@@ -87,11 +87,11 @@ def time_and_train(fit: Callable, *args):
         fit: The training function object of the QSVM.
         *args: Arguments required by the `fit` method.
     """
-    print("Training the QSVM...", end="")
+    print("Training the QSVM... ", end="")
     train_time_init = perf_counter()
     fit(*args)
     train_time_fina = perf_counter()
     exec_time = train_time_fina-train_time_init
-    print(f"Training completed in: {exec_time:.2e} sec. or "
-          f"{exec_time/60:.2e} min.")
+    print(tcols.OKGREEN +  f"Training completed in: " + tcols.ENDC +
+          f"{exec_time:.2e} sec. or {exec_time/60:.2e} min.")
     

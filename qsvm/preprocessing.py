@@ -17,9 +17,15 @@ def get_data(args: dict) -> Tuple:
         consists of the data vectors (features) and the corresponding labels. 
         The loaders contain the training and the test data.
     """
+    print(tcols.BOLD + "\nPreparing training and testing datasets... " 
+          + tcols.ENDC)
+    print("Signal ", end="")
     x_sig = h5_to_ml_ready_numpy(args["sig_path"])
+    print("Background ", end="")
     x_bkg = h5_to_ml_ready_numpy(args["bkg_path"])
+    print("Testing background ", end="")
     x_bkg_test = h5_to_ml_ready_numpy(args["test_bkg_path"])
+    #print("\n")
     train_loader = get_train_dataset(x_sig, x_bkg, args["ntrain"])
     test_loader = get_test_dataset(x_sig, x_bkg_test, args["ntest"])
     return train_loader, test_loader
@@ -39,7 +45,8 @@ def h5_to_ml_ready_numpy(file_path: str) -> np.ndarray:
     """
     h5_file = h5py.File(file_path, 'r')
     latent_rep = np.asarray(h5_file.get('latent_space'))
-    print(f"File in {file_path} has shape {latent_rep.shape}")
+    print("raw data: " + tcols.OKBLUE + f"{file_path}" + tcols.ENDC + 
+          ", ", end="")
     latent_rep_flat = reshaper(latent_rep)
     return latent_rep_flat
 
@@ -53,8 +60,9 @@ def reshaper(array: np.ndarray) -> np.ndarray:
         Reshaped array of shape (n, 2*latent_dim). Where n is the total number
         of events in the file.
     """
+    print(f"reshape {array.shape}", end="")
     array = np.reshape(array, (len(array), -1))
-    print(f"Flatten array shape: {array.shape}")
+    print(f" -> {array.shape}")
     return array
 
 def get_train_dataset(sig: np.ndarray, bkg: np.ndarray, ntrain: int) \
