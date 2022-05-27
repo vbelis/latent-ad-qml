@@ -1,12 +1,9 @@
 # Module where all tested quantum circuits are defined using qiskit.
-# To be used for the classifiers and expressibility and entanglement studies.
 
 from qiskit.circuit import QuantumCircuit, ParameterVector
 import numpy as np
 
-
-# TODO rename to dense ecoding
-def u2Reuploading(nqubits=8) -> QuantumCircuit:
+def u_dense_encoding(nqubits=8) -> QuantumCircuit:
     """
     Constructs a feature map, inspired by the dense encoding method.
     @nqubits   :: Int number of qubits used.

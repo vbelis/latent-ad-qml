@@ -1,3 +1,6 @@
+# Data preprocessing module. Loads the training, testing, and k-fold testing 
+# datasets following specific conventions for the work. The raw data is an .h5 file.
+
 import h5py
 import numpy as np
 from typing import Tuple
@@ -25,7 +28,6 @@ def get_data(args: dict) -> Tuple:
     x_bkg = h5_to_ml_ready_numpy(args["bkg_path"])
     print("Testing background ", end="")
     x_bkg_test = h5_to_ml_ready_numpy(args["test_bkg_path"])
-    #print("\n")
     train_loader = get_train_dataset(x_sig, x_bkg, args["ntrain"])
     test_loader = get_test_dataset(x_sig, x_bkg_test, args["ntest"])
     return train_loader, test_loader

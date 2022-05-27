@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-# Run script of the qsvm training. See the main file for more details 
-# on how it works.
+# Run script of the qsvm training.
 
 import argparse
 import sys
@@ -40,7 +39,9 @@ parser.add_argument('--nvalid', type=int, default=0,
 parser.add_argument('--ntest', type=int, default=720,
                     help='Number of test events for the QSVM.')
 parser.add_argument('--kfolds', type=int, default=5,
-                    help='Number of k-test folds used.')  
+                    help='Number of k-test folds used.')
+parser.add_argument('--nqubit', type=int, default=8,
+                    help='Number of qubits for quantum feature map circuit.') 
 
 args = parser.parse_args()
 
@@ -77,7 +78,8 @@ args = {
     "ntrain": args.ntrain,
     "nvalid": args.nvalid,
     "ntest": args.ntest,
-    "seed": seed # For the data shuffling.
+    "nqubit": args.nqubit,
+    "seed": seed, # For the data shuffling.
 }
 
 main(args)

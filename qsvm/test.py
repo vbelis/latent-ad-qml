@@ -8,7 +8,7 @@ from qiskit_machine_learning.kernels import QuantumKernel
 from typing import Tuple
 from sklearn import metrics
 
-from feature_map_circuits import u2Reuploading
+from feature_map_circuits import u_dense_encoding
 
 def main(args):
     train_loader, test_loader = util.get_data(args)
@@ -19,7 +19,7 @@ def main(args):
     qsvm = util.load_qsvm(args["qsvm_model"] + "model")
     # TODO would be nice in to pass the feature map as an argument as well and
     # save it as a hyperparameter of the QSVM model in the .json file.
-    feature_map = u2Reuploading(nqubits=8, nfeatures=args["feature_dim"])
+    feature_map = u_dense_encoding(nqubits=8, nfeatures=args["feature_dim"])
 
     quantum_instance, backend = util.configure_quantum_instance(
         ibmq_api_config=args["ibmq_api_config"],
@@ -32,9 +32,6 @@ def main(args):
     scores = compute_qsvm_scores(
         qsvm, kernel, train_features, test_folds, args["qsvm_model"]
     )
-    #plot.roc_plot(
-    #    scores, qdata, test_folds_labels, args["qsvm_model"], args["display_name"]
-    #)
 
 
 def compute_qsvm_scores(

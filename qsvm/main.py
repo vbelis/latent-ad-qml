@@ -1,8 +1,5 @@
-# Main script of the qsvm.
-# Imports the data for training. Imports the data for validation and testing
-# and kfolds it into k=5.
-# Computes the ROC curve of the qsvm and the AUC, saves the ROC plot.
-import warnings
+# Main script for the training qsvm.
+
 from time import perf_counter
 from typing import Callable
 
@@ -17,14 +14,9 @@ from terminal_colors import tcols
 import util
 import test
 import preprocessing
-from feature_map_circuits import u2Reuploading
-
-# Warnings are suppressed since qiskit aqua obfuscates the output of this
-# script otherwise (IBM's fault not ours.)
-# warnings.filterwarnings("ignore", category=DeprecationWarning)
+from feature_map_circuits import u_dense_encoding
 
 seed = 12345 
-# Ensure same global behaviour.
 algorithm_globals.random_seed = seed
 
 
@@ -33,15 +25,15 @@ def main(args):
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
 
-    feature_map = u2Reuploading(nqubits=8)
+    feature_map = u_dense_encoding(nqubits=args["nqubit"])
     quantum_instance, backend = util.configure_quantum_instance(
         ibmq_api_config=args["ibmq_api_config"],
         run_type=args["run_type"],
         backend_name=args["backend_name"],
         **args["config"],
     )
-    kernel = QuantumKernel(feature_map=feature_map, 
-                           quantum_instance=quantum_instance)
+    kernel = QuantumKernel(feature_map, quantum_instance)
+    
     print("Calculating the quantum kernel matrix elements... ", end="")
     train_time_init = perf_counter()
     quantum_kernel_matrix = kernel.evaluate(x_vec=train_features)
@@ -82,7 +74,7 @@ def main(args):
 
 def time_and_train(fit: Callable, *args):
     """
-    Trains and times the training of the qsvm model.
+    Trains and computes the training runtime of the qsvm model.
     Args:
         fit: The training function object of the QSVM.
         *args: Arguments required by the `fit` method.
