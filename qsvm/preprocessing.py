@@ -122,8 +122,6 @@ def get_kfold_data(test_data: np.ndarray, y_target: np.ndarray, kfolds: int = 5)
     Returns:
         Returns array of shape (kfolds, ntest/kfolds).
     """
-    print(test_data)
-    print(y_target)
     sig_test, bkg_test, sig_target, bkg_target = split_sig_bkg(test_data, 
                                                                y_target)
     folded_sig = np.split(sig_test, kfolds)
@@ -134,6 +132,8 @@ def get_kfold_data(test_data: np.ndarray, y_target: np.ndarray, kfolds: int = 5)
     folded_test = np.concatenate((folded_sig, folded_bkg), axis=1)
     folded_target = np.concatenate((folded_sig_target, folded_bkg_target), 
                                    axis=1)
+    print(f"\nPrepared k-folded test dataset with k={kfolds}"
+          f" and shape {folded_test.shape} " + tcols.SPARKS)
     return folded_test, folded_target
 
 

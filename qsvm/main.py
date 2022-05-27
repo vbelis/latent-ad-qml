@@ -25,7 +25,6 @@ def main(args):
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
 
-    preprocessing.get_kfold_data(test_features, test_labels, args["kfolds"])
     feature_map = u_dense_encoding(nqubits=args["nqubit"])
     quantum_instance, backend = util.configure_quantum_instance(
         ibmq_api_config=args["ibmq_api_config"],
@@ -33,7 +32,7 @@ def main(args):
         backend_name=args["backend_name"],
         **args["config"],
     )
-    kernel = QuantumKernel(feature_map, quantum_instance)
+    kernel = QuantumKernel(feature_map, quantum_instance=quantum_instance)
     
     print("Calculating the quantum kernel matrix elements... ", end="")
     train_time_init = perf_counter()
@@ -65,9 +64,13 @@ def main(args):
     util.save_qsvm(qsvm, out_path)
     qc_transpiled = util.get_quantum_kernel_circuit(kernel, out_path)
     
-    #if args["compute_kfolds"]: 
-    #    test.main()
-    # TODO do the k-folding here in one go -> .h5 for ROC plotting with Kinga's script.
+    if args["kfold_scores"]: 
+        test_folds, test_folds_targets = preprocessing.get_kfold_data(
+            test_features, 
+            test_labels
+        )
+        test.compute_qsvm_scores(qsvm, kernel, train_features, test_folds, out_path)
+    
 
     if backend is not None:
         util.save_circuit_physical_layout(qc_transpiled, backend, out_path)
