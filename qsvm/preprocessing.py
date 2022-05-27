@@ -110,17 +110,51 @@ def create_output_y(n: int) -> np.ndarray:
     y_data = np.concatenate((np.ones(n), np.zeros(n)))
     return y_data
 
-def get_kfold_data(test_data: np.ndarray, kfolds: int = 5) -> np.ndarray:
+def get_kfold_data(test_data: np.ndarray, y_target: np.ndarray, kfolds: int = 5) \
+                   -> Tuple[np.ndarray, np.ndarray]:
     """
     Split the testing dataset into k folds. With this resampling technique we 
     will estimate the variance and the mean of the expected ROC curve and AUC.
     Args:
         test_data: Array of the testing data.
+        y_target: Array of targets/labels of the testing data.
         kfolds: Number of requested k-folds.
     Returns:
         Returns array of shape (kfolds, ntest/kfolds).
     """
-    kfold_data = np.split(test_data, kfolds)
-    # FIXME need to think which dataset to split, the final one or before some reshaping step?
+    print(test_data)
+    print(y_target)
+    sig_test, bkg_test, sig_target, bkg_target = split_sig_bkg(test_data, 
+                                                               y_target)
+    folded_sig = np.split(sig_test, kfolds)
+    folded_sig_target = np.split(sig_target, kfolds)
+    folded_bkg = np.split(bkg_test, kfolds)
+    folded_bkg_target = np.split(bkg_target, kfolds)
+
+    folded_test = np.concatenate((folded_sig, folded_bkg), axis=1)
+    folded_target = np.concatenate((folded_sig_target, folded_bkg_target), 
+                                   axis=1)
+    return folded_test, folded_target
 
 
+def split_sig_bkg(data: np.ndarray, target: np.ndarray) \
+                  -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Split dataset into signal and background samples using the
+    target. The target is supposed to be 1 for every signal and 0
+    for every bkg. This does not work for more than 2 class data.
+    
+    Args:
+        data: Numpy array containing the data.
+        target: Numpy array containing the target.
+    Returns:
+         A tuple containing the numpy array of signal events and a numpy array 
+         containing the background events, along with their corresponding targets.
+    """
+    sig_mask = target == 1
+    bkg_mask = target == 0
+    sig_target = target[sig_mask]
+    bkg_target = target[bkg_mask]
+    data_sig = data[sig_mask, :]
+    data_bkg = data[bkg_mask, :]
+    return data_sig, data_bkg, sig_target, bkg_target

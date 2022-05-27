@@ -25,6 +25,7 @@ def main(args):
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
 
+    preprocessing.get_kfold_data(test_features, test_labels, args["kfolds"])
     feature_map = u_dense_encoding(nqubits=args["nqubit"])
     quantum_instance, backend = util.configure_quantum_instance(
         ibmq_api_config=args["ibmq_api_config"],

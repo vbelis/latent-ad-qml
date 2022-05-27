@@ -3,9 +3,7 @@
 # Run script of the qsvm training.
 
 import argparse
-import sys
 import json
-sys.path.append("..")
 
 from main import main
 
@@ -79,6 +77,7 @@ args = {
     "nvalid": args.nvalid,
     "ntest": args.ntest,
     "nqubit": args.nqubit,
+    "kfolds": args.kfolds,
     "seed": seed, # For the data shuffling.
 }
 

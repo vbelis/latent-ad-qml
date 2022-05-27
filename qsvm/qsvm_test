@@ -4,11 +4,9 @@
 # on how it works.
 
 import argparse
-import sys
 import json
-sys.path.append("..")
 
-from qsvm.test import main
+from test import main
 
 
 parser = argparse.ArgumentParser(formatter_class=argparse.
