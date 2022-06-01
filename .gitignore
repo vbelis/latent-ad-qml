@@ -3,6 +3,7 @@ __pycache__
 ._*
 *.pyc
 *DS_Store*
+.vscode/
 
 # Output
 trained_qsvms/
