@@ -8,18 +8,22 @@ from qiskit_machine_learning.kernels import QuantumKernel
 from typing import Tuple
 from sklearn import metrics
 
+import preprocessing
 from feature_map_circuits import u_dense_encoding
 
 def main(args):
-    train_loader, test_loader = util.get_data(args)
+    train_loader, test_loader = preprocessing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
-    test_folds = [test_features] # FIXME implement code to do k-folds from .h5
+    test_fold_features, test_fold_labels = preprocessing.get_kfold_data(
+        test_features, 
+        test_labels,
+    )
 
     qsvm = util.load_qsvm(args["qsvm_model"] + "model")
     # TODO would be nice in to pass the feature map as an argument as well and
     # save it as a hyperparameter of the QSVM model in the .json file.
-    feature_map = u_dense_encoding(nqubits=8, nfeatures=args["feature_dim"])
+    feature_map = u_dense_encoding(nqubits=args["nqubits"])
 
     quantum_instance, backend = util.configure_quantum_instance(
         ibmq_api_config=args["ibmq_api_config"],
@@ -30,7 +34,7 @@ def main(args):
     kernel = QuantumKernel(feature_map=feature_map, quantum_instance=quantum_instance)
 
     scores = compute_qsvm_scores(
-        qsvm, kernel, train_features, test_folds, args["qsvm_model"]
+        qsvm, kernel, train_features, test_fold_features, args["qsvm_model"]
     )
 
 
@@ -67,7 +71,7 @@ def compute_qsvm_scores(
     )
 
     if output_folder is not None:
-        path = output_folder + "/y_score_list.npy"
+        path = output_folder + "y_score_list.npy"
         print("Saving model scores array in: " + path)
         np.save(path, model_scores)
 
@@ -96,7 +100,7 @@ def compute_svm_scores(
 
 def accuracy_from_scores(
     scores: np.ndarray, 
-    truth_labels,
+    truth_labels: np.ndarray,
 ) -> Tuple[float, np.ndarray]:
     """ # TODO will make use of it if computing the decision function during training
     and computing the k-folds in one go.
@@ -109,7 +113,8 @@ def accuracy_from_scores(
         scores: 1d array with the scores to be transformed.
     Returns:
         A tuple of an array with 1's (sig) and 0's (bkg), if the score is positive and
-        negative, respectively, and the accuracy of the model.
+        negative, respectively, and the accuracy of the model. The former return object
+        is equivalent to SVC.predict.
     """
     scores[scores>0] = 1
     scores[scores<0] = 0

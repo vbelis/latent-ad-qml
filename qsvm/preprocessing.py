@@ -158,3 +158,4 @@ def split_sig_bkg(data: np.ndarray, target: np.ndarray) \
     data_sig = data[sig_mask, :]
     data_bkg = data[bkg_mask, :]
     return data_sig, data_bkg, sig_target, bkg_target
+    

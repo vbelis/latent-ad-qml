@@ -63,15 +63,7 @@ def main(args):
     util.print_accuracy_scores(test_acc, train_acc)
     util.save_qsvm(qsvm, out_path)
     qc_transpiled = util.get_quantum_kernel_circuit(kernel, out_path)
-    
-    if args["kfold_scores"]: 
-        test_folds, test_folds_targets = preprocessing.get_kfold_data(
-            test_features, 
-            test_labels
-        )
-        test.compute_qsvm_scores(qsvm, kernel, train_features, test_folds, out_path)
-    
-
+        
     if backend is not None:
         util.save_circuit_physical_layout(qc_transpiled, backend, out_path)
         util.save_backend_properties(backend, out_path + "/backend_properties_dict")
