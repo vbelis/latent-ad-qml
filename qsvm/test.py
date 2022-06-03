@@ -1,28 +1,26 @@
 from time import perf_counter
-
-from terminal_colors import tcols
+import h5py
 import numpy as np
-import util
 from sklearn.svm import SVC
 from qiskit_machine_learning.kernels import QuantumKernel
 from typing import Tuple
 from sklearn import metrics
 
+import util
 import preprocessing
+from terminal_colors import tcols
 from feature_map_circuits import u_dense_encoding
 
 def main(args):
     train_loader, test_loader = preprocessing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
-    test_fold_features, test_fold_labels = preprocessing.get_kfold_data(
-        test_features, 
-        test_labels,
-    )
-
-    qsvm = util.load_qsvm(args["qsvm_model"] + "model")
+    sig_fold, bkg_fold = preprocessing.get_kfold_data(test_features, 
+                                                      test_labels,)
+    qsvm = util.load_qsvm(args["model"] + "model")
     # TODO would be nice in to pass the feature map as an argument as well and
     # save it as a hyperparameter of the QSVM model in the .json file.
+    # model = util.load_model(path)
     feature_map = u_dense_encoding(nqubits=args["nqubits"])
 
     quantum_instance, backend = util.configure_quantum_instance(
@@ -33,27 +31,38 @@ def main(args):
     )
     kernel = QuantumKernel(feature_map=feature_map, quantum_instance=quantum_instance)
 
-    scores = compute_qsvm_scores(
-        qsvm, kernel, train_features, test_fold_features, args["qsvm_model"]
-    )
-
+    print("\nFor the signal folds: ")
+    score_sig = compute_qsvm_scores(qsvm, kernel, train_features, sig_fold,)
+    print("For the background folds: ")
+    score_bkg = compute_qsvm_scores(qsvm, kernel, train_features, bkg_fold,)
+    output_path = args["model"] 
+    #+ args["output"]
+    print(f"Saving the sig and bkg in the folder: " + tcols.OKCYAN 
+          + f"{output_path}" + tcols.ENDC)
+    np.save(output_path + "sig_scores.npy", score_sig)
+    np.save(output_path + "bkg_scores.npy", score_bkg)
+    
 
 def compute_qsvm_scores(
-    model, kernel, x_train, data_folds, output_folder=None,
+    model:SVC, 
+    kernel: QuantumKernel, 
+    x_train: np.ndarray, 
+    data_folds: np.ndarray, 
 ) -> np.ndarray:
     """
     Computing the model scores on all the test data folds to construct
     performance metrics of the model, e.g., ROC curve and AUC.
 
-    @model (svm.SVC)         :: The qsvm model to compute the score for.
-    @kernel (QuantumKernel)  :: The quatum kernel of the QSVM.
-    @x_train (np.ndarray)    :: Training data array of the saved QSVM.
-    @data_folds (np.ndarray) :: Numpy array of kfolded data.
-    @output_folder :: The folder where the results are saved.
+    Args:
+        model: The qsvm model to compute the score for.
+        kernel: The quatum kernel of the QSVM.
+        x_train: Training data array of the saved QSVM.
+        data_folds: Numpy array of kfolded data.
 
-    returns :: Array of the qsvm scores obtained.
+    Returns:
+        Array of the qsvm scores obtained.
     """
-    print("\nComputing QSVM scores...")
+    print("Computing QSVM scores... ", end="")
     scores_time_init = perf_counter()
     model_scores = np.array(
         [
@@ -67,14 +76,8 @@ def compute_qsvm_scores(
         tcols.OKGREEN
         + "Completed in: "
         + tcols.ENDC
-        + f"{exec_time:2.2e} sec. or {exec_time/60:2.2e} min."
+        + f"{exec_time:2.2e} sec. or {exec_time/60:2.2e} min. " + tcols.ROCKET
     )
-
-    if output_folder is not None:
-        path = output_folder + "y_score_list.npy"
-        print("Saving model scores array in: " + path)
-        np.save(path, model_scores)
-
     return model_scores
 
 def compute_svm_scores(

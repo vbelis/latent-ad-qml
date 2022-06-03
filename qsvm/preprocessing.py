@@ -110,8 +110,12 @@ def create_output_y(n: int) -> np.ndarray:
     y_data = np.concatenate((np.ones(n), np.zeros(n)))
     return y_data
 
-def get_kfold_data(test_data: np.ndarray, y_target: np.ndarray, kfolds: int = 5) \
-                   -> Tuple[np.ndarray, np.ndarray]:
+def get_kfold_data(
+    test_data: np.ndarray, 
+    y_target: np.ndarray, 
+    kfolds: int = 5,
+    full_dataset: bool = False,
+    ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Split the testing dataset into k folds. With this resampling technique we 
     will estimate the variance and the mean of the expected ROC curve and AUC.
@@ -119,16 +123,26 @@ def get_kfold_data(test_data: np.ndarray, y_target: np.ndarray, kfolds: int = 5)
         test_data: Array of the testing data.
         y_target: Array of targets/labels of the testing data.
         kfolds: Number of requested k-folds.
+        full_dataset: Whether or not to return full concatenated dataset with 
+                      signal and background data along with folded labels. If 
+                      set to False (default value) the function returns just 
+                      signal and background folds separately.
     Returns:
-        Returns array of shape (kfolds, ntest/kfolds).
+        The folded dataset with the corresponding labels (if full_dataset==True), 
+        or the signal and background folds, separately.
     """
     sig_test, bkg_test, sig_target, bkg_target = split_sig_bkg(test_data, 
                                                                y_target)
-    folded_sig = np.split(sig_test, kfolds)
+    folded_sig = np.array(np.split(sig_test, kfolds))
+    folded_bkg = np.array(np.split(bkg_test, kfolds))
+    if not full_dataset: 
+        print(f"\nPrepared k-folded test with k={kfolds}"
+              f" for signal and background data, each of shape " 
+              f"{folded_sig.shape}" + tcols.SPARKS)
+        return folded_sig, folded_bkg
+    
     folded_sig_target = np.split(sig_target, kfolds)
-    folded_bkg = np.split(bkg_test, kfolds)
     folded_bkg_target = np.split(bkg_target, kfolds)
-
     folded_test = np.concatenate((folded_sig, folded_bkg), axis=1)
     folded_target = np.concatenate((folded_sig_target, folded_bkg_target), 
                                    axis=1)
@@ -158,4 +172,3 @@ def split_sig_bkg(data: np.ndarray, target: np.ndarray) \
     data_sig = data[sig_mask, :]
     data_bkg = data[bkg_mask, :]
     return data_sig, data_bkg, sig_target, bkg_target
-    
