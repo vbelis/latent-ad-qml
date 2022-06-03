@@ -13,7 +13,7 @@ from terminal_colors import tcols
 
 import util
 import test
-import preprocessing
+import data_processing
 from feature_map_circuits import u_dense_encoding
 
 seed = 12345 
@@ -21,7 +21,7 @@ algorithm_globals.random_seed = seed
 
 
 def main(args):
-    train_loader, test_loader = preprocessing.get_data(args)
+    train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
 

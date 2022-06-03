@@ -7,16 +7,16 @@ from typing import Tuple
 from sklearn import metrics
 
 import util
-import preprocessing
+import data_processing
 from terminal_colors import tcols
 from feature_map_circuits import u_dense_encoding
 
 def main(args):
-    train_loader, test_loader = preprocessing.get_data(args)
+    train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
-    sig_fold, bkg_fold = preprocessing.get_kfold_data(test_features, 
-                                                      test_labels,)
+    sig_fold, bkg_fold = data_processing.get_kfold_data(test_features,
+                                                        test_labels,)
     qsvm = util.load_qsvm(args["model"] + "model")
     # TODO would be nice in to pass the feature map as an argument as well and
     # save it as a hyperparameter of the QSVM model in the .json file.

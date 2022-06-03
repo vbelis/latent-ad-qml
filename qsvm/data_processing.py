@@ -1,4 +1,4 @@
-# Data preprocessing module. Loads the training, testing, and k-fold testing 
+# Data processing module. Loads the training, testing, and k-fold testing 
 # datasets following specific conventions for the work. The raw data is an .h5 file.
 
 import h5py
