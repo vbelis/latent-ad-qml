@@ -2,6 +2,7 @@
 
 import os
 import joblib
+import re
 from typing import Tuple, Union
 from qiskit import IBMQ
 from qiskit import Aer
@@ -15,11 +16,7 @@ from qiskit.providers.aer.backends import AerSimulator
 from qiskit.providers import Backend, BaseBackend
 from qiskit.providers.ibmq import IBMQBackend
 from qiskit_machine_learning.kernels import QuantumKernel
-import re
-import numpy as np
 from sklearn.svm import SVC
-import h5py
-import argparse
 
 from terminal_colors import tcols
 
@@ -327,10 +324,3 @@ def configure_quantum_instance(
             tcols.FAIL + "Specified programme run type does not" "exist!" + tcols.ENDC
         )
     return quantum_instance, backend
-
-
-def get_run_type():
-    # switcher stuff # FIXME follow the ae_qml project design.
-    pass
-
-

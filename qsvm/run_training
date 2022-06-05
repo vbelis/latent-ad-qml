@@ -40,7 +40,6 @@ parser.add_argument('--kfolds', type=int, default=5,
                     help='Number of k-test folds used.')
 parser.add_argument('--nqubit', type=int, default=8,
                     help='Number of qubits for quantum feature map circuit.')
-parser.add_argument('--kfold_scores', action="store_true")
 
 args = parser.parse_args()
 
@@ -79,7 +78,6 @@ args = {
     "ntest": args.ntest,
     "nqubit": args.nqubit,
     "kfolds": args.kfolds,
-    "kfold_scores": args.kfold_scores,
     "seed": seed, # For the data shuffling.
 }
 

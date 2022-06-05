@@ -36,7 +36,6 @@ def main(args):
     print("For the background folds: ")
     score_bkg = compute_qsvm_scores(qsvm, kernel, train_features, bkg_fold,)
     output_path = args["model"] 
-    #+ args["output"]
     print(f"Saving the sig and bkg in the folder: " + tcols.OKCYAN 
           + f"{output_path}" + tcols.ENDC)
     np.save(output_path + "sig_scores.npy", score_sig)
