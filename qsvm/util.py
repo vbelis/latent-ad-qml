@@ -18,7 +18,7 @@ from qiskit.providers.ibmq import IBMQBackend
 from qiskit_machine_learning.kernels import QuantumKernel
 from sklearn.svm import SVC
 
-from terminal_colors import tcols
+from terminal_enhancer import tcols
 
 
 def print_accuracy_scores(test_acc: float, train_acc: float):

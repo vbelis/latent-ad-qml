@@ -9,7 +9,7 @@ import numpy as np
 
 from sklearn.svm import SVC
 
-from terminal_colors import tcols
+from terminal_enhancer import tcols
 
 import util
 import test

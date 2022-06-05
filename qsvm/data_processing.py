@@ -5,7 +5,7 @@ import h5py
 import numpy as np
 from typing import Tuple
 
-from terminal_colors import tcols
+from terminal_enhancer import tcols
 
 
 def get_data(args: dict) -> Tuple:

@@ -8,7 +8,7 @@ from sklearn import metrics
 
 import util
 import data_processing
-from terminal_colors import tcols
+from terminal_enhancer import tcols
 from feature_map_circuits import u_dense_encoding
 
 def main(args):

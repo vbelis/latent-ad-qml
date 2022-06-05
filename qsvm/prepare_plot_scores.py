@@ -6,7 +6,7 @@ import numpy as np
 import argparse
 import h5py
 
-from terminal_colors import tcols# TODO rename to terminal enhancer?
+from terminal_enhancer import tcols
 
 def save_scores_h5(classical_path: str, quantum_path: str, out_path: str):
     """
