@@ -1,5 +1,4 @@
 import numpy as np
-np.random.seed(42)
 import math
 import h5py
 
