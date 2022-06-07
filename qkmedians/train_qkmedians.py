@@ -51,11 +51,13 @@ def train_qkmedians(latent_dim, train_size, read_file, k=2, tolerance=1.e-3, sav
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='read arguments for qkmedians training')
-    parser.add_argument('-lat_dim', dest='latent_dim', type=str, help='latent dimension')
+    parser.add_argument('-latent_dim', dest='latent_dim', type=str, help='latent dimension')
     parser.add_argument('-train_size', dest='train_size', type=int, help='training data size')
-    parser.add_argument('-read_file', dest='read_file', type=str)
+    parser.add_argument('-read_file', dest='read_file', type=str, help='training data file')
     parser.add_argument('-k', dest='k', type=int, default=2, help='number of classes')
     parser.add_argument('-tolerance', dest='tolerance', type=float, help='tolerance')
-    parser.add_argument('-save_file', dest='save_file',type=str, help='save file')
+    parser.add_argument('-save_file', dest='save_file',type=str, help='file to save results')
 
     args = parser.parse_args()
+    
+    train_qkmedians(args.latent_dim, args.train_size, args.read_file, args.k, args.tolerance, args.save_file)
