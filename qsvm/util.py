@@ -58,11 +58,13 @@ def create_output_folder(args: dict, model: Union[SVC, QSVM]) -> str:
     return out_path
 
 
-def save_qsvm(model: SVC, path: str):
+def save_svm(model: Union[SVC, QSVM], path: str):
     """
     Saves the qsvm model to a certain path.
-    @model :: vqc model object.
-    @path  :: Path to save the model in.
+    
+    Args:
+        model: Kernel machine model that we want to save.
+        path: Path to save the model in.
     """
     joblib.dump(model, path + "/model")
     print("Trained model saved in: " + path)

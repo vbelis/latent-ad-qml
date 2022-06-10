@@ -110,8 +110,7 @@ class QSVM(SVC):
         print(
         tcols.OKGREEN + f"Done in: {train_time_fina-train_time_init:.2e} s"
         + tcols.ENDC
-        ) # TODO find a way to time the fitting function too without making
-          # the code ugly. Maybe we need to always precomput the kernel?
+        )
         super().fit(self._kernel_matrix_train, train_labels)
 
     def score(self, x: np.ndarray, y: np.ndarray, train_data: bool = False,
