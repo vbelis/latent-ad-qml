@@ -3,7 +3,7 @@
 import os
 import joblib
 import re
-from typing import Tuple, Union
+from typing import Tuple, Union, Callable
 from qiskit import IBMQ
 from qiskit import Aer
 from qiskit import QuantumCircuit
@@ -18,6 +18,7 @@ from qiskit.providers.ibmq import IBMQBackend
 from qiskit_machine_learning.kernels import QuantumKernel
 from sklearn.svm import SVC
 
+from qsvm import QSVM
 from terminal_enhancer import tcols
 
 
@@ -32,18 +33,18 @@ def print_accuracy_scores(test_acc: float, train_acc: float):
     print(f"Testing accuracy = {test_acc}" + tcols.ENDC)
 
 
-def create_output_folder(args: dict, qsvm: SVC) -> str:
+def create_output_folder(args: dict, model: Union[SVC, QSVM]) -> str:
     """
-    Creates output folder for the qsvm and returns the path (str)
-    @args (dict)         :: The argument dictionary defined in the qsvm_launch
-                            script.
-    @qsvm (sklearn.SVC)  :: QSVM object.
+    Creates output folder for the model and returns the path (str).
+    
+    Args:
+        args:The argument dictionary defined in the run_training script.
+        model: QSVM or SVC object.
     Returns:
-            @out_path (str), the path where all files relevant to the qsvm
-            will be saved.
+            The path where all files relevant to the model will be saved.
     """
     args["output_folder"] = (
-        args["output_folder"] + f"_c={qsvm.C}" + f"_{args['run_type']}"
+        args["output_folder"] + f"_c={model.C}" + f"_{args['run_type']}"
     )
     if args["backend_name"] is not None:
         # For briefness remove the "ibmq" prefix from the backend_name for the
@@ -51,6 +52,7 @@ def create_output_folder(args: dict, qsvm: SVC) -> str:
         backend_name = re.sub("ibmq?_", "", args["backend_name"])
         args["output_folder"] += f"_{backend_name}"
     out_path = "trained_qsvms/" + args["output_folder"]
+    # FIXME naming for the classical models? Put all in trained_qsvms?
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     return out_path
@@ -94,7 +96,7 @@ def save_backend_properties(backend: Union[Backend, BaseBackend], path: str):
         path,
     )
 
-def print_model_info(model: SVC):
+def print_model_info(model: Union[SVC, QSVM]):
     """
     Print information about the trained model, such as the C parameter value, 
     number of support vectors, number of training and testing samples.
@@ -324,3 +326,50 @@ def configure_quantum_instance(
             tcols.FAIL + "Specified programme run type does not" "exist!" + tcols.ENDC
         )
     return quantum_instance, backend
+
+def time_and_exec(func: Callable, *args) -> float:
+    """
+    Executes the given function with its arguments, times and returns the
+    execution time. Typically used for timing training, and testing tasks
+    of the models.
+
+    Args:
+        func: Function to execute.
+        *args: Arguments of the function.
+    Returns:
+        The output of the function and the runtime.
+    """
+    train_time_init = perf_counter()
+    func(*args)
+    train_time_fina = perf_counter()
+    exec_time = train_time_fina-train_time_init
+    return exec_time
+
+    
+def init_kernel_machine(args:dict, path:str = None) -> Union[SVC, QSVM]:
+    """
+    Initialises the kernel machine. Depending on the flag, this will be 
+    a SVM or a QSVM.
+    Args:
+        args: 
+    """
+    if args["quantum"]: 
+        print("Configuring the Quantum Support Vector Machine...")
+        return QSVM(args)
+    
+    print("Configuring the Classical Support Vector Machine...")
+    return SVC(kernel="rbf", C=args["c_param"], gamma=args["gamma"])
+    
+
+def export_hyperparameters(self, outdir):
+    """
+    Saves the hyperparameters of the model to a json file.
+    @outdir :: Directory where to save the json file.
+    """
+    # FIXME
+    file_path = os.path.join(outdir, "hyperparameters.json")
+    params_file = open(file_path, "w")
+    json.dump(self.hp, params_file)
+    params_file.close()
+
+    # TODO think whether I will use util or define a object method.

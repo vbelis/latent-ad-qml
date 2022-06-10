@@ -1,2 +1,7 @@
-# Run the qsvm on the autoencoder latent space. Choose between ideal, noisy simulation and run on hardware for the qsvm training.
-./qsvm_launch --data_folder ../../data/kinga_collab/extra_ema_tests/8/RSGraviton_WW_NA_35_ml_ready_data/ntrain600/ --backend_name none --run_type ideal --output_folder  test --c_param 1.0 --ntrain 600 --ntest 2000
+# Run the traininig of the classical SVM model
+
+./run_training --sig_path /path/to/sig_data.h5 --bkg_path /path/to/bkg_data.h5 --test_bkg_path /path/to/bkg_test.h5 --output_folder /path/to/save_folder --c_param 1.0 --ntrain 600 --ntest 20 --kfolds 5
+
+# Run the training of the Quantum SVM model
+
+./run_training --sig_path /path/to/sig_data.h5 --bkg_path /path/to/bkg_data.h5 --test_bkg_path /path/to/bkg_test.h5 --quantum --feature_map u_dense_encoding --nqubits 8 --backend_name none --run_type ideal --output_folder /path/to/save_folder --c_param 1.0 --ntrain 600 --ntest 20 --kfolds 5
