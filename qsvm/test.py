@@ -17,7 +17,7 @@ def main(args):
     test_features, test_labels = test_loader[0], test_loader[1]
     sig_fold, bkg_fold = data_processing.get_kfold_data(test_features,
                                                         test_labels,)
-    qsvm = util.load_qsvm(args["model"] + "model")
+    qsvm = util.load_model(args["model"] + "model")
     # TODO would be nice in to pass the feature map as an argument as well and
     # save it as a hyperparameter of the QSVM model in the .json file.
     # model = util.load_model(path)

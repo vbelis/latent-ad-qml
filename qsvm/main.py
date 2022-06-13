@@ -1,20 +1,13 @@
-# Main script for the training qsvm.
+# Main script for the training QSVM and SVM models.
 
 from time import perf_counter
 from typing import Callable
-
 from qiskit.utils import algorithm_globals
-from qiskit_machine_learning.kernels import QuantumKernel
 import numpy as np
 
-from sklearn.svm import SVC
-
-from terminal_enhancer import tcols
-
 import util
-import test
 import data_processing
-from feature_map_circuits import u_dense_encoding
+from terminal_enhancer import tcols
 
 seed = 12345 
 algorithm_globals.random_seed = seed
@@ -31,21 +24,9 @@ def main(args):
     time_and_train(model.fit, train_features, train_labels)
     util.print_model_info(model)
     
-    print("Computing the test dataset accuracy of the models, quick check"
-          " for overtraining...")
-    test_time_init = perf_counter()
-    if args["quantum"]: # TODO could this be more elegant?
-        np.save(out_path + "/kernel_matrix_elements", model.kernel_matrix_train)
-        train_acc = model.score(train_features, train_labels, train_data=True)
-    else: 
-        train_acc = model.score(train_features, train_labels)
-    test_acc = model.score(test_features, test_labels)
-    test_time_fina = perf_counter()
-    exec_time = test_time_fina - test_time_init  
-    print(f"Completed in: {exec_time:.2e} sec. or "f"{exec_time/60:.2e} min. "
-          + tcols.ROCKET)
-    util.print_accuracy_scores(test_acc, train_acc)
-    util.save_qsvm(model, out_path)
+    util.overfit_xcheck(model, train_features, train_labels, 
+                        test_features, test_labels)
+    util.save_model(model, out_path)
    
     """
     #FIXME

@@ -3,6 +3,7 @@
 import os
 import joblib
 import re
+from time import perf_counter
 from typing import Tuple, Union, Callable
 from qiskit import IBMQ
 from qiskit import Aer
@@ -58,7 +59,7 @@ def create_output_folder(args: dict, model: Union[SVC, QSVM]) -> str:
     return out_path
 
 
-def save_svm(model: Union[SVC, QSVM], path: str):
+def save_model(model: Union[SVC, QSVM], path: str):
     """
     Saves the qsvm model to a certain path.
     
@@ -70,7 +71,7 @@ def save_svm(model: Union[SVC, QSVM], path: str):
     print("Trained model saved in: " + path)
 
 
-def load_qsvm(path: str) -> SVC:
+def load_model(path: str) -> SVC:
     """
     Load model from pickle file, i.e., deserialisation.
     @path  :: String of full path to load the model from.
@@ -356,22 +357,47 @@ def init_kernel_machine(args:dict, path:str = None) -> Union[SVC, QSVM]:
         args: 
     """
     if args["quantum"]: 
-        print("Configuring the Quantum Support Vector Machine...")
+        print(tcols.OKCYAN + "\nConfiguring the Quantum Support Vector"
+              " Machine." + tcols.ENDC)
         return QSVM(args)
     
-    print("Configuring the Classical Support Vector Machine...")
+    print(tcols.OKCYAN + "\nConfiguring the Classical Support Vector"
+          " Machine..." + tcols.ENDC)
     return SVC(kernel="rbf", C=args["c_param"], gamma=args["gamma"])
     
-
-def export_hyperparameters(self, outdir):
+def overfit_xcheck(model: Union[QSVM, SVC], train_data, train_labels, test_data, test_labels):
     """
-    Saves the hyperparameters of the model to a json file.
-    @outdir :: Directory where to save the json file.
+    Computes the training and testing accuracy of the model to cross-check for
+    overtraining if the two values are far way from eachother. The execution of
+    this function is also timed.
     """
-    # FIXME
-    file_path = os.path.join(outdir, "hyperparameters.json")
-    params_file = open(file_path, "w")
-    json.dump(self.hp, params_file)
-    params_file.close()
+    print("Computing the test dataset accuracy of the models, quick check"
+          " for overtraining...")
+    test_time_init = perf_counter()
+    if isinstance(model, QSVM):
+        train_acc = model.score(train_data, train_labels, train_data=True)
+    elif isinstance(model, SVC):
+        train_acc = model.score(train_data, train_labels)
+    else: 
+        raise TypeError(tcols.FAIL + "The model should be either a SVC or "
+                        "a QSVM object." + tcols.ENDC)
+    test_acc = model.score(test_data, test_labels)
+    test_time_fina = perf_counter()
+    exec_time = test_time_fina - test_time_init  
+    print(f"Completed in: {exec_time:.2e} sec. or "f"{exec_time/60:.2e} min. "
+          + tcols.ROCKET)
+    print_accuracy_scores(test_acc, train_acc)
 
-    # TODO think whether I will use util or define a object method.
+
+#def export_hyperparameters(self, outdir):
+#    """
+#    Saves the hyperparameters of the model to a json file.
+#    @outdir :: Directory where to save the json file.
+#    """
+#    # FIXME
+#    file_path = os.path.join(outdir, "hyperparameters.json")
+#    params_file = open(file_path, "w")
+#    json.dump(self.hp, params_file)
+#    params_file.close()
+#
+#    # TODO think whether I will use util or define a object method.
