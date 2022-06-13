@@ -3,6 +3,7 @@
 import os
 import joblib
 import re
+import json
 from time import perf_counter
 from typing import Tuple, Union, Callable
 from qiskit import IBMQ
@@ -44,16 +45,14 @@ def create_output_folder(args: dict, model: Union[SVC, QSVM]) -> str:
     Returns:
             The path where all files relevant to the model will be saved.
     """
-    args["output_folder"] = (
-        args["output_folder"] + f"_c={model.C}" + f"_{args['run_type']}"
-    )
-    if args["backend_name"] is not None:
-        # For briefness remove the "ibmq" prefix from the backend_name for the
-        # output folder:
-        backend_name = re.sub("ibmq?_", "", args["backend_name"])
-        args["output_folder"] += f"_{backend_name}"
-    out_path = "trained_qsvms/" + args["output_folder"]
-    # FIXME naming for the classical models? Put all in trained_qsvms?
+    out_path = args["output_folder"] + f"_c={model.C}" 
+    if args["quantum"]:
+        out_path = out_path+ f"_{args['run_type']}"
+        if args["backend_name"] is not None and args["backend_name"] != "none":
+            # For briefness remove the "ibmq" prefix for the output folder:
+            backend_name = re.sub("ibmq?_", "", args["backend_name"])
+            out_path += f"_{backend_name}"
+    out_path = "trained_qsvms/" + out_path
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     return out_path
@@ -389,15 +388,14 @@ def overfit_xcheck(model: Union[QSVM, SVC], train_data, train_labels, test_data,
     print_accuracy_scores(test_acc, train_acc)
 
 
-#def export_hyperparameters(self, outdir):
-#    """
-#    Saves the hyperparameters of the model to a json file.
-#    @outdir :: Directory where to save the json file.
-#    """
-#    # FIXME
-#    file_path = os.path.join(outdir, "hyperparameters.json")
-#    params_file = open(file_path, "w")
-#    json.dump(self.hp, params_file)
-#    params_file.close()
-#
-#    # TODO think whether I will use util or define a object method.
+def export_hyperparameters(outdir):
+    """
+    Saves the hyperparameters of the model to a json file.
+    @outdir :: Directory where to save the json file.
+    """
+    file_path = os.path.join(outdir, "hyperparameters.json")
+    print(file_path)
+    #params_file = open(file_path, "w")
+    #json.dump(self.hp, params_file)
+    #params_file.close()
+
