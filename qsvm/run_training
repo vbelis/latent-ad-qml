@@ -5,7 +5,7 @@
 import argparse
 import json
 
-from main import main
+from train import main
 
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
