@@ -3,6 +3,10 @@ import numpy as np
 from sklearn.metrics import roc_curve, auc, confusion_matrix
 import h5py
 
+
+def euclidean_dist(a, b):
+    return np.linalg.norm(a-b)
+
 def calc_norm(a, b):
     return math.sqrt(np.sum(a**2) + np.sum(b**2))
 
