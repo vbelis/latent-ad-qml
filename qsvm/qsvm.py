@@ -1,11 +1,14 @@
 # Module that defines the main object Quantum Support Vector Machine. 
 # Based on the kernel machine sklearn.svm.SVC implementation.
 
+import joblib
 from sklearn.svm import SVC
 from qiskit import QuantumCircuit
 from qiskit.utils import QuantumInstance
-from qiskit.providers import Backend
+from qiskit.circuit import ParameterVector
+from qiskit.providers import Backend, BaseBackend
 from qiskit.providers.ibmq import IBMQBackend
+from qiskit.visualization import plot_circuit_layout
 from qiskit_machine_learning.kernels import QuantumKernel
 import numpy as np
 from time import perf_counter
@@ -21,15 +24,6 @@ class QSVM(SVC):
     objective function is optimised on a classical device, using convex 
     optimisation libraries utilised by sklearn. The quantum part is the 
     kernel.
-
-    Attributes:
-        Same as SVC. TODO
-        _kernel_matrix_train: The kernel matrix computed during training/
-        _train_data: The training data of the model.
-        Note: Saving the last two variables introduces more state to the object,
-        however reduces the computation time by half, since the number of quantum
-        circuits that need to be simulated is reduced in half (dublicates), 
-        when we want to compute accuracy and scores during testing.
     """
     def __init__(self, hpars: dict):
         """
@@ -40,14 +34,16 @@ class QSVM(SVC):
         super().__init__(kernel="precomputed", C=hpars["c_param"])
         
         self._nqubits = hpars["nqubits"]
-        exec("self._feature_map = fm." + hpars["feature_map"]
+        self._feature_map_name = hpars["feature_map"]
+        exec("self._feature_map = fm." + self._feature_map_name
              + "(nqubits=self._nqubits)")
 
+        self._backend_config = hpars["config"]
         self._quantum_instance, self._backend = util.configure_quantum_instance(
             ibmq_api_config=hpars["ibmq_api_config"],
             run_type=hpars["run_type"],
             backend_name=hpars["backend_name"],
-            **hpars["config"],
+            **self._backend_config,
         )
         self._quantum_kernel = QuantumKernel(
             self._feature_map,
@@ -70,6 +66,16 @@ class QSVM(SVC):
         return self._backend
 
     @property
+    def backend_config(self) -> dict:
+        """Returns the backend configuration specified during the QSVM training."""
+        return self._backend_config
+
+    @property
+    def nqubits(self) -> int:
+        """Returns the number of qubits of the QSVM circuit."""
+        return self._nqubits
+
+    @property
     def quantum_instance(self) -> QuantumInstance:
         """Returns the quantum instance object that the QSVM uses for the 
         simulations, or hardware runs.
@@ -80,6 +86,11 @@ class QSVM(SVC):
     def feature_map(self) -> QuantumCircuit:
         """Returns the QuantumCircuit that implements the quantum feature map."""
         return self._feature_map
+
+    @property
+    def feature_map_name(self) -> str:
+        """Returns the quantum feature map name."""
+        return self._feature_map_name
     
     @property
     def quantum_kernel(self) -> QuantumKernel:
@@ -146,8 +157,7 @@ class QSVM(SVC):
         return super().score(kernel_matrix_test, y, sample_weight)
         
 
-    def decision_function(self, x_test: np.ndarray, x_train: np.ndarray) \
-                          -> np.ndarray:
+    def decision_function(self, x_test: np.ndarray) -> np.ndarray:
         """
         Computes the score value (test statistic) of the QSVM model. It computes
         the displacement of the data vector x from the decision boundary. If the
@@ -157,10 +167,86 @@ class QSVM(SVC):
         Args: 
             x_test: Array of data vectors of which the scores we want to 
                     compute.
-            x_train: Array of data vectors with which the QSVM was trained.
         Returns:
             The corresponding array of scores of x.
         """
-        test_kernel_matrix = self._quantum_kernel.evaluate(x_vec=x_test, 
-                                                           y_vec=x_train)
+        test_kernel_matrix = self._quantum_kernel.evaluate(
+            x_vec=x_test, 
+            y_vec=self._train_data,
+        )
         return super().decision_function(test_kernel_matrix)
+    
+    def get_transpiled_kernel_circuit(
+        self, 
+        path: str, 
+        output_format: str = "mpl", 
+        **kwargs: dict,
+    ) -> QuantumCircuit:
+        """
+        Save the transpiled quantum kernel circuit figure.
+
+        Args:
+             quantum_kernel: QuantumKernel object used in the
+                                                QSVM training.
+             path: Path to save the output figure.
+             output_format: The format of the image. Formats:
+                            'text', 'mlp', 'latex', 'latex_source'.
+             kwargs: Keyword arguemnts for QuantumCircuit.draw().
+
+        Returns:
+                Transpiled QuantumCircuit that represents the quantum kernel.
+                i.e., the circuit that will be executed on the backend.
+        """
+        print("\nCreating the quantum kernel circuit...")
+        n_params = self._quantum_kernel.feature_map.num_parameters
+        feature_map_params_x = ParameterVector("x", n_params)
+        feature_map_params_y = ParameterVector("y", n_params)
+        qc_kernel_circuit = self._quantum_kernel.construct_circuit(
+            feature_map_params_x, feature_map_params_y
+        )
+        qc_transpiled = self._quantum_instance.transpile(qc_kernel_circuit)[0]
+
+        path += "/quantum_kernel_circuit_plot"
+        print(tcols.OKCYAN + "Saving quantum kernel circuit in:" 
+              + tcols.ENDC, path)
+        qc_transpiled.draw(
+            output=output_format,
+            filename=path,
+            **kwargs,
+        )
+        return qc_transpiled
+
+    def save_circuit_physical_layout(self, circuit: QuantumCircuit, 
+                                     save_path: str):
+        """
+        Plot and save the quantum circuit and its physical layout on the backend.
+
+        Args:
+             circuit: Circuit to plot on the backend.
+             save_path: Path to save figure.
+        """
+        fig = plot_circuit_layout(circuit, self._backend)
+        save_path += "/circuit_physical_layout"
+        print(tcols.OKCYAN + "Saving physical circuit layout in:" 
+              + tcols.ENDC, save_path)
+        fig.savefig(save_path)
+
+    def save_backend_properties(self, path: str):
+        """
+        Saves a dictionary to file using Joblib. The dictionary contains quantum
+        hardware properties, or noisy simulator properties, when the QSVM is not 
+        trained with ideal simulation.
+
+        Args:
+            backend: IBM Quantum computer backend from which we save the 
+                     calibration data.
+            path: String of full path to save the model in.
+        """
+        properties_dict = self._backend.properties().to_dict()
+        path += "/backend_properties_dict"
+        joblib.dump(properties_dict, path)
+        print(
+            tcols.OKCYAN + "Quantum computer backend properties saved in Python"
+            " dictionary format in:" + tcols.ENDC,
+            path,
+        )

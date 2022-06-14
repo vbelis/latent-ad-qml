@@ -30,7 +30,8 @@ def main(args):
         **args["config"],
     )
     kernel = QuantumKernel(feature_map=feature_map, quantum_instance=quantum_instance)
-
+    print(qsvm._train_data.shape)
+    print(qsvm.score(test_features, test_labels))
     print("\nFor the signal folds: ")
     score_sig = compute_qsvm_scores(qsvm, kernel, train_features, sig_fold,)
     print("For the background folds: ")
@@ -65,7 +66,7 @@ def compute_qsvm_scores(
     scores_time_init = perf_counter()
     model_scores = np.array(
         [
-            model.decision_function(kernel.evaluate(x_vec=fold, y_vec=x_train))
+            model.decision_function(fold)
             for fold in data_folds
         ]
     )

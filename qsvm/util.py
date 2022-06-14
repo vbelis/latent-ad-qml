@@ -4,6 +4,7 @@ import os
 import joblib
 import re
 import json
+import numpy as np
 from time import perf_counter
 from typing import Tuple, Union, Callable
 from qiskit import IBMQ
@@ -66,8 +67,14 @@ def save_model(model: Union[SVC, QSVM], path: str):
         model: Kernel machine model that we want to save.
         path: Path to save the model in.
     """
+    if isinstance(model, QSVM):
+        np.save(path + "/train_kernel_matrix.npy", model.kernel_matrix_train)
+        qc_transpiled = model.get_transpiled_kernel_circuit(path)
+        if model.backend is not None:
+            model.save_circuit_physical_layout(qc_transpiled, path)
+            model.save_backend_properties(path)
     joblib.dump(model, path + "/model")
-    print("Trained model saved in: " + path)
+    print(tcols.OKCYAN + "Trained model saved in: " + tcols.ENDC + path)
 
 
 def load_model(path: str) -> SVC:
@@ -78,25 +85,6 @@ def load_model(path: str) -> SVC:
     returns :: Joblib object that can be loaded by qiskit.
     """
     return joblib.load(path)
-
-def save_backend_properties(backend: Union[Backend, BaseBackend], path: str):
-    """
-    Saves a dictionary to file using Joblib. The dictionary contains quantum
-    hardware properties, or noisy simulator properties, when the QSVM is not 
-    trained with ideal simulation.
-
-    Args:
-        backend: IBM Quantum computer backend from which we save the 
-                 calibration data.
-        path: String of full path to save the model in.
-    """
-    properties_dict = backend.properties().to_dict()
-    joblib.dump(properties_dict, path)
-    print(
-        tcols.OKCYAN + "Quantum computer backend properties saved in Python"
-        " dictionary format in:" + tcols.ENDC,
-        path,
-    )
 
 def print_model_info(model: Union[SVC, QSVM]):
     """
@@ -112,62 +100,6 @@ def print_model_info(model: Union[SVC, QSVM]):
         f"each class are: {model.n_support_}"
     )
     print("-------------------------------------------\n")
-
-
-def get_quantum_kernel_circuit(
-    quantum_kernel: QuantumKernel, 
-    path: str, 
-    output_format: str = "mpl", 
-    **kwargs: dict,
-) -> QuantumCircuit:
-    """
-    Save the transpiled quantum kernel circuit figure.
-    
-    Args:
-         quantum_kernel: QuantumKernel object used in the
-                                            QSVM training.
-         path: Path to save the output figure.
-         output_format: The format of the image. Formats:
-                        'text', 'mlp', 'latex', 'latex_source'.
-         kwargs: Keyword arguemnts for QuantumCircuit.draw().
-    
-    Returns:
-            Transpiled QuantumCircuit that represents the quantum kernel.
-            i.e., the circuit that will be executed on the backend.
-    """
-    print("\nCreating the quanntum kernel circuit...")
-    n_params = quantum_kernel.feature_map.num_parameters
-    feature_map_params_x = ParameterVector("x", n_params)
-    feature_map_params_y = ParameterVector("y", n_params)
-    qc_kernel_circuit = quantum_kernel.construct_circuit(
-        feature_map_params_x, feature_map_params_y
-    )
-    qc_transpiled = quantum_kernel.quantum_instance.transpile(qc_kernel_circuit)[0]
-
-    path += "/quantum_kernel_circuit_plot"
-    print(tcols.OKCYAN + "Saving quantum kernel circuit in:" + tcols.ENDC, path)
-    qc_transpiled.draw(
-        output=output_format,
-        filename=path,
-        **kwargs,
-    )
-    return qc_transpiled
-
-
-def save_circuit_physical_layout(circuit: QuantumCircuit, backend, save_path):
-    """
-    Plot and save the quantum circuit and its physical layout on the backend.
-
-    Args:
-         @circuit (QuantumCircuit) :: Circuit to plot on the backend.
-         @backend                  :: The physical quantum computer backend.
-         @save_path (str)          :: Path to save figure.
-    """
-    fig = plot_circuit_layout(circuit, backend)
-    save_path += "/circuit_physical_layout"
-    print(tcols.OKCYAN + "Saving physical circuit layout in:" + tcols.ENDC, save_path)
-    fig.savefig(save_path)
-
 
 def connect_quantum_computer(ibmq_api_config:dict, backend_name: str) -> IBMQBackend:
     """
@@ -346,7 +278,6 @@ def time_and_exec(func: Callable, *args) -> float:
     train_time_fina = perf_counter()
     exec_time = train_time_fina-train_time_init
     return exec_time
-
     
 def init_kernel_machine(args:dict, path:str = None) -> Union[SVC, QSVM]:
     """
@@ -387,15 +318,24 @@ def overfit_xcheck(model: Union[QSVM, SVC], train_data, train_labels, test_data,
           + tcols.ROCKET)
     print_accuracy_scores(test_acc, train_acc)
 
-
-def export_hyperparameters(outdir):
+def export_hyperparameters(model: Union[QSVM, SVC], outdir):
     """
-    Saves the hyperparameters of the model to a json file.
-    @outdir :: Directory where to save the json file.
+    Saves the hyperparameters of the model to a json file. QSVM and SVM have
+    different hyperparameters.
+    
+    Args:
+        outdir: Directory where to save the json file, same as the saved model.
     """
     file_path = os.path.join(outdir, "hyperparameters.json")
-    print(file_path)
-    #params_file = open(file_path, "w")
-    #json.dump(self.hp, params_file)
-    #params_file.close()
-
+    if isinstance(model, QSVM):
+        hp = {
+            "C": model.C,
+            "nqubits": model.nqubits,
+            "feature_map_name": model.feature_map_name,
+            "backend_config": model.backend_config,
+        }
+    else:
+        hp = {"C": model.C}
+    params_file = open(file_path, "w")
+    json.dump(hp, params_file)
+    params_file.close()

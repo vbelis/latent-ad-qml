@@ -1,4 +1,8 @@
-# Main script for the training QSVM and SVM models.
+# The quantum and classical SVM training script. Here, the model is instantiated 
+# with some parameters, the circuit is built, and then it is trained on a data set.
+# The model is then checked for overtraining by computing the accuracy on the test
+# and train data sets. The model along  are saved in a folder
+# with the name of a user's choosing..
 
 from time import perf_counter
 from typing import Callable
@@ -27,17 +31,7 @@ def main(args):
     util.overfit_xcheck(model, train_features, train_labels, 
                         test_features, test_labels)
     util.save_model(model, out_path)
-   
-    """
-    #FIXME
-    util.export_hyperparameters() to include the functions below and the
-    np.save(kernel)
-    qc_transpiled = util.get_quantum_kernel_circuit(kernel, out_path)
-        
-    if backend is not None:
-        util.save_circuit_physical_layout(qc_transpiled, backend, out_path)
-        util.save_backend_properties(backend, out_path + "/backend_properties_dict")
-    """
+    util.export_hyperparameters(model, out_path)
 
 def time_and_train(fit: Callable, *args):
     """

@@ -60,8 +60,11 @@ config_hardware = {'optimization_level':3, 'initial_layout': initial_layout,
                    'seed_transpiler':seed, 'shots':5000}
 config_ideal = {'seed_simulator': seed}
 
-switcher = {'ideal' : lambda: config_ideal, 'noisy' : lambda: config_noisy, 
-            'hardware' : lambda: config_hardware}
+switcher = {
+    'ideal' : lambda: config_ideal, 
+     'noisy' : lambda: config_noisy, 
+     'hardware' : lambda: config_hardware,
+}
 config = switcher.get(args.run_type, lambda: None)()
 
 args = {
