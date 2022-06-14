@@ -14,7 +14,7 @@ def initialize_centroids(points, k):
     indexes = np.random.randint(points.shape[0], size=k)
     return points[indexes]
 
-def find_distance_matrix_quantum(points, centroid):
+def find_distance_matrix_quantum(points, centroid, device_name):
     """ 
     Modified version of scipy.spatial.distance.cdist() function.
     Args:
@@ -35,11 +35,11 @@ def find_distance_matrix_quantum(points, centroid):
 
     dist_matrix = np.zeros((n_events, centroid.shape[0]))
     for i in range(n_events):
-        distance, _ = distc.DistCalc_DI(points[i,:], centroid[0])
+        distance, _ = distc.DistCalc_DI(points[i,:], centroid[0], device_name)
         dist_matrix[i,:] = distance
     return dist_matrix
 
-def geometric_median(points, eps=1e-6):
+def geometric_median(points, eps=1e-6, device_name='/GPU:0'):
     """
     Implementation from Reference - DOI: 10.1007/s00180-011-0262-4
     Args:
@@ -55,7 +55,7 @@ def geometric_median(points, eps=1e-6):
     median = np.mean(points, 0) # starting median
 
     while True:
-        D = find_distance_matrix_quantum(points, [y])
+        D = find_distance_matrix_quantum(points, [median], device_name)
         nonzeros = (D != 0)[:, 0]
         Dinv = 1 / D[nonzeros]
         Dinv_sum = np.sum(Dinv)
@@ -75,7 +75,7 @@ def geometric_median(points, eps=1e-6):
             new_median = (1-gamma)*T1 + gamma*median # Eq. (11)
         
         # converge condition    
-        dist_med_newmed,_ = distc.DistCalc_DI(median, new_median)
+        dist_med_newmed,_ = distc.DistCalc_DI(median, new_median, device_name=device_name)
         if dist_med_newmed < eps:
             return new_median
         median = new_median # next median
@@ -100,7 +100,7 @@ def find_centroids_GM(points, cluster_labels, clusters=2):
         print(f'Found for cluster {j}')
     return np.array(centroids)
 
-def find_nearest_neighbour_DI(points, centroids, device_name):
+def find_nearest_neighbour_DI(points, centroids, device_name='/GPU:0'):
     """
     Args:
         points: array of shape (N, X)
