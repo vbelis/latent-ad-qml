@@ -10,8 +10,8 @@ def pad_input(X):
         X = np.pad(X, (0, size_needed-num_features), "constant")
     return X
 
-def DistCalc_DI(a, b, shots_n=10000):
-    """ Distance calculation with destructive interference """
+def DistCalc_DI(a, b, device_name, shots_n=10000):
+    """ Distance calculation using destructive interference """
     num_features = len(a)
     norm = calc_norm(a, b)
     a_norm = a/norm
@@ -21,14 +21,13 @@ def DistCalc_DI(a, b, shots_n=10000):
     b_norm = pad_input(b_norm)
     
     amplitudes = np.concatenate((a_norm, b_norm))
-    #print(np.array(amplitudes).shape)
     n_qubits = int(np.log2(len(amplitudes)))
     
     #QIBO
     qc = Circuit(n_qubits)
     qc.add(gates.H(0))
     qc.add(gates.M(0))
-    with tf.device("/GPU:0"):
+    with tf.device(device_name):
         result = qc.execute(initial_state=amplitudes, nshots=shots_n)
     counts = result.frequencies(binary=True)
     distance = norm*math.sqrt(2)*math.sqrt((counts['1']/shots_n))
