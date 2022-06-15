@@ -23,7 +23,7 @@ from terminal_enhancer import tcols
 
 def print_accuracy_scores(test_acc: float, train_acc: float):
     """
-    Prints the train and test accuracies of the model. 
+    Prints the train and test accuracies of the model.
     Args:
         test_acc: The accuracy of the trained model on the test dataset.
         train_acc: The accuracy of the trained model on the train dataset.
@@ -35,16 +35,16 @@ def print_accuracy_scores(test_acc: float, train_acc: float):
 def create_output_folder(args: dict, model: Union[SVC, QSVM]) -> str:
     """
     Creates output folder for the model and returns the path (str).
-    
+
     Args:
         args:The argument dictionary defined in the run_training script.
         model: QSVM or SVC object.
     Returns:
             The path where all files relevant to the model will be saved.
     """
-    out_path = args["output_folder"] + f"_c={model.C}" 
+    out_path = args["output_folder"] + f"_c={model.C}"
     if args["quantum"]:
-        out_path = out_path+ f"_{args['run_type']}"
+        out_path = out_path + f"_{args['run_type']}"
         if args["backend_name"] is not None and args["backend_name"] != "none":
             # For briefness remove the "ibmq" prefix for the output folder:
             backend_name = re.sub("ibmq?_", "", args["backend_name"])
@@ -58,7 +58,7 @@ def create_output_folder(args: dict, model: Union[SVC, QSVM]) -> str:
 def save_model(model: Union[SVC, QSVM], path: str):
     """
     Saves the qsvm model to a certain path.
-    
+
     Args:
         model: Kernel machine model that we want to save.
         path: Path to save the model in.
@@ -76,17 +76,18 @@ def save_model(model: Union[SVC, QSVM], path: str):
 def load_model(path: str) -> Union[QSVM, SVC]:
     """
     Load model from pickle file, i.e., deserialisation.
-    
+
     Args:
         path: String of full path to load the model from.
-    Returns: 
+    Returns:
         Joblib object of the trained QSVM or SVM model.
     """
     return joblib.load(path)
 
+
 def print_model_info(model: Union[SVC, QSVM]):
     """
-    Print information about the trained model, such as the C parameter value, 
+    Print information about the trained model, such as the C parameter value,
     number of support vectors, number of training and testing samples.
     Args:
         model: The trained (Q)SVM model.
@@ -99,7 +100,8 @@ def print_model_info(model: Union[SVC, QSVM]):
     )
     print("-------------------------------------------\n")
 
-def connect_quantum_computer(ibmq_api_config:dict, backend_name: str) -> IBMQBackend:
+
+def connect_quantum_computer(ibmq_api_config: dict, backend_name: str) -> IBMQBackend:
     """
     Load a IBMQ-experience backend using a token (IBM-CERN hub credentials)
     This backend (i.e. quantum computer) can either be used for running on
@@ -259,6 +261,7 @@ def configure_quantum_instance(
         )
     return quantum_instance, backend
 
+
 def time_and_exec(func: Callable, *args) -> float:
     """
     Executes the given function with its arguments, times and returns the
@@ -274,53 +277,68 @@ def time_and_exec(func: Callable, *args) -> float:
     train_time_init = perf_counter()
     func(*args)
     train_time_fina = perf_counter()
-    exec_time = train_time_fina-train_time_init
+    exec_time = train_time_fina - train_time_init
     return exec_time
-    
-def init_kernel_machine(args:dict, path:str = None) -> Union[SVC, QSVM]:
+
+
+def init_kernel_machine(args: dict, path: str = None) -> Union[SVC, QSVM]:
     """
-    Initialises the kernel machine. Depending on the flag, this will be 
+    Initialises the kernel machine. Depending on the flag, this will be
     a SVM or a QSVM.
     Args:
-        args: 
+        args:
     """
-    if args["quantum"]: 
-        print(tcols.OKCYAN + "\nConfiguring the Quantum Support Vector"
-              " Machine." + tcols.ENDC)
+    if args["quantum"]:
+        print(
+            tcols.OKCYAN + "\nConfiguring the Quantum Support Vector"
+            " Machine." + tcols.ENDC
+        )
         return QSVM(args)
-    
-    print(tcols.OKCYAN + "\nConfiguring the Classical Support Vector"
-          " Machine..." + tcols.ENDC)
+
+    print(
+        tcols.OKCYAN + "\nConfiguring the Classical Support Vector"
+        " Machine..." + tcols.ENDC
+    )
     return SVC(kernel="rbf", C=args["c_param"], gamma=args["gamma"])
-    
-def overfit_xcheck(model: Union[QSVM, SVC], train_data, train_labels, test_data, test_labels):
+
+
+def overfit_xcheck(
+    model: Union[QSVM, SVC], train_data, train_labels, test_data, test_labels
+):
     """
     Computes the training and testing accuracy of the model to cross-check for
     overtraining if the two values are far way from eachother. The execution of
     this function is also timed.
     """
-    print("Computing the test dataset accuracy of the models, quick check"
-          " for overtraining...")
+    print(
+        "Computing the test dataset accuracy of the models, quick check"
+        " for overtraining..."
+    )
     test_time_init = perf_counter()
     if isinstance(model, QSVM):
         train_acc = model.score(train_data, train_labels, train_data=True)
     elif isinstance(model, SVC):
         train_acc = model.score(train_data, train_labels)
-    else: 
-        raise TypeError(tcols.FAIL + "The model should be either a SVC or "
-                        "a QSVM object." + tcols.ENDC)
+    else:
+        raise TypeError(
+            tcols.FAIL + "The model should be either a SVC or "
+            "a QSVM object." + tcols.ENDC
+        )
     test_acc = model.score(test_data, test_labels)
     test_time_fina = perf_counter()
-    exec_time = test_time_fina - test_time_init  
-    print(f"Completed in: {exec_time:.2e} sec. or "f"{exec_time/60:.2e} min. "
-          + tcols.ROCKET)
+    exec_time = test_time_fina - test_time_init
+    print(
+        f"Completed in: {exec_time:.2e} sec. or "
+        f"{exec_time/60:.2e} min. " + tcols.ROCKET
+    )
     print_accuracy_scores(test_acc, train_acc)
+
 
 def export_hyperparameters(model: Union[QSVM, SVC], outdir: str):
     """
     Saves the hyperparameters of the model to a json file. QSVM and SVM have
     different hyperparameters.
-    
+
     Args:
         outdir: Directory where to save the json file, same as the saved model.
     """

@@ -1,4 +1,4 @@
-# The quantum and classical SVM training script. Here, the model is instantiated 
+# The quantum and classical SVM training script. Here, the model is instantiated
 # with some parameters, the circuit is built, and then it is trained on a data set.
 # The model is then checked for overtraining by computing the accuracy on the test
 # and train data sets. The model along  are saved in a folder
@@ -12,7 +12,7 @@ import util
 import data_processing
 from terminal_enhancer import tcols
 
-seed = 12345 
+seed = 12345
 algorithm_globals.random_seed = seed
 
 
@@ -23,14 +23,14 @@ def main(args):
 
     model = util.init_kernel_machine(args)
     out_path = util.create_output_folder(args, model)
-    
+
     time_and_train(model.fit, train_features, train_labels)
     util.print_model_info(model)
-    
-    util.overfit_xcheck(model, train_features, train_labels, 
-                        test_features, test_labels)
+
+    util.overfit_xcheck(model, train_features, train_labels, test_features, test_labels)
     util.save_model(model, out_path)
     util.export_hyperparameters(model, out_path)
+
 
 def time_and_train(fit: Callable, *args):
     """
@@ -43,7 +43,8 @@ def time_and_train(fit: Callable, *args):
     train_time_init = perf_counter()
     fit(*args)
     train_time_fina = perf_counter()
-    exec_time = train_time_fina-train_time_init
-    print("Training completed in: " + tcols.OKGREEN + f"{exec_time:.2e} sec. "
-          f"or {exec_time/60:.2e} min. " + tcols.ENDC + tcols.SPARKS)
-    
+    exec_time = train_time_fina - train_time_init
+    print(
+        "Training completed in: " + tcols.OKGREEN + f"{exec_time:.2e} sec. "
+        f"or {exec_time/60:.2e} min. " + tcols.ENDC + tcols.SPARKS
+    )

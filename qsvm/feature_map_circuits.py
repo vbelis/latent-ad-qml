@@ -3,6 +3,7 @@
 from qiskit.circuit import QuantumCircuit, ParameterVector
 import numpy as np
 
+
 def u_dense_encoding(nqubits=8) -> QuantumCircuit:
     """
     Constructs a feature map, inspired by the dense encoding method.
@@ -11,7 +12,7 @@ def u_dense_encoding(nqubits=8) -> QuantumCircuit:
     returns :: The quantum circuit object form qiskit.
     """
     # TODO test with Hadamards in the beggining.
-    nfeatures = 2*nqubits
+    nfeatures = 2 * nqubits
     x = ParameterVector("x", nfeatures)
     qc = QuantumCircuit(nqubits)
     for feature, qubit in zip(range(0, 2 * nqubits, 2), range(nqubits)):
