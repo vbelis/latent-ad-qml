@@ -1,4 +1,4 @@
-# Utility methods for the qsvm.
+# Utility methods for the SVM and QSVM training and testing.
 
 import os
 import joblib
@@ -9,16 +9,12 @@ from time import perf_counter
 from typing import Tuple, Union, Callable
 from qiskit import IBMQ
 from qiskit import Aer
-from qiskit import QuantumCircuit
 from qiskit.utils import QuantumInstance
 from qiskit.providers.exceptions import QiskitBackendNotFoundError
-from qiskit.circuit import ParameterVector
-from qiskit.visualization import plot_circuit_layout
 from qiskit.providers.aer.noise import NoiseModel
 from qiskit.providers.aer.backends import AerSimulator
-from qiskit.providers import Backend, BaseBackend
+from qiskit.providers import Backend
 from qiskit.providers.ibmq import IBMQBackend
-from qiskit_machine_learning.kernels import QuantumKernel
 from sklearn.svm import SVC
 
 from qsvm import QSVM
@@ -77,12 +73,14 @@ def save_model(model: Union[SVC, QSVM], path: str):
     print(tcols.OKCYAN + "Trained model saved in: " + tcols.ENDC + path)
 
 
-def load_model(path: str) -> SVC:
+def load_model(path: str) -> Union[QSVM, SVC]:
     """
     Load model from pickle file, i.e., deserialisation.
-    @path  :: String of full path to load the model from.
-
-    returns :: Joblib object that can be loaded by qiskit.
+    
+    Args:
+        path: String of full path to load the model from.
+    Returns: 
+        Joblib object of the trained QSVM or SVM model.
     """
     return joblib.load(path)
 
@@ -318,7 +316,7 @@ def overfit_xcheck(model: Union[QSVM, SVC], train_data, train_labels, test_data,
           + tcols.ROCKET)
     print_accuracy_scores(test_acc, train_acc)
 
-def export_hyperparameters(model: Union[QSVM, SVC], outdir):
+def export_hyperparameters(model: Union[QSVM, SVC], outdir: str):
     """
     Saves the hyperparameters of the model to a json file. QSVM and SVM have
     different hyperparameters.

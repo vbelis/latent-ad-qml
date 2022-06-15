@@ -6,7 +6,7 @@ from sklearn.svm import SVC
 from qiskit import QuantumCircuit
 from qiskit.utils import QuantumInstance
 from qiskit.circuit import ParameterVector
-from qiskit.providers import Backend, BaseBackend
+from qiskit.providers import Backend
 from qiskit.providers.ibmq import IBMQBackend
 from qiskit.visualization import plot_circuit_layout
 from qiskit_machine_learning.kernels import QuantumKernel
@@ -145,9 +145,6 @@ class QSVM(SVC):
             The accuracy of the model on the given dataset x.
         """
         if train_data:
-            # FIXME if QSVM.fit is not called the self._kernel_matrix_train 
-            # would be None. Hence something might break in test.py when/if
-            # using score on train data, without having the prior fit.
             return super().score(self._kernel_matrix_train, y, sample_weight)
 
         kernel_matrix_test = self._quantum_kernel.evaluate(

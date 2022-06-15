@@ -7,7 +7,6 @@
 from time import perf_counter
 from typing import Callable
 from qiskit.utils import algorithm_globals
-import numpy as np
 
 import util
 import data_processing

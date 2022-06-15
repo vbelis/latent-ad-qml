@@ -23,11 +23,11 @@ def save_scores_h5(classical_path: str, quantum_path: str, out_path: str):
         output_path: Path to the generated .h5 file.
     """
     print("Loading scores of the quantum model: " + tcols.OKBLUE + 
-          "{quantum_path}" + tcols.ENDC)
+          f"{quantum_path}" + tcols.ENDC)
     quantum_sig = np.load(args.quantum_folder + "sig_scores.npy")
     quantum_bkg = np.load(args.quantum_folder + "bkg_scores.npy")
     print("Loading scores of the classical model: " + tcols.OKBLUE + 
-          "{classical_path}" + tcols.ENDC)
+          f"{classical_path}" + tcols.ENDC)
     classical_sig = np.load(args.classical_folder + "sig_scores.npy")
     classical_bkg = np.load(args.classical_folder + "bkg_scores.npy")
 

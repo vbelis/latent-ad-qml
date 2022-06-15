@@ -28,7 +28,14 @@ def get_data(args: dict) -> Tuple:
     x_bkg = h5_to_ml_ready_numpy(args["bkg_path"])
     print("Testing background ", end="")
     x_bkg_test = h5_to_ml_ready_numpy(args["test_bkg_path"])
-    train_loader = get_train_dataset(x_sig, x_bkg, args["ntrain"])
+    
+    try: 
+        train_loader = get_train_dataset(x_sig, x_bkg, args["ntrain"])
+    except KeyError: 
+        print(tcols.WARNING + "No training dataset is loaded, since no"
+              " args['ntrain'] was provided." + tcols.ENDC)
+        train_loader = None
+
     test_loader = get_test_dataset(x_sig, x_bkg_test, args["ntest"])
     return train_loader, test_loader
 
@@ -138,7 +145,7 @@ def get_kfold_data(
     if not full_dataset: 
         print(f"\nPrepared k-folded test with k={kfolds}"
               f" for signal and background data, each of shape " 
-              f"{folded_sig.shape}" + tcols.SPARKS)
+              f"{folded_sig.shape} " + tcols.SPARKS)
         return folded_sig, folded_bkg
     
     folded_sig_target = np.split(sig_target, kfolds)
