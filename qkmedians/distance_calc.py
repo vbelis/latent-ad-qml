@@ -10,7 +10,7 @@ def pad_input(X):
         X = np.pad(X, (0, size_needed-num_features), "constant")
     return X
 
-def DistCalc_DI(a, b, device_name, shots_n=10000):
+def DistCalc_DI(a, b, device_name='/GPU:0', shots_n=10000):
     """ Distance calculation using destructive interference """
     num_features = len(a)
     norm = calc_norm(a, b)
