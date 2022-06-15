@@ -1,3 +1,5 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-black?style=flat-square&logo=black)](https://github.com/psf/black)
+
 # Quantum and classical Support Vector Machine for supervised anomaly detection.
 
 ## TODOs
