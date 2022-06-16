@@ -36,13 +36,8 @@ parser.add_argument('--gamma',nargs="+", default='scale',
                     help='The gamma parameter of the SVM with rbf kernel.')
 parser.add_argument('--ntrain', type=int, default=600,
                     help='Number of training events for the QSVM.')
-parser.add_argument('--nvalid', type=int, default=0,
-                    help='Number of validation events for the QSVM (typically)'
-                         'not used for the QSVM).')
 parser.add_argument('--ntest', type=int, default=720,
                     help='Number of test events for the QSVM.')
-parser.add_argument('--kfolds', type=int, default=5,
-                    help='Number of k-test folds used.')
 args = parser.parse_args()
 
 # Load private configuration file for ibmq_api_token and provider details.   
@@ -82,9 +77,7 @@ args = {
     "run_type": args.run_type,
     "config": config,
     "ntrain": args.ntrain,
-    "nvalid": args.nvalid,
     "ntest": args.ntest,
-    "kfolds": args.kfolds,
     "seed": seed, # For the data shuffling.
 }
 
