@@ -6,6 +6,7 @@ import argparse
 import json
 
 from train import main
+from terminal_enhancer import tcols
 
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
@@ -38,6 +39,8 @@ parser.add_argument('--ntrain', type=int, default=600,
                     help='Number of training events for the QSVM.')
 parser.add_argument('--ntest', type=int, default=720,
                     help='Number of test events for the QSVM.')
+parser.add_argument('--grid_search', action="store_true",
+                    help='Initiate grid search on the C hyperparameter.')
 args = parser.parse_args()
 
 # Load private configuration file for ibmq_api_token and provider details.   
@@ -79,6 +82,14 @@ args = {
     "ntrain": args.ntrain,
     "ntest": args.ntest,
     "seed": seed, # For the data shuffling.
+    "grid_search": args.grid_search,
 }
 
-main(args)
+if not args["grid_search"]: main(args)
+else:
+    c_values = [ 0.01, 0.1, 1.0, 10., 100.]
+    print(tcols.BOLD + tcols.HEADER + f"\nInitialising grid search for C = {c_values}..." + tcols.ENDC)
+    for c in c_values:
+        print(tcols.UNDERLINE + tcols.BOLD + f"\nC = {c}" + tcols.ENDC)
+        args["c_param"] = c
+        main(args)
