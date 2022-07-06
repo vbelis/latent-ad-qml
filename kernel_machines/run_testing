@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+# Run script of the (Q)SVM testing. See the test.py file for more details
+# on how it works.
+
+import argparse
+
+from test import main
+
+
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument(
+    "--sig_path",
+    type=str,
+    required=True,
+    help="Path to the signal/anomaly dataset (.h5 format).",
+)
+parser.add_argument(
+    "--bkg_path",
+    type=str,
+    required=True,
+    help="Path to the QCD background dataset (.h5 format).",
+)
+parser.add_argument(
+    "--test_bkg_path",
+    type=str,
+    required=True,
+    help="Path to the background testing dataset (.h5 format).",
+)
+parser.add_argument(
+    "--model", type=str, required=True, help="The folder path of the QSVM model."
+)
+parser.add_argument(
+    "--ntest", type=int, default=720, help="Number of test events for the QSVM."
+)
+parser.add_argument(
+    "--kfolds", type=int, default=5, help="Number of k-validation/test folds used."
+)
+args = parser.parse_args()
+
+args = {
+    "sig_path": args.sig_path,
+    "bkg_path": args.bkg_path,
+    "test_bkg_path": args.test_bkg_path,
+    "model": args.model,
+    "ntest": args.ntest,
+    "kfolds": args.kfolds,
+}
+
+main(args)
