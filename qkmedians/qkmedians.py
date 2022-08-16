@@ -41,7 +41,7 @@ def find_distance_matrix_quantum(points, centroid, device_name):
 
 def geometric_median(points, eps=1e-6, device_name='/GPU:0'):
     """
-    Implementation from Reference - DOI: 10.1007/s00180-011-0262-4
+    Implementation from Reference - DOI: 10.1007/s00180-011-0262-4 for "VaZh" algorithm
     Args:
         points: array of shape (N, X)
                     N = number of samples,
