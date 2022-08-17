@@ -17,12 +17,11 @@ def combine_loss_min(loss):
 def load_clustering_test_data(lat_dim, test_size=10000, k=2, signal_name='RSGraviton_WW', mass='35', br_na=None, around_peak=None, read_dir='/eos/user/e/epuljak/private/epuljak/public/diJet'):
 
     # read QCD latent space data
-    file_name = f'{read_dir}/{lat_dim}/latentrep_QCD_sig_testclustering_around35.h5'
+    file_name = f'{read_dir}/{lat_dim}/latentrep_QCD_sig_test.h5'
     with h5py.File(file_name, 'r') as file:
         data = file['latent_space']
         l1 = data[:,0,:]
         l2 = data[:,1,:]
-        #r_index = np.random.choice(list(range(l1.shape[0])), size=int(test_size/2))
         data_test_qcd = np.vstack([l1[:test_size], l2[:test_size]])
         
     # read SIGNAL predicted data
@@ -37,7 +36,6 @@ def load_clustering_test_data(lat_dim, test_size=10000, k=2, signal_name='RSGrav
         data = file['latent_space']
         l1 = data[:,0,:]
         l2 = data[:,1,:]
-        #r_index = np.random.choice(list(range(l1.shape[0])), size=int(test_size/2))
         data_test_sig = np.vstack([l1[:test_size], l2[:test_size]])
     
     return data_test_qcd, data_test_sig
@@ -78,19 +76,17 @@ def get_metric(qcd, bsm, tpr_window=[0.5, 0.6]):
     
     return one_over_fpr_data, one_over_fpr_error
 
-def calc_AD_scores(identifiers, n_samples_train, test_size=10000, signal_name='RSGraviton_WW', mass='35', br_na=None, q_dir='results_qmedians/corrected_cuts/diJet', c_dir='results_kmedians/diJet', read_test_dir='/eos/user/e/epuljak/private/epuljak/public/diJet', classic=True, around_peak=None):
+def calc_AD_scores(identifiers, n_samples_train, test_size=10000, signal_name='RSGraviton_WW', mass='35', br_na=None, q_dir=None, c_dir=None, read_test_dir=None, save_dir=None classic=True, around_peak=None):
     
-    save_dir='/eos/user/e/epuljak/private/epuljak/PhD/TN/QIBO/search_algorithms/notebooks/ad_scores'
     quantum = []; classic = []
     
     for i in range(len(identifiers)): # for each latent space or train size
         
         # load q-centroids
-        centroids_q = np.load(f'{q_dir}/centroids/around35/centroids_lat{identifiers[i]}_{n_samples_train[i]}.npy')
+        centroids_q = np.load(f'{q_dir}/centroids_lat{identifiers[i]}_{n_samples_train[i]}.npy')
         # load c-centroids
-        centroids_c = np.load(f'{c_dir}/centroids/around35/centroids_lat{identifiers[i]}_{n_samples_train[i]}.npy')
+        centroids_c = np.load(f'{c_dir}/centroids_lat{identifiers[i]}_{n_samples_train[i]}.npy')
         test_qcd, test_sig = u.load_clustering_test_data(identifiers[i], test_size=test_size, k=2, signal_name=signal_name, mass=mass, br_na=br_na, read_dir=read_test_dir, around_peak=around_peak)
-        #test_qcd, test_sig = u.load_clustering_test_data_iML(identifiers[i], test_size=test_size, k=2, signal_name=signal_name, mass=mass, br_na=br_na)
         
         # find cluster assignments + distance to centroids for test data
         q_cluster_assign, q_distances = qkmed.find_nearest_neighbour_DI(test_qcd, centroids_q)
@@ -100,14 +96,12 @@ def calc_AD_scores(identifiers, n_samples_train, test_size=10000, signal_name='R
         
         # calc AD scores
         q_score_qcd = u.ad_score(q_cluster_assign, q_distances)
-        print(q_score_qcd.shape)
         q_score_sig = u.ad_score(q_cluster_assign_s, q_distances_s)
         c_score_qcd = u.ad_score(c_cluster_assign, c_distances)
         c_score_sig = u.ad_score(c_cluster_assign_s, c_distances_s)
         
         # calculate loss from 2 jets
         quantum_loss_qcd = u.combine_loss_min(q_score_qcd)
-        print(quantum_loss_qcd.shape)
         quantum_loss_sig = u.combine_loss_min(q_score_sig)
         quantum.append([quantum_loss_qcd, quantum_loss_sig])
         
@@ -119,7 +113,7 @@ def calc_AD_scores(identifiers, n_samples_train, test_size=10000, signal_name='R
         data_save = pd.DataFrame({'quantum_loss_qcd': quantum_loss_qcd, 'quantum_loss_sig': quantum_loss_sig,\
                                  'classic_loss_qcd': classic_loss_qcd, 'classic_loss_sig': classic_loss_sig})
         
-        data_save.to_pickle(f'{save_dir}/around35/{identifiers[i]}/Latent_{identifiers[i]}_trainsize_{n_samples_train[i]}_{signal_name}{mass}{br_na}.pkl')
+        data_save.to_pickle(f'{save_dir}/Latent_{identifiers[i]}_trainsize_{n_samples_train[i]}_{signal_name}{mass}{br_na}.pkl')
         
     return quantum, classic
 
