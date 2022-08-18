@@ -37,7 +37,7 @@ def create_output_folder(args: dict, model: Union[SVC, QSVM]) -> str:
     Creates output folder for the model and returns the path (str).
 
     Args:
-        args:The argument dictionary defined in the run_training script.
+        args: The argument dictionary defined in the run_training script.
         model: QSVM or SVC object.
     Returns:
             The path where all files relevant to the model will be saved.
@@ -281,12 +281,12 @@ def time_and_exec(func: Callable, *args) -> float:
     return exec_time
 
 
-def init_kernel_machine(args: dict, path: str = None) -> Union[SVC, QSVM]:
+def init_kernel_machine(args: dict) -> Union[SVC, QSVM]:
     """
     Initialises the kernel machine. Depending on the flag, this will be
     a SVM or a QSVM.
     Args:
-        args:
+        args: The argument dictionary defined in the training script.
     """
     if args["quantum"]:
         print(
