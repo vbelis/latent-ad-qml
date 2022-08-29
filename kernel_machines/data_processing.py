@@ -3,10 +3,11 @@
 
 import h5py
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Union
 
 from terminal_enhancer import tcols
 
+# TODO add docstrings for the one-class svm changes 
 
 def get_data(args: dict) -> Tuple:
     """
@@ -29,7 +30,7 @@ def get_data(args: dict) -> Tuple:
     x_bkg_test = h5_to_ml_ready_numpy(args["test_bkg_path"])
 
     try:
-        train_loader = get_train_dataset(x_sig, x_bkg, args["ntrain"])
+        train_loader = get_train_dataset(x_sig, x_bkg, args["ntrain"], args["unsup"])
     except KeyError:
         print(
             tcols.WARNING + "No training dataset is loaded, since no"
@@ -78,20 +79,31 @@ def reshaper(array: np.ndarray) -> np.ndarray:
 
 
 def get_train_dataset(
-    sig: np.ndarray, bkg: np.ndarray, ntrain: int
-) -> Tuple[np.ndarray, np.ndarray]:
+    sig: np.ndarray, bkg: np.ndarray, ntrain: int, is_unsup: bool,
+) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, None]]:
     """
     Constructing the training dataset based on the conventions used for this work.
     Namely, last ntrain/2 from the sig file and the first ntrain/2 from the bkg file.
     Args:
+        is_unsup: Flags if the dataset to be loaded is for unsupervised training. If so,
+                  then only ntrain background samples are returned.
         sig: Array containing all the signal events needed for the training.
         bkg: Array containing all the background events needed for the training.
         ntrain: Number of requested training samples in total (sig+bkg).
+    
+    Returns: FIXME for one-class
     """
+    if is_unsup:
+        x_data_train = bkg[: ntrain]
+        print(f"Created training dataset of shape: {x_data_train.shape}, "
+              "for unsupervised training.")
+        return x_data_train, None
+    
     sig = sig[-int(ntrain / 2) :]
     bkg = bkg[: int(ntrain / 2)]
     x_data_train = np.concatenate((sig, bkg))
-    print(f"Created training dataset of shape: {x_data_train.shape}")
+    print(f"Created training dataset of shape: {x_data_train.shape} "
+          "for supervised training.")
     y_data_train = create_output_y(int(ntrain / 2))
     return x_data_train, y_data_train
 

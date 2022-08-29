@@ -31,6 +31,9 @@ parser.add_argument(
     "--quantum", action="store_true", help="Flag to choose between QSVM and SVM."
 )
 parser.add_argument(
+    "--unsup", action="store_true", help="Flag to choose between unsupervised and supervised models"
+)
+parser.add_argument(
     "--nqubits", type=int, help="Number of qubits for quantum feature map circuit."
 )
 parser.add_argument("--feature_map", type=str, help="Feature map circuit for the QSVM.")
@@ -52,6 +55,9 @@ parser.add_argument(
 )
 parser.add_argument(
     "--c_param", type=float, default=1.0, help="The C parameter of the SVM."
+)
+parser.add_argument(
+    "--nu_param", type=float, default=1.0, help="The nu parameter of the one-class SVM."
 )
 parser.add_argument(
     "--gamma",
@@ -108,9 +114,11 @@ args = {
     "bkg_path": args.bkg_path,
     "test_bkg_path": args.test_bkg_path,
     "c_param": args.c_param,
+    "nu_param": args.nu_param,
     "output_folder": args.output_folder,
     "gamma": args.gamma,
     "quantum": args.quantum,
+    "unsup": args.unsup,
     "nqubits": args.nqubits,
     "feature_map": args.feature_map,
     "backend_name": args.backend_name,
