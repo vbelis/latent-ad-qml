@@ -1,8 +1,8 @@
-# Module that defines the main object Quantum Support Vector Machine.
-# Based on the kernel machine sklearn.svm.SVC implementation.
+# In this module the quantum one-class QSVM model class is defined.
 
+from sklearn.svm import OneClassSVM
+from sklearn.metrics import accuracy_score
 import joblib
-from sklearn.svm import SVC
 from qiskit import QuantumCircuit
 from qiskit.utils import QuantumInstance
 from qiskit.circuit import ParameterVector
@@ -19,12 +19,10 @@ import util
 from terminal_enhancer import tcols
 
 
-class QSVM(SVC):
+class OneClassQSVM(OneClassSVM):
     """
-    Quantum Support Vector Machine (QSVM) class. The SVM optimisation
-    objective function is optimised on a classical device, using convex
-    optimisation libraries utilised by sklearn. The quantum part is the
-    kernel.
+    One-class Quantum Support Vector Machine class. The construction is similar to
+    the QSVM but the training here is unsupervised.
     """
 
     def __init__(self, hpars: dict):
@@ -33,7 +31,7 @@ class QSVM(SVC):
             hpars: Hyperparameters of the model and configuration parameters
                    for the training.
         """
-        super().__init__(kernel="precomputed", C=hpars["c_param"])
+        super().__init__(kernel="precomputed", nu=hpars["nu_param"])
 
         self._nqubits = hpars["nqubits"]
         self._feature_map_name = hpars["feature_map"]
@@ -101,12 +99,13 @@ class QSVM(SVC):
         """Returns the QuantumKernel object of the QSVM model."""
         return self._quantum_kernel
 
-    def fit(self, train_data: np.ndarray, train_labels: np.ndarray):
+    def fit(self, train_data: np.ndarray, train_labels=None):
         """
-        Train the QSVM model. In the case of QSVM where `kernel=precomputed`
+        Train the one-class QSVM model. In the case of `kernel=precomputed`
         the kernel_matrix elements from the inner products of training data
         vectors need to be passed to fit. Thus, the quantum kernel matrix
-        elements are first evaluated and then passed to the SVC.fit appropriately.
+        elements are first evaluated and then passed to the OneClassSVM.fit
+        appropriately.
 
         The method also, times the kernel matrix element calculation and saves
         the matrix for later use, such as score calculation.
@@ -114,8 +113,7 @@ class QSVM(SVC):
         Args:
             train_data: The training data vectors array,
                         of shape (ntrain, n_features).
-            train_labels: The labels of training data vectors, 1 (signal) and 0
-                          or -1 (background), of shape (ntrain,).
+            train_labels: Ignored, present only for API consistency by convention.
         """
         self._train_data = train_data
         print("Calculating the quantum kernel matrix elements... ", end="")
@@ -127,7 +125,7 @@ class QSVM(SVC):
             + f"Done in: {train_time_fina-train_time_init:.2e} s"
             + tcols.ENDC
         )
-        super().fit(self._kernel_matrix_train, train_labels)
+        super().fit(self._kernel_matrix_train)
 
     def score(
         self,
@@ -137,31 +135,44 @@ class QSVM(SVC):
         sample_weight: np.ndarray = None,
     ) -> float:
         """
-        Return the mean accuracy on the given test data and labels.
-        Need to compute the corresponding kernel matrix elements and then pass
-        to the SVC.score.
+        Return the mean accuracy on the given test data x and labels y.
 
         Args:
-            x: Training data set of shape (ntrain, nfeatures)
-            y: Target (ground truth) labels of the x data array OR of x_test
-               if not None, of shape (ntrain,)
-            train_data: Flag that specifies whether the score is computed on
-                        the training data or new dataset (test). The reason
-                        behind this flag is to not compute the kernel matrix
-                        on the training data more than once, since it is the
-                        computationally expensive task in training the QSVM.
-            sample_weight: Weights of the testing samples, of shape (ntrain,)
-        Returns:
-            The accuracy of the model on the given dataset x.
+            x : array-like of shape (n_samples, n_features). Test samples.
+            y : array-like of shape (n_samples,). True labels for `x`.
+
+            sample_weight : array-like of shape (n_samples,), default=None.
+
+        Returns: Mean accuracy of ``self.predict(X)`` wrt. `y`.
         """
         if train_data:
-            return super().score(self._kernel_matrix_train, y, sample_weight)
+            y_pred = self.predict(self._kernel_matrix_train)
+            y = np.ones(len(x))  # To compute the fraction of outliers in training.
+            return accuracy_score(y, y_pred, sample_weight=sample_weight)
 
         kernel_matrix_test = self._quantum_kernel.evaluate(
             x_vec=x,
             y_vec=self._train_data,
         )
-        return super().score(kernel_matrix_test, y, sample_weight)
+        y_pred = self.predict(kernel_matrix_test)
+        return accuracy_score(y, y_pred, sample_weight=sample_weight)
+
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        """
+        Predicts the label of a data vector X.
+        Maps the prediction label of the one-class SVM from 1 -> 0
+        and -1 -> 1 for inliers (background) and outliers
+        (anomalies/signal), respectively.
+
+        Args:
+            x: Data vector array of shape (n_samples, n_features)
+
+        Returns: The predicted labels of the input data vectors, of shape (n_samples).
+        """
+        y = super().predict(x)
+        y[y == 1] = 0
+        y[y == -1] = 1
+        return y
 
     def decision_function(self, x_test: np.ndarray) -> np.ndarray:
         """

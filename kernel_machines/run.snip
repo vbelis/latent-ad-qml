@@ -5,7 +5,7 @@
 
 # Run the training of the supervised Quantum SVM model
 
-./run_training --sig_path /path/to/sig_data.h5 --bkg_path /path/to/bkg_data.h5 --test_bkg_path /path/to/bkg_test.h5 --quantum --feature_map u_dense_encoding --nqubits 8 --backend_name none --run_type ideal --output_folder /path/to/save_folder --c_param 1.0 --ntrain 600 --ntest 20 --kfolds 5
+./run_training --sig_path /path/to/sig_data.h5 --bkg_path /path/to/bkg_data.h5 --test_bkg_path /path/to/bkg_test.h5 --quantum --feature_map u_dense_encoding --nqubits 8 --backend_name none --run_type ideal --output_folder /path/to/save_folder --c_param 1.0 --ntrain 600 --ntest 20
 
 # To turn the above models into unsupervised kernel machines use the --unsup flag.
 
