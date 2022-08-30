@@ -18,6 +18,7 @@ import feature_map_circuits as fm
 import util
 from terminal_enhancer import tcols
 
+
 class OneClassQSVM(OneClassSVM):
     """
     One-class Quantum Support Vector Machine class. The construction is similar to
@@ -103,7 +104,7 @@ class OneClassQSVM(OneClassSVM):
         Train the one-class QSVM model. In the case of `kernel=precomputed`
         the kernel_matrix elements from the inner products of training data
         vectors need to be passed to fit. Thus, the quantum kernel matrix
-        elements are first evaluated and then passed to the OneClassSVM.fit 
+        elements are first evaluated and then passed to the OneClassSVM.fit
         appropriately.
 
         The method also, times the kernel matrix element calculation and saves
@@ -125,28 +126,28 @@ class OneClassQSVM(OneClassSVM):
             + tcols.ENDC
         )
         super().fit(self._kernel_matrix_train)
-    
+
     def score(
-        self, 
-        x: np.ndarray, 
+        self,
+        x: np.ndarray,
         y: np.ndarray,
         train_data: bool = False,
-        sample_weight: np.ndarray = None
+        sample_weight: np.ndarray = None,
     ) -> float:
         """
         Return the mean accuracy on the given test data x and labels y.
-        
+
         Args:
             x : array-like of shape (n_samples, n_features). Test samples.
             y : array-like of shape (n_samples,). True labels for `x`.
-            
+
             sample_weight : array-like of shape (n_samples,), default=None.
-        
+
         Returns: Mean accuracy of ``self.predict(X)`` wrt. `y`.
         """
         if train_data:
             y_pred = self.predict(self._kernel_matrix_train)
-            y = np.ones(len(x)) # To compute the fraction of outliers in training.
+            y = np.ones(len(x))  # To compute the fraction of outliers in training.
             return accuracy_score(y, y_pred, sample_weight=sample_weight)
 
         kernel_matrix_test = self._quantum_kernel.evaluate(
@@ -159,13 +160,13 @@ class OneClassQSVM(OneClassSVM):
     def predict(self, x: np.ndarray) -> np.ndarray:
         """
         Predicts the label of a data vector X.
-        Maps the prediction label of the one-class SVM from 1 -> 0 
-        and -1 -> 1 for inliers (background) and outliers 
+        Maps the prediction label of the one-class SVM from 1 -> 0
+        and -1 -> 1 for inliers (background) and outliers
         (anomalies/signal), respectively.
 
-        Args: 
+        Args:
             x: Data vector array of shape (n_samples, n_features)
-        
+
         Returns: The predicted labels of the input data vectors, of shape (n_samples).
         """
         y = super().predict(x)

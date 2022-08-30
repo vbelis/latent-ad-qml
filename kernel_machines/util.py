@@ -17,8 +17,6 @@ from qiskit.providers import Backend
 from qiskit.providers.ibmq import IBMQBackend
 from sklearn.svm import SVC
 
-from sklearn.svm import OneClassSVM
-
 from qsvm import QSVM
 from one_class_svm import CustomOneClassSVM
 from one_class_qsvm import OneClassQSVM
@@ -36,7 +34,9 @@ def print_accuracy_scores(test_acc: float, train_acc: float):
     print(f"Testing accuracy = {test_acc}" + tcols.ENDC)
 
 
-def create_output_folder(args: dict, model: Union[SVC, QSVM, OneClassSVM, OneClassQSVM]) -> str:
+def create_output_folder(
+    args: dict, model: Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]
+) -> str:
     """
     Creates output folder for the model and returns the path (str).
 
@@ -46,8 +46,10 @@ def create_output_folder(args: dict, model: Union[SVC, QSVM, OneClassSVM, OneCla
     Returns:
             The path where all files relevant to the model will be saved.
     """
-    if args["unsup"] : out_path = args["output_folder"] + f"_nu={model.nu}"
-    else: out_path = args["output_folder"] + f"_c={model.C}"
+    if args["unsup"]:
+        out_path = args["output_folder"] + f"_nu={model.nu}"
+    else:
+        out_path = args["output_folder"] + f"_c={model.C}"
     if args["quantum"]:
         out_path = out_path + f"_{args['run_type']}"
         if args["backend_name"] is not None and args["backend_name"] != "none":
@@ -60,7 +62,7 @@ def create_output_folder(args: dict, model: Union[SVC, QSVM, OneClassSVM, OneCla
     return out_path
 
 
-def save_model(model: Union[SVC, QSVM, OneClassSVM, OneClassQSVM], path: str):
+def save_model(model: Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM], path: str):
     """
     Saves the qsvm model to a certain path.
 
@@ -78,7 +80,7 @@ def save_model(model: Union[SVC, QSVM, OneClassSVM, OneClassQSVM], path: str):
     print(tcols.OKCYAN + "Trained model saved in: " + tcols.ENDC + path)
 
 
-def load_model(path: str) -> Union[QSVM, SVC, OneClassSVM, OneClassQSVM]:
+def load_model(path: str) -> Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM]:
     """
     Load model from pickle file, i.e., deserialisation.
 
@@ -90,7 +92,7 @@ def load_model(path: str) -> Union[QSVM, SVC, OneClassSVM, OneClassQSVM]:
     return joblib.load(path)
 
 
-def print_model_info(model: Union[SVC, QSVM, OneClassSVM, OneClassQSVM]):
+def print_model_info(model: Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]):
     """
     Print information about the trained model, such as the C parameter value,
     number of support vectors, number of training and testing samples.
@@ -98,17 +100,14 @@ def print_model_info(model: Union[SVC, QSVM, OneClassSVM, OneClassQSVM]):
         model: The trained (Q)SVM model.
     """
     print("\n-------------------------------------------")
-    if isinstance(model, SVC): # Check if it is a supervised SVM or a QSVM 
+    if isinstance(model, SVC):  # Check if it is a supervised SVM or a QSVM
         print(
             f"C = {model.C}\n"
             f"For classes: {model.classes_}, the number of support vectors for "
             f"each class are: {model.n_support_}"
         )
     else:
-        print(
-            f"nu = {model.nu}\n"
-            f"Number of support vectors: {model.n_support_}"
-        )
+        print(f"nu = {model.nu}\n" f"Number of support vectors: {model.n_support_}")
     print("-------------------------------------------\n")
 
 
@@ -292,13 +291,13 @@ def time_and_exec(func: Callable, *args) -> float:
     return exec_time
 
 
-def init_kernel_machine(args: dict) -> Union[SVC, QSVM, OneClassSVM, OneClassQSVM]:
+def init_kernel_machine(args: dict) -> Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]:
     """
     Initialises the kernel machine. Depending on the flag, this will be
     a SVM or a QSVM.
     Args:
         args: The argument dictionary defined in the training script.
-    """ 
+    """
     # TODO maybe do a switcher for more neatness?
     if args["quantum"]:
         if args["unsup"]:
@@ -314,13 +313,12 @@ def init_kernel_machine(args: dict) -> Union[SVC, QSVM, OneClassSVM, OneClassQSV
         return QSVM(args)
 
     if args["unsup"]:
-        print( 
+        print(
             tcols.OKCYAN + "\nConfiguring the one-class Classical Support Vector"
             " Machine..." + tcols.ENDC
         )
-        #return OneClassSVM(kernel="rbf", nu=args["nu_param"], gamma=args["gamma"])
         return CustomOneClassSVM(kernel="rbf", nu=args["nu_param"], gamma=args["gamma"])
-    print( 
+    print(
         tcols.OKCYAN + "\nConfiguring the Classical Support Vector"
         " Machine..." + tcols.ENDC
     )
@@ -328,13 +326,17 @@ def init_kernel_machine(args: dict) -> Union[SVC, QSVM, OneClassSVM, OneClassQSV
 
 
 def overfit_xcheck(
-    model: Union[QSVM, SVC, OneClassSVM, OneClassQSVM], train_data, train_labels, test_data, test_labels
+    model: Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM],
+    train_data,
+    train_labels,
+    test_data,
+    test_labels,
 ):
     """
-    For the supervised models, it computes the training and testing accuracy of 
+    For the supervised models, it computes the training and testing accuracy of
     the model to cross-check for overtraining. In the unsupervised case, the fraction
     of training datapoints that have been flagged as anomalies is computed.
-    
+
     The execution of this function is also timed.
     """
     print(
@@ -343,14 +345,19 @@ def overfit_xcheck(
     )
     test_time_init = perf_counter()
     train_acc = None
-    if isinstance(model, QSVM) or isinstance(model, OneClassQSVM) or isinstance(model, CustomOneClassSVM):
+    if (
+        isinstance(model, QSVM)
+        or isinstance(model, OneClassQSVM)
+        or isinstance(model, CustomOneClassSVM)
+    ):
         train_acc = model.score(train_data, train_labels, train_data=True)
     elif isinstance(model, SVC):
         train_acc = model.score(train_data, train_labels)
     else:
         raise TypeError(
-            tcols.FAIL + "The model should be either a SVC or a QSVM or a OneClassSVM or"
-        " a OneClassQSVM object." + tcols.ENDC
+            tcols.FAIL
+            + "The model should be either a SVC or a QSVM or a OneClassSVM or"
+            " a OneClassQSVM object." + tcols.ENDC
         )
     test_acc = model.score(test_data, test_labels)
     test_time_fina = perf_counter()
@@ -362,7 +369,9 @@ def overfit_xcheck(
     print_accuracy_scores(test_acc, train_acc)
 
 
-def export_hyperparameters(model: Union[QSVM, SVC, OneClassSVM, OneClassQSVM], outdir: str):
+def export_hyperparameters(
+    model: Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM], outdir: str
+):
     """
     Saves the hyperparameters of the model to a json file. QSVM and SVM have
     different hyperparameters.

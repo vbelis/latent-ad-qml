@@ -78,7 +78,10 @@ def reshaper(array: np.ndarray) -> np.ndarray:
 
 
 def get_train_dataset(
-    sig: np.ndarray, bkg: np.ndarray, ntrain: int, is_unsup: bool,
+    sig: np.ndarray,
+    bkg: np.ndarray,
+    ntrain: int,
+    is_unsup: bool,
 ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, None]]:
     """
     Constructing the training dataset based on the conventions used for this work.
@@ -92,21 +95,25 @@ def get_train_dataset(
         sig: Array containing all the signal events needed for the training.
         bkg: Array containing all the background events needed for the training.
         ntrain: Number of requested training samples in total (sig+bkg).
-    
-    Returns: The training data and the corresponding labels. In the unsupervised 
+
+    Returns: The training data and the corresponding labels. In the unsupervised
              case the latter is `None`.
     """
     if is_unsup:
-        x_data_train = bkg[: ntrain]
-        print(f"Created training dataset of shape: {x_data_train.shape}, "
-              "for unsupervised training.")
+        x_data_train = bkg[:ntrain]
+        print(
+            f"Created training dataset of shape: {x_data_train.shape}, "
+            "for unsupervised training."
+        )
         return x_data_train, None
-    
+
     sig = sig[-int(ntrain / 2) :]
     bkg = bkg[: int(ntrain / 2)]
     x_data_train = np.concatenate((sig, bkg))
-    print(f"Created training dataset of shape: {x_data_train.shape} "
-          "for supervised training.")
+    print(
+        f"Created training dataset of shape: {x_data_train.shape} "
+        "for supervised training."
+    )
     y_data_train = create_output_y(int(ntrain / 2))
     return x_data_train, y_data_train
 
