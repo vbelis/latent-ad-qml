@@ -108,8 +108,8 @@ class QSVM(SVC):
         vectors need to be passed to fit. Thus, the quantum kernel matrix
         elements are first evaluated and then passed to the SVC.fit appropriately.
 
-        The method also saved the kernel matrix elements of the training data
-        for later use, such as score calculation.
+        The method also, times the kernel matrix element calculation and saves
+        the matrix for later use, such as score calculation.
 
         Args:
             train_data: The training data vectors array,

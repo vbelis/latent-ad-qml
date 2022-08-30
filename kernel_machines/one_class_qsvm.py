@@ -1,4 +1,4 @@
-# In this module the quantum one class SVM model class is defined.
+# In this module the quantum one-class QSVM model class is defined.
 
 from sklearn.svm import OneClassSVM
 from sklearn.metrics import accuracy_score
@@ -20,7 +20,8 @@ from terminal_enhancer import tcols
 
 class OneClassQSVM(OneClassSVM):
     """
-    TODO
+    One-class Quantum Support Vector Machine class. The construction is similar to
+    the QSVM but the training here is unsupervised.
     """
 
     def __init__(self, hpars: dict):
@@ -99,14 +100,14 @@ class OneClassQSVM(OneClassSVM):
 
     def fit(self, train_data: np.ndarray, train_labels=None):
         """
-        FIXME
-        Train the one class QSVM model. In the case of QSVM where `kernel=precomputed`
+        Train the one-class QSVM model. In the case of `kernel=precomputed`
         the kernel_matrix elements from the inner products of training data
         vectors need to be passed to fit. Thus, the quantum kernel matrix
-        elements are first evaluated and then passed to the SVC.fit appropriately.
+        elements are first evaluated and then passed to the OneClassSVM.fit 
+        appropriately.
 
-        The method also saved the kernel matrix elements of the training data
-        for later use, such as score calculation.
+        The method also, times the kernel matrix element calculation and saves
+        the matrix for later use, such as score calculation.
 
         Args:
             train_data: The training data vectors array,
@@ -133,22 +134,15 @@ class OneClassQSVM(OneClassSVM):
         sample_weight: np.ndarray = None
     ) -> float:
         """
-        Return the mean accuracy on the given test data and labels.
-        In multi-label classification, this is the subset accuracy
-        which is a harsh metric since you require for each sample that
-        each label set be correctly predicted.
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Test samples.
-        y : array-like of shape (n_samples,) or (n_samples, n_outputs)
-            True labels for `X`.
-        sample_weight : array-like of shape (n_samples,), default=None
-            Sample weights.
-        Returns
-        -------
-        score : float
-            Mean accuracy of ``self.predict(X)`` wrt. `y`.
+        Return the mean accuracy on the given test data x and labels y.
+        
+        Args:
+            x : array-like of shape (n_samples, n_features). Test samples.
+            y : array-like of shape (n_samples,). True labels for `x`.
+            
+            sample_weight : array-like of shape (n_samples,), default=None.
+        
+        Returns: Mean accuracy of ``self.predict(X)`` wrt. `y`.
         """
         if train_data:
             y_pred = self.predict(self._kernel_matrix_train)
@@ -165,8 +159,9 @@ class OneClassQSVM(OneClassSVM):
     def predict(self, x: np.ndarray) -> np.ndarray:
         """
         Predicts the label of a data vector X.
-        Maps the prediction label of the one-class SVM from 1 -> 0 and -1 -> 1 for inliers
-        (background) and outliers (anomalies/signal), respectively.
+        Maps the prediction label of the one-class SVM from 1 -> 0 
+        and -1 -> 1 for inliers (background) and outliers 
+        (anomalies/signal), respectively.
 
         Args: 
             x: Data vector array of shape (n_samples, n_features)

@@ -34,7 +34,7 @@ def print_accuracy_scores(test_acc: float, train_acc: float):
     print(f"Testing accuracy = {test_acc}" + tcols.ENDC)
 
 
-def create_output_folder(args: dict, model: Union[SVC, QSVM]) -> str:
+def create_output_folder(args: dict, model: Union[SVC, QSVM, OneClassSVM, OneClassQSVM]) -> str:
     """
     Creates output folder for the model and returns the path (str).
 
@@ -76,7 +76,7 @@ def save_model(model: Union[SVC, QSVM, OneClassSVM, OneClassQSVM], path: str):
     print(tcols.OKCYAN + "Trained model saved in: " + tcols.ENDC + path)
 
 
-def load_model(path: str) -> Union[QSVM, SVC]:
+def load_model(path: str) -> Union[QSVM, SVC, OneClassSVM, OneClassQSVM]:
     """
     Load model from pickle file, i.e., deserialisation.
 
@@ -290,14 +290,14 @@ def time_and_exec(func: Callable, *args) -> float:
     return exec_time
 
 
-def init_kernel_machine(args: dict) -> Union[SVC, QSVM]:
+def init_kernel_machine(args: dict) -> Union[SVC, QSVM, OneClassSVM, OneClassQSVM]:
     """
     Initialises the kernel machine. Depending on the flag, this will be
     a SVM or a QSVM.
     Args:
         args: The argument dictionary defined in the training script.
     """ 
-    # TODO maybe do a switcher?
+    # TODO maybe do a switcher for more neatness?
     if args["quantum"]:
         if args["unsup"]:
             print(
@@ -325,14 +325,14 @@ def init_kernel_machine(args: dict) -> Union[SVC, QSVM]:
 
 
 def overfit_xcheck(
-    model: Union[QSVM, SVC], train_data, train_labels, test_data, test_labels
+    model: Union[QSVM, SVC, OneClassSVM, OneClassQSVM], train_data, train_labels, test_data, test_labels
 ):
-    """FIXME there is no "overfit check" for the unsupervised models. The train
-    data are all background.
-
-    Computes the training and testing accuracy of the model to cross-check for
-    overtraining if the two values are far way from eachother. The execution of
-    this function is also timed.
+    """
+    For the supervised models, it computes the training and testing accuracy of 
+    the model to cross-check for overtraining. In the unsupervised case, the fraction
+    of training datapoints that have been flagged as anomalies is computed.
+    
+    The execution of this function is also timed.
     """
     print(
         "Computing the test dataset accuracy of the models, quick check"
@@ -363,7 +363,7 @@ def overfit_xcheck(
     print_accuracy_scores(test_acc, train_acc)
 
 
-def export_hyperparameters(model: Union[QSVM, SVC], outdir: str):
+def export_hyperparameters(model: Union[QSVM, SVC, OneClassSVM, OneClassQSVM], outdir: str):
     """
     Saves the hyperparameters of the model to a json file. QSVM and SVM have
     different hyperparameters.

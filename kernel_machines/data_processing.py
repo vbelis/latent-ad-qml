@@ -7,7 +7,6 @@ from typing import Tuple, Union
 
 from terminal_enhancer import tcols
 
-# TODO add docstrings for the one-class svm changes 
 
 def get_data(args: dict) -> Tuple:
     """
@@ -83,7 +82,10 @@ def get_train_dataset(
 ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, None]]:
     """
     Constructing the training dataset based on the conventions used for this work.
-    Namely, last ntrain/2 from the sig file and the first ntrain/2 from the bkg file.
+    Namely, last `ntrain/2` from the sig file and the first `ntrain/2` from the bkg file
+    for supervised kernel machines. For the unsupervised case the first `ntrain`
+    the QCD background are loaded.
+
     Args:
         is_unsup: Flags if the dataset to be loaded is for unsupervised training. If so,
                   then only ntrain background samples are returned.
@@ -91,7 +93,8 @@ def get_train_dataset(
         bkg: Array containing all the background events needed for the training.
         ntrain: Number of requested training samples in total (sig+bkg).
     
-    Returns: FIXME for one-class
+    Returns: The training data and the corresponding labels. In the unsupervised 
+             case the latter is `None`.
     """
     if is_unsup:
         x_data_train = bkg[: ntrain]

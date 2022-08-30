@@ -10,7 +10,6 @@ from qiskit.utils import algorithm_globals
 
 import util
 import data_processing
-from one_class_qsvm import OneClassQSVM
 from terminal_enhancer import tcols
 
 seed = 12345
