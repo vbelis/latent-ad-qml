@@ -16,9 +16,11 @@ from qiskit.providers.aer.backends import AerSimulator
 from qiskit.providers import Backend
 from qiskit.providers.ibmq import IBMQBackend
 from sklearn.svm import SVC
+
 from sklearn.svm import OneClassSVM
 
 from qsvm import QSVM
+from one_class_svm import CustomOneClassSVM
 from one_class_qsvm import OneClassQSVM
 from terminal_enhancer import tcols
 
@@ -316,7 +318,8 @@ def init_kernel_machine(args: dict) -> Union[SVC, QSVM, OneClassSVM, OneClassQSV
             tcols.OKCYAN + "\nConfiguring the one-class Classical Support Vector"
             " Machine..." + tcols.ENDC
         )
-        return OneClassSVM(kernel="rbf", C=args["nu_param"], gamma=args["gamma"])
+        #return OneClassSVM(kernel="rbf", nu=args["nu_param"], gamma=args["gamma"])
+        return CustomOneClassSVM(kernel="rbf", nu=args["nu_param"], gamma=args["gamma"])
     print( 
         tcols.OKCYAN + "\nConfiguring the Classical Support Vector"
         " Machine..." + tcols.ENDC
@@ -340,14 +343,10 @@ def overfit_xcheck(
     )
     test_time_init = perf_counter()
     train_acc = None
-    if isinstance(model, QSVM):
+    if isinstance(model, QSVM) or isinstance(model, OneClassQSVM) or isinstance(model, CustomOneClassSVM):
         train_acc = model.score(train_data, train_labels, train_data=True)
     elif isinstance(model, SVC):
         train_acc = model.score(train_data, train_labels)
-    elif isinstance(model, OneClassSVM):
-        print(tcols.WARNING + "One-class SVM model, no training accuracy is computed." 
-              + tcols.ENDC)
-        train_acc = model.score(train_data, train_labels, train_data=True)
     else:
         raise TypeError(
             tcols.FAIL + "The model should be either a SVC or a QSVM or a OneClassSVM or"
