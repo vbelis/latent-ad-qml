@@ -39,9 +39,9 @@ def find_distance_matrix_quantum(points, centroid, device_name):
         dist_matrix[i,:] = distance
     return dist_matrix
 
-def geometric_median(points, eps=1e-6, device_name='/GPU:0'):
+def geometric_median(points, median, eps=1e-6, device_name='/GPU:0'):
     """
-    Implementation from Reference - DOI: 10.1007/s00180-011-0262-4 for "VaZh" algorithm
+    Implementation from Reference - DOI: 10.1007/s00180-011-0262-4
     Args:
         points: array of shape (N, X)
                     N = number of samples,
@@ -52,8 +52,6 @@ def geometric_median(points, eps=1e-6, device_name='/GPU:0'):
         print("For this class there is no points assigned!")
         return
     
-    median = np.mean(points, 0) # starting median
-
     while True:
         D = find_distance_matrix_quantum(points, [median], device_name)
         nonzeros = (D != 0)[:, 0]
@@ -81,7 +79,7 @@ def geometric_median(points, eps=1e-6, device_name='/GPU:0'):
         median = new_median # next median
         
         
-def find_centroids_GM(points, cluster_labels, clusters=2):
+def find_centroids_GM(points, cluster_labels, start_centroids, clusters=2):
     """
     Args:
         points: array of shape (N, X)
@@ -89,15 +87,14 @@ def find_centroids_GM(points, cluster_labels, clusters=2):
                     X = dimension of latent space - number of features
         cluster_labels: array of shape (N,) - cluster labels assigned to each data point
         clusters: int - number of clusters
-    """    
+    """
+    
     centroids = np.zeros([clusters, points.shape[1]])
     k = points.shape[1]
     for j in range(clusters):
-        print(f'Searching centroids for cluster {j}')
         points_class_i = points[cluster_labels==j]
-        median = geometric_median(points_class_i)
+        median = geometric_median(points_class_i, start_centroids[j, :])
         centroids[j,:] = median
-        print(f'Found for cluster {j}')
     return np.array(centroids)
 
 def find_nearest_neighbour_DI(points, centroids, device_name='/GPU:0'):
@@ -121,9 +118,9 @@ def find_nearest_neighbour_DI(points, centroids, device_name='/GPU:0'):
     for i in range(n): # through all training samples
         dist=[]
         for j in range(k): # distance of each training example to each centroid
-            temp_dist, _ = distc.DistCalc_DI(points[i,:], centroids[j,:], device_name=device_name, shots_n=10000) # returning back one number for all latent dimensions!
+            temp_dist, _ = distc.DistCalc_DI(points[i,:], centroids[j,:], device_name, shots_n=10000) # returning back one number for all latent dimensions!
             dist.append(temp_dist)
-        cluster_index = np.argmin(dist) # classical minimization
+        cluster_index = np.argmin(dist)
         cluster_label.append(cluster_index)
         distances.append(dist)
     return np.asarray(cluster_label), np.asarray(distances)
