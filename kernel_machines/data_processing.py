@@ -37,7 +37,7 @@ def get_data(args: dict) -> Tuple:
         )
         train_loader = None
 
-    test_loader = get_test_dataset(x_sig, x_bkg_test, args["ntest"])
+    test_loader = get_test_dataset(x_sig, x_bkg_test, args["ntest"])#, args["unsup"])
     return train_loader, test_loader
 
 
@@ -114,12 +114,12 @@ def get_train_dataset(
         f"Created training dataset of shape: {x_data_train.shape} "
         "for supervised training."
     )
-    y_data_train = create_output_y(int(ntrain / 2))
+    y_data_train = create_output_y(len(sig))
     return x_data_train, y_data_train
 
 
 def get_test_dataset(
-    sig: np.ndarray, bkg_test: np.ndarray, ntest: int
+    sig: np.ndarray, bkg_test: np.ndarray, ntest: int, is_unsup: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Constructing the testing dataset based on the conventions used for this work.
@@ -130,19 +130,32 @@ def get_test_dataset(
         bkg: Array containing all the background events needed for the testing.
         ntrain: Number of requested testing samples in total (sig+bkg).
     """
-    sig = sig[: int(ntest / 2)]
-    bkg_test = bkg_test[: int(ntest / 2)]
+    if is_unsup:
+        sig = sig[: int(ntest*0.05)]
+        bkg_test = bkg_test[: int(ntest*0.95)]
+        y_data_test = create_output_y(n=(len(sig),len(bkg_test)))
+        print(f"Signal shape {sig.shape} and Background shape {bkg_test.shape}")
+    else:
+        sig = sig[: int(ntest / 2)]
+        bkg_test = bkg_test[: int(ntest / 2)]
+        y_data_test = create_output_y(int(ntest / 2))
+        print(f"Signal shape {sig.shape} and Background shape {bkg_test.shape}")
+    
     x_data_test = np.concatenate((sig, bkg_test))
-    y_data_test = create_output_y(int(ntest / 2))
     print(f"Created testing dataset of shape: {x_data_test.shape}")
     return x_data_test, y_data_test
 
 
-def create_output_y(n: int) -> np.ndarray:
+def create_output_y(n: Union[int, Tuple[int]]) -> np.ndarray:
     """
     Creates the out target/label files according the data file structure.
     n can refer to the number of training events or test events.
     """
+    if isinstance(n, Tuple):
+        n_sig, n_bkg = n[0], n[1]
+        y_data = np.concatenate((np.ones(n_sig), np.zeros(n_bkg)))
+        print(y_data.shape)
+        return y_data
     y_data = np.concatenate((np.ones(n), np.zeros(n)))
     return y_data
 

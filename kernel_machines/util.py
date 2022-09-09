@@ -16,6 +16,14 @@ from qiskit.providers.aer.backends import AerSimulator
 from qiskit.providers import Backend
 from qiskit.providers.ibmq import IBMQBackend
 from sklearn.svm import SVC
+from sklearn.svm import OneClassSVM
+from sklearn.metrics import roc_curve
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_auc_score
+import matplotlib.pyplot as plt
 
 from qsvm import QSVM
 from one_class_svm import CustomOneClassSVM
@@ -23,14 +31,19 @@ from one_class_qsvm import OneClassQSVM
 from terminal_enhancer import tcols
 
 
-def print_accuracy_scores(test_acc: float, train_acc: float):
-    """
+def print_accuracy_scores(test_acc: float, train_acc: float, is_unsup: bool):
+    """ FIXME: takes y_scores not accuracies
     Prints the train and test accuracies of the model.
     Args:
+        is_unsup: Flag if the model is unsupervised. The printing is slighlty
+                  different if so.
         test_acc: The accuracy of the trained model on the test dataset.
         train_acc: The accuracy of the trained model on the train dataset.
     """
-    print(tcols.OKGREEN + f"Training accuracy = {train_acc}")
+    if is_unsup:
+        print(tcols.OKGREEN + f"Fraction of outliers in the traning set = {train_acc}")
+    else:
+        print(tcols.OKGREEN + f"Training accuracy = {train_acc}")
     print(f"Testing accuracy = {test_acc}" + tcols.ENDC)
 
 
@@ -77,7 +90,7 @@ def save_model(model: Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM], path: s
             model.save_circuit_physical_layout(qc_transpiled, path)
             model.save_backend_properties(path)
     joblib.dump(model, path + "/model")
-    print(tcols.OKCYAN + "Trained model saved in: " + tcols.ENDC + path)
+    print("Trained model and plots saved in: " + tcols.OKCYAN + path + tcols.ENDC)
 
 
 def load_model(path: str) -> Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM]:
@@ -325,18 +338,19 @@ def init_kernel_machine(args: dict) -> Union[SVC, QSVM, CustomOneClassSVM, OneCl
     return SVC(kernel="rbf", C=args["c_param"], gamma=args["gamma"])
 
 
-def overfit_xcheck(
+def eval_metrics(
     model: Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM],
     train_data,
     train_labels,
     test_data,
     test_labels,
+    out_path,
 ):
     """
     For the supervised models, it computes the training and testing accuracy of
     the model to cross-check for overtraining. In the unsupervised case, the fraction
     of training datapoints that have been flagged as anomalies is computed.
-
+    TODO mention ROC plot, PR plot.
     The execution of this function is also timed.
     """
     print(
@@ -359,14 +373,72 @@ def overfit_xcheck(
             + "The model should be either a SVC or a QSVM or a OneClassSVM or"
             " a OneClassQSVM object." + tcols.ENDC
         )
-    test_acc = model.score(test_data, test_labels)
+    y_score = model.decision_function(test_data)
+    compute_roc_pr_curves(test_labels, y_score, out_path)
+    
+    y_score[y_score>0.] = 1
+    y_score[y_score<0.] = 0
+    test_acc = accuracy_score(test_labels, y_score)
+    print_accuracy_scores(test_acc, train_acc, isinstance(model, OneClassSVM))
+    
     test_time_fina = perf_counter()
     exec_time = test_time_fina - test_time_init
     print(
-        f"Completed in: {exec_time:.2e} sec. or "
+        f"Completed evaluation in: {exec_time:.2e} sec. or "
         f"{exec_time/60:.2e} min. " + tcols.ROCKET
-    )
-    print_accuracy_scores(test_acc, train_acc)
+    )    
+
+
+def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path: str):
+    """
+    Computes the ROC and Precision-Recall (PR) curves and saves them in the model
+    out_path. Also, prints the 1/FPR value around a TPR working point, default=0.8.
+
+    Args:
+        test_labels: The test dataset truth labels.
+        y_score: The model scores on the test dataset.
+        out_path: Path to save the the plots to. Same as the trained model path.
+    """
+    fpr, tpr, thresholds = roc_curve(y_true=test_labels, y_score=y_score)
+    auc = roc_auc_score(test_labels, y_score)
+    plt.plot(tpr, 1./fpr, label=f"AUC: {auc:.3f}")
+    plt.yscale("log")
+    plt.xlabel("TPR")
+    plt.ylabel("FPR")
+    plt.legend()
+    plt.savefig(out_path + "/roc.pdf")
+    plt.clf()
+    get_fpr_around_tpr_point(fpr, tpr)
+
+    p, r, thresholds = precision_recall_curve(test_labels, probas_pred=y_score)
+    plt.plot(r, p)
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.savefig(out_path +"/pr.pdf")
+    print("\nComputed ROC and PR curves " + tcols.SPARKS)
+
+def get_fpr_around_tpr_point(fpr: np.ndarray, tpr: np.ndarray, tpr_working_point: float = 0.8):
+    """
+    Computes the mean 1/FPR value that corresponds to a small window aroun a given
+    TPR working point (default: 0.8). If there are no values in the window, it widened 
+    sequentially until it includes some values around the working point.
+
+    Args:
+        fpr: The false positive rate values of the model.
+        tpr: The true positive rate values of the model.
+        tpr_working_point: True positive rate working point, typical values {0.4, 0.6, 0.8}
+    """
+    ind = np.array([])
+    low_bound = tpr_working_point*0.999
+    up_bound = tpr_working_point*1.001
+    while len(ind) == 0:
+        ind = np.where(np.logical_and(tpr>=low_bound, tpr<=up_bound))[0]
+        low_bound *= 0.99 # open the window by 1%
+        up_bound *= 1.01
+    print(f"\nTPR values around {tpr_working_point} window with lower bound {low_bound}"
+          f" and upper bound: {up_bound}")
+    print(f"Corresponding mean 1/FPR value in that window: {np.mean(1./fpr[ind]):.3f} ± " 
+          f"{np.std(1./fpr[ind]):.3f}")
 
 
 def export_hyperparameters(

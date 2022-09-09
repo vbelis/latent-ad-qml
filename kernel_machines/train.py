@@ -29,7 +29,7 @@ def main(args: dict):
     time_and_train(model.fit, train_features, train_labels)
     util.print_model_info(model)
 
-    util.overfit_xcheck(model, train_features, train_labels, test_features, test_labels)
+    util.eval_metrics(model, train_features, train_labels, test_features, test_labels, out_path)
     util.save_model(model, out_path)
     util.export_hyperparameters(model, out_path)
 

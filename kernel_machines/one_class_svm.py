@@ -79,3 +79,14 @@ class CustomOneClassSVM(OneClassSVM):
         y[y == 1] = 0
         y[y == -1] = 1
         return y
+
+    def decision_function(self, x: np.ndarray) -> np.ndarray:
+        """
+        Signed distance to the separating hyperplane, positive for an inlier
+        and negative for an outlier. The output of `super().decision_function`
+        is multiplied by -1 in order to have the same sign convention between
+        supervised and unsupervised kernel machines. For some reason the scores
+        have the opposite sign for signal and background for SVC.decision_function
+        and OneClassSVM.decision_function.
+        """
+        return -1.0*super().decision_function(x)

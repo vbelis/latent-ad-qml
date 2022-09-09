@@ -13,6 +13,7 @@ def main(args: dict):
     sig_fold, bkg_fold = data_processing.get_kfold_data(
         test_features,
         test_labels,
+        args["kfolds"]
     )
     output_path = args["model"]
     model = util.load_model(output_path + "model")

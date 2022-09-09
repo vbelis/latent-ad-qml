@@ -146,15 +146,11 @@ class OneClassQSVM(OneClassSVM):
         Returns: Mean accuracy of ``self.predict(X)`` wrt. `y`.
         """
         if train_data:
-            y_pred = self.predict(self._kernel_matrix_train)
+            y_pred = self.predict(x)
             y = np.ones(len(x))  # To compute the fraction of outliers in training.
             return accuracy_score(y, y_pred, sample_weight=sample_weight)
 
-        kernel_matrix_test = self._quantum_kernel.evaluate(
-            x_vec=x,
-            y_vec=self._train_data,
-        )
-        y_pred = self.predict(kernel_matrix_test)
+        y_pred = self.predict(x)
         return accuracy_score(y, y_pred, sample_weight=sample_weight)
 
     def predict(self, x: np.ndarray) -> np.ndarray:
@@ -169,7 +165,11 @@ class OneClassQSVM(OneClassSVM):
 
         Returns: The predicted labels of the input data vectors, of shape (n_samples).
         """
-        y = super().predict(x)
+        test_kernel_matrix = self._quantum_kernel.evaluate(
+            x_vec=x,
+            y_vec=self._train_data,
+        )
+        y = super().predict(test_kernel_matrix)
         y[y == 1] = 0
         y[y == -1] = 1
         return y
@@ -179,7 +179,13 @@ class OneClassQSVM(OneClassSVM):
         Computes the score value (test statistic) of the QSVM model. It computes
         the displacement of the data vector x from the decision boundary. If the
         sign is positive then the predicted label of the model is +1 and -1
-        (or 0) otherwise.
+        (or 0) otherwise. 
+        
+        The output of `super().decision_function`
+        is multiplied by -1 in order to have the same sign convention between
+        supervised and unsupervised kernel machines. For some reason the scores
+        have the opposite sign for signal and background for SVC.decision_function
+        and OneClassSVM.decision_function.
 
         Args:
             x_test: Array of data vectors of which the scores we want to
@@ -191,7 +197,7 @@ class OneClassQSVM(OneClassSVM):
             x_vec=x_test,
             y_vec=self._train_data,
         )
-        return super().decision_function(test_kernel_matrix)
+        return -1.0*super().decision_function(test_kernel_matrix)
 
     def get_transpiled_kernel_circuit(
         self,
