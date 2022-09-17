@@ -9,6 +9,7 @@ from qiskit.circuit import ParameterVector
 from qiskit.providers import Backend
 from qiskit.providers.ibmq import IBMQBackend
 from qiskit.visualization import plot_circuit_layout
+import matplotlib.pyplot as plt
 from qiskit_machine_learning.kernels import QuantumKernel
 import numpy as np
 from time import perf_counter
@@ -32,6 +33,8 @@ class QSVM(SVC):
         Args:
             hpars: Hyperparameters of the model and configuration parameters
                    for the training.
+        Attributes: TODO
+        Methods: TODO?
         """
         super().__init__(kernel="precomputed", C=hpars["c_param"])
 
@@ -219,6 +222,7 @@ class QSVM(SVC):
             filename=path,
             **kwargs,
         )
+        plt.clf()
         return qc_transpiled
 
     def save_circuit_physical_layout(self, circuit: QuantumCircuit, save_path: str):

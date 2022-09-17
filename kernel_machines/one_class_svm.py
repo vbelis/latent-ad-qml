@@ -26,6 +26,7 @@ class CustomOneClassSVM(OneClassSVM):
         verbose=False,
         max_iter=-1
     ):
+        self.feature_map_name = kernel
         super().__init__(
             kernel=kernel,
             degree=degree,

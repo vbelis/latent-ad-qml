@@ -330,12 +330,12 @@ def init_kernel_machine(args: dict) -> Union[SVC, QSVM, CustomOneClassSVM, OneCl
             tcols.OKCYAN + "\nConfiguring the one-class Classical Support Vector"
             " Machine..." + tcols.ENDC
         )
-        return CustomOneClassSVM(kernel="rbf", nu=args["nu_param"], gamma=args["gamma"])
+        return CustomOneClassSVM(kernel=args["feature_map"], nu=args["nu_param"], gamma=args["gamma"])
     print(
         tcols.OKCYAN + "\nConfiguring the Classical Support Vector"
         " Machine..." + tcols.ENDC
     )
-    return SVC(kernel="rbf", C=args["c_param"], gamma=args["gamma"])
+    return SVC(kernel=args["feature_map"], C=args["c_param"], gamma=args["gamma"])
 
 
 def eval_metrics(
@@ -354,8 +354,7 @@ def eval_metrics(
     The execution of this function is also timed.
     """
     print(
-        "Computing the test dataset accuracy of the models, quick check"
-        " for overtraining..."
+        "Computing the test dataset accuracy of the models, ROC and PR plots..."
     )
     test_time_init = perf_counter()
     train_acc = None
@@ -366,7 +365,7 @@ def eval_metrics(
     ):
         train_acc = model.score(train_data, train_labels, train_data=True)
     elif isinstance(model, SVC):
-        train_acc = model.score(train_data, train_labels)
+        train_acc = model.score(train_data, train_labels) # FIXME use the scores directly
     else:
         raise TypeError(
             tcols.FAIL
@@ -374,10 +373,11 @@ def eval_metrics(
             " a OneClassQSVM object." + tcols.ENDC
         )
     y_score = model.decision_function(test_data)
-    compute_roc_pr_curves(test_labels, y_score, out_path)
+    compute_roc_pr_curves(test_labels, y_score, out_path, model)
+    plot_score_distributions(y_score, test_labels, out_path)
     
     y_score[y_score>0.] = 1
-    y_score[y_score<0.] = 0
+    y_score[y_score<0.] = 0 # FIXME use that for accuracy to not dublicate calculation
     test_acc = accuracy_score(test_labels, y_score)
     print_accuracy_scores(test_acc, train_acc, isinstance(model, OneClassSVM))
     
@@ -388,8 +388,32 @@ def eval_metrics(
         f"{exec_time/60:.2e} min. " + tcols.ROCKET
     )    
 
+def plot_score_distributions(y_score: np.ndarray, y_label: np.ndarray, out_path: str):
+    """
+    Plots and saves the score distributions for signal and background as a histogram.
+    
+    Args:
+        y_score: The model scores on the test dataset.
+        test_labels: The test dataset truth labels.
+        out_path: Path to save the the plots to. Same as the trained model path.
+     """
+    fig = plt.figure(figsize=(8,6))
+    plt.hist(y_score[y_label==1], histtype = 'step', linewidth=2, bins=60, 
+             label='Signal', density=True, color="royalblue")
+    plt.hist(y_score[y_label==0], histtype = 'step', linewidth=2, bins=60, 
+             label='Background', density=True, color="red")
+    plt.xlabel("score")
+    plt.ylabel("A.U.")
+    plt.yscale("log")
+    plt.legend()
+    plt.savefig(out_path + "/score_distribution.pdf")
+    plt.clf()
+    print("\n Saving score distributions for signal and background " + tcols.SPARKS)
 
-def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path: str):
+
+
+def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path: str,
+                          model: Union[SVC, QSVM, OneClassQSVM, CustomOneClassSVM]):
     """
     Computes the ROC and Precision-Recall (PR) curves and saves them in the model
     out_path. Also, prints the 1/FPR value around a TPR working point, default=0.8.
@@ -398,26 +422,41 @@ def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path
         test_labels: The test dataset truth labels.
         y_score: The model scores on the test dataset.
         out_path: Path to save the the plots to. Same as the trained model path.
+        model: Kernel machine model, to write information thereof on plot legend.
     """
+    def create_plot_model_label(model,) -> str:
+        """Creates the label for the legend, include hyperparameter and 
+        feature map or kernel name info.
+        """
+        if isinstance(model, OneClassSVM):
+            label = f"\nFeature map: {model.feature_map_name}\n" + r"$\nu$ = " + f"{model.nu}"
+        elif isinstance(model, QSVM):
+            label = f"\nFeature map: {model.feature_map}" + f"\nC = {model.C}"
+        else:
+            label = f"\nFeature map: {model.kernel}" + f"\nC = {model.C}"
+        return label
+    
     fpr, tpr, thresholds = roc_curve(y_true=test_labels, y_score=y_score)
     auc = roc_auc_score(test_labels, y_score)
-    plt.plot(tpr, 1./fpr, label=f"AUC: {auc:.3f}")
+    one_over_fpr = get_fpr_around_tpr_point(fpr, tpr)
+    plt.plot(tpr, 1./fpr, label=f"AUC: {auc:.3f}\n" + r"FPR$^{-1}$:" + f" {one_over_fpr[0]:.3f}" 
+             f" ± {one_over_fpr[1]:.3f}" + create_plot_model_label(model))
     plt.yscale("log")
     plt.xlabel("TPR")
-    plt.ylabel("FPR")
+    plt.ylabel(r"FPR$^{-1}$")
     plt.legend()
     plt.savefig(out_path + "/roc.pdf")
     plt.clf()
-    get_fpr_around_tpr_point(fpr, tpr)
 
     p, r, thresholds = precision_recall_curve(test_labels, probas_pred=y_score)
     plt.plot(r, p)
     plt.xlabel("Recall")
     plt.ylabel("Precision")
-    plt.savefig(out_path +"/pr.pdf")
+    plt.savefig(out_path + "/pr.pdf")
     print("\nComputed ROC and PR curves " + tcols.SPARKS)
+    plt.clf()
 
-def get_fpr_around_tpr_point(fpr: np.ndarray, tpr: np.ndarray, tpr_working_point: float = 0.8):
+def get_fpr_around_tpr_point(fpr: np.ndarray, tpr: np.ndarray, tpr_working_point: float = 0.8) -> Tuple:
     """
     Computes the mean 1/FPR value that corresponds to a small window aroun a given
     TPR working point (default: 0.8). If there are no values in the window, it widened 
@@ -435,10 +474,15 @@ def get_fpr_around_tpr_point(fpr: np.ndarray, tpr: np.ndarray, tpr_working_point
         ind = np.where(np.logical_and(tpr>=low_bound, tpr<=up_bound))[0]
         low_bound *= 0.99 # open the window by 1%
         up_bound *= 1.01
+        print(ind)
+        print("fpr[ind]", fpr[ind])
+    # FIXME take care of the fpr=0 that causes nan and inf below
+    one_over_fpr_mean = np.mean(1./fpr[ind]), np.std(1./fpr[ind])
     print(f"\nTPR values around {tpr_working_point} window with lower bound {low_bound}"
           f" and upper bound: {up_bound}")
-    print(f"Corresponding mean 1/FPR value in that window: {np.mean(1./fpr[ind]):.3f} ± " 
-          f"{np.std(1./fpr[ind]):.3f}")
+    print(f"Corresponding mean 1/FPR value in that window: {one_over_fpr_mean[0]:.3f} ± " 
+          f"{one_over_fpr_mean[1]:.3f}")
+    return one_over_fpr_mean
 
 
 def export_hyperparameters(
@@ -458,7 +502,7 @@ def export_hyperparameters(
             "nqubits": model.nqubits,
             "feature_map_name": model.feature_map_name,
             "backend_config": model.backend_config,
-        }
+        } # FIXME this doesn't include OneClassQSVM
     else:
         hp = {"C": model.C}
     params_file = open(file_path, "w")

@@ -84,7 +84,8 @@ def get_arguments() -> dict:
     parser.add_argument(
         "--nqubits", type=int, help="Number of qubits for quantum feature map circuit."
     )
-    parser.add_argument("--feature_map", type=str, help="Feature map circuit for the QSVM.")
+    parser.add_argument("--feature_map", type=str, 
+                        help="Feature map circuit for the QSVM or classical (!) kernel name.")
     parser.add_argument(
         "--backend_name",
         type=str,
