@@ -431,7 +431,7 @@ def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path
         if isinstance(model, OneClassSVM):
             label = f"\nFeature map: {model.feature_map_name}\n" + r"$\nu$ = " + f"{model.nu}"
         elif isinstance(model, QSVM):
-            label = f"\nFeature map: {model.feature_map}" + f"\nC = {model.C}"
+            label = f"\nFeature map: {model.feature_map_name}" + f"\nC = {model.C}"
         else:
             label = f"\nFeature map: {model.kernel}" + f"\nC = {model.C}"
         return label
@@ -443,6 +443,7 @@ def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path
              f" ± {one_over_fpr[1]:.3f}" + create_plot_model_label(model))
     plt.yscale("log")
     plt.xlabel("TPR")
+    plt.xlim([0., 1.1])
     plt.ylabel(r"FPR$^{-1}$")
     plt.legend()
     plt.savefig(out_path + "/roc.pdf")
@@ -476,8 +477,9 @@ def get_fpr_around_tpr_point(fpr: np.ndarray, tpr: np.ndarray, tpr_working_point
         up_bound *= 1.01
         print(ind)
         print("fpr[ind]", fpr[ind])
-    # FIXME take care of the fpr=0 that causes nan and inf below
-    one_over_fpr_mean = np.mean(1./fpr[ind]), np.std(1./fpr[ind])
+    # FIXME take care of the fpr=0 that causes nan and inf below but do the plotting
+    fpr_window_no_zeros = fpr[ind][fpr[ind] != 0]
+    one_over_fpr_mean = np.mean(1./fpr_window_no_zeros), np.std(1./fpr_window_no_zeros)
     print(f"\nTPR values around {tpr_working_point} window with lower bound {low_bound}"
           f" and upper bound: {up_bound}")
     print(f"Corresponding mean 1/FPR value in that window: {one_over_fpr_mean[0]:.3f} ± " 
