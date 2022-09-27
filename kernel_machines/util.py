@@ -32,7 +32,7 @@ from terminal_enhancer import tcols
 
 
 def print_accuracy_scores(test_acc: float, train_acc: float, is_unsup: bool):
-    """ FIXME: takes y_scores not accuracies
+    """
     Prints the train and test accuracies of the model.
     Args:
         is_unsup: Flag if the model is unsupervised. The printing is slighlty
@@ -365,7 +365,7 @@ def eval_metrics(
     ):
         train_acc = model.score(train_data, train_labels, train_data=True)
     elif isinstance(model, SVC):
-        train_acc = model.score(train_data, train_labels) # FIXME use the scores directly
+        train_acc = model.score(train_data, train_labels)
     else:
         raise TypeError(
             tcols.FAIL
@@ -377,7 +377,7 @@ def eval_metrics(
     plot_score_distributions(y_score, test_labels, out_path)
     
     y_score[y_score>0.] = 1
-    y_score[y_score<0.] = 0 # FIXME use that for accuracy to not dublicate calculation
+    y_score[y_score<0.] = 0
     test_acc = accuracy_score(test_labels, y_score)
     print_accuracy_scores(test_acc, train_acc, isinstance(model, OneClassSVM))
     
@@ -475,9 +475,6 @@ def get_fpr_around_tpr_point(fpr: np.ndarray, tpr: np.ndarray, tpr_working_point
         ind = np.where(np.logical_and(tpr>=low_bound, tpr<=up_bound))[0]
         low_bound *= 0.99 # open the window by 1%
         up_bound *= 1.01
-        print(ind)
-        print("fpr[ind]", fpr[ind])
-    # FIXME take care of the fpr=0 that causes nan and inf below but do the plotting
     fpr_window_no_zeros = fpr[ind][fpr[ind] != 0]
     one_over_fpr_mean = np.mean(1./fpr_window_no_zeros), np.std(1./fpr_window_no_zeros)
     print(f"\nTPR values around {tpr_working_point} window with lower bound {low_bound}"
