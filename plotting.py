@@ -1,7 +1,5 @@
 import pandas as pd
-#import h5py
 import matplotlib.pyplot as plt
-#plt.rcParams['legend.title_fontsize'] = 'xx-small'
 import numpy as np
 from sklearn.metrics import roc_curve, auc
 import mplhep as hep
@@ -22,12 +20,12 @@ def get_FPR_for_fixed_TPR(tpr_window, fpr_loss, tpr_loss, true_data, pred_data, 
 def get_mean_and_error(data):
     return [np.mean(data, axis=0), np.std(data, axis=0)]
 
-def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, colors, title, 
+def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, title, 
                        pic_id=None, xlabel='True Positive Rate', ylabel=r'1/False Positive Rate', legend_loc='best', legend_title='$ROC$', save_dir=None):
     
-    palette = ['#3E96A1', '#EC4E20', '#FF9505',]# '#713E5A']
+    palette = ['#3E96A1', '#EC4E20', '#FF9505']
     styles = ['solid', 'dashed']
-    plt.style.use(hep.style.CMS)   
+    plt.style.use(hep.style.CMS)
     fig = plt.figure(figsize=(8, 8))
     anomaly_auc_legend = []
     for i in range(len(ids)): # for each latent space or train size
@@ -37,7 +35,7 @@ def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, cl
         for j in range(n_folds):
             # quantum data
             fq, tq = get_roc_data(quantum_loss_qcd[i][j], quantum_loss_sig[i][j])
-            # classic data
+            # classical data
             fc, tc = get_roc_data(classic_loss_qcd[i][j], classic_loss_sig[i][j])
 
             auc_q.append(auc(fq, tq)); auc_c.append(auc(fc, tc))
