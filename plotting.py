@@ -1,11 +1,12 @@
 import pandas as pd
-import h5py
+#import h5py
 import matplotlib.pyplot as plt
-plt.rcParams['legend.title_fontsize'] = 'xx-small'
+#plt.rcParams['legend.title_fontsize'] = 'xx-small'
 import numpy as np
 from sklearn.metrics import roc_curve, auc
-# import mplhep as hep
-# plt.style.use(hep.style.CMS)   
+import mplhep as hep
+from matplotlib.lines import Line2D
+
 
 def get_roc_data(qcd, bsm, fix_tpr=False):
     true_val = np.concatenate((np.ones(bsm.shape[0]), np.zeros(qcd.shape[0])))
@@ -21,10 +22,14 @@ def get_FPR_for_fixed_TPR(tpr_window, fpr_loss, tpr_loss, true_data, pred_data, 
 def get_mean_and_error(data):
     return [np.mean(data, axis=0), np.std(data, axis=0)]
 
-def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, colors, title, pic_id=None, xlabel='TPR', ylabel='1/FPR', legend_loc='best', legend_title='$ROC$', save_dir=None):
-
-    fig = plt.figure(figsize=(10,8))
-
+def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, colors, title, 
+                       pic_id=None, xlabel='True Positive Rate', ylabel=r'1/False Positive Rate', legend_loc='best', legend_title='$ROC$', save_dir=None):
+    
+    palette = ['#3E96A1', '#EC4E20', '#FF9505',]# '#713E5A']
+    styles = ['solid', 'dashed']
+    plt.style.use(hep.style.CMS)   
+    fig = plt.figure(figsize=(8, 8))
+    anomaly_auc_legend = []
     for i in range(len(ids)): # for each latent space or train size
         fpr_q=[]; fpr_c=[]
         auc_q=[]; auc_c=[]
@@ -42,32 +47,49 @@ def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, cl
         auc_data_q = get_mean_and_error(np.array(auc_q))
         auc_data_c = get_mean_and_error(np.array(auc_c))
         
-        fpr_data_q = get_mean_and_error(np.array(fpr_q))
-        fpr_data_c = get_mean_and_error(np.array(fpr_c))
+        fpr_data_q = get_mean_and_error(1./np.array(fpr_q))
+        fpr_data_c = get_mean_and_error(1./np.array(fpr_c))
         
         tpr_mean_q = np.mean(np.array(tpr_q), axis=0)
         tpr_mean_c = np.mean(np.array(tpr_c), axis=0)
         
-        fpr_over_data_q = 1./fpr_data_q[0]
-        fpr_over_data_c = 1./fpr_data_c[0]
-
-        fpr_over_error_q = fpr_data_q[1]*(1./np.power(fpr_data_q[0],2)) # sigma_x*(1/x^2)
-        fpr_over_error_c = fpr_data_c[1]*(1./np.power(fpr_data_c[0],2))
+        if ids[i]=='Narrow 'r'G $\to$ WW 3.5 TeV': # uncertainties are bigger for G_NA
+            band_ind = np.where(tpr_mean_q > 0.6)[0] 
+        else:
+            band_ind = np.where(tpr_mean_q > 0.3)[0]
         
-        plt.plot(tpr_mean_q, fpr_over_data_q, label='(%s) Quantum: (auc = %.2f+/-%.2f)'% (ids[i], auc_data_q[0]*100., auc_data_q[1]*100.), linewidth=1.5, color=colors[i])
-        #plt.fill_between(tpr_mean_q, fpr_over_data_q-fpr_over_error_q, fpr_over_data_q+fpr_over_error_q, alpha=0.8, label='(%s) Quantum: (auc = %.2f+/-%.2f)'% (ids[i], auc_data_q[0]*100., auc_data_q[1]*100.))
-        #plt.fill_between(tpr_mean_c, fpr_data_c[0]-fpr_data_c[1], fpr_data_c[0]+fpr_data_c[1], alpha=0.5, label='(%s) Classic: (auc = %.2f+/-%.2f)'% (ids[i], auc_data_c[0]*100., auc_data_c[1]*100.))
+        plt.plot(tpr_mean_q, fpr_data_q[0], linewidth=1.5, color=palette[i])
+        plt.plot(tpr_mean_c, fpr_data_c[0], linewidth=1.5, color=palette[i], linestyle='dashed')
+        plt.fill_between(tpr_mean_q[band_ind], fpr_data_q[0][band_ind]-fpr_data_q[1][band_ind], fpr_data_q[0][band_ind]+fpr_data_q[1][band_ind], alpha=0.2, color=palette[i])
+        plt.fill_between(tpr_mean_c[band_ind], fpr_data_c[0][band_ind]-fpr_data_c[1][band_ind], fpr_data_c[0][band_ind]+fpr_data_c[1][band_ind], alpha=0.2, color=palette[i])
+        anomaly_auc_legend.append(ids[i] + f" AUCs: {auc_data_q[0]*100:.2f}"f"± {auc_data_q[1]*100:.2f} "
+                                  f"/ {auc_data_c[0]*100:.2f}"f"± {auc_data_c[1]*100:.2f}")
+                                
+    dummy_res_lines = [Line2D([0,1],[0,1],linestyle=s, color='black') for s in styles[:2]]
+    lines = plt.gca().get_lines()
+    plt.semilogy(np.linspace(0, 1, num=int(1e4)), 1./np.linspace(0, 1, num=int(1e4)), linewidth=1.5, color='black')
+    legend1 = plt.legend(dummy_res_lines, [r'Quantum', r'Classical'], loc='lower left', frameon=False, \
+            handlelength=1.5, fontsize=14, title_fontsize=17, bbox_to_anchor=(0.7,0.8),)
+
+    legend2 = plt.legend([lines[i*2] for i in range(len(palette))], anomaly_auc_legend, loc='lower left', \
+            frameon=False, title='', fontsize=14, title_fontsize=17)
+    legend1._legend_box.align = "left"
+    legend2._legend_box.align = "left"
+    for leg in legend1.legendHandles:
+        leg.set_linewidth(2.2)
+        leg.set_color('gray')
+    for leg in legend2.legendHandles:
+        leg.set_linewidth(2.2) 
+    plt.gca().add_artist(legend1)
+    plt.gca().add_artist(legend2)
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
     plt.yscale('log')
-    plt.xlim(0.0, 1.0)
+    plt.xlim(0.0, 1.05)
     plt.title(title)
-    leg = plt.legend(fancybox=True, frameon=True, prop={"size":10}, bbox_to_anchor =(1.0, 1.0))
-    leg.get_title().set_position((-40, 0))
     fig.tight_layout()
-    plt.grid(True)
     if save_dir:
-        plt.savefig(f'{save_dir}/ROC_final_{pic_id}.pdf', dpi = fig.dpi, bbox_inches='tight')
+        plt.savefig(f'{save_dir}/ROC_{pic_id}.pdf', dpi = fig.dpi, bbox_inches='tight')
     else: plt.show()
 
 def create_table_for_fixed_TPR(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, tpr_windows=[0.4, 0.6, 0.8], tolerance=0.01):
@@ -82,7 +104,6 @@ def create_table_for_fixed_TPR(quantum_loss_qcd, quantum_loss_sig, classic_loss_
             fq, tq, _, true_q, pred_q = get_roc_data(quantum_loss_qcd[i][j], quantum_loss_sig[i][j], fix_tpr=True)
             # classic data
             fc, tc, _, true_c, pred_c = get_roc_data(classic_loss_qcd[i][j], classic_loss_sig[i][j], fix_tpr=True)
-            
             for window in tpr_windows:
                 f_q = get_FPR_for_fixed_TPR(window, np.array(fq), np.array(tq), true_q, pred_q, tolerance)
                 f_c = get_FPR_for_fixed_TPR(window, np.array(fc), np.array(tc), true_c, pred_c, tolerance)
@@ -91,14 +112,14 @@ def create_table_for_fixed_TPR(quantum_loss_qcd, quantum_loss_sig, classic_loss_
         
         for window in tpr_windows:
             
-            fpr_data_q = get_mean_and_error(np.array(fpr_q[f'{window}']))
-            fpr_data_c = get_mean_and_error(np.array(fpr_c[f'{window}']))
+            fpr_data_q = get_mean_and_error(1./np.array(fpr_q[f'{window}']))
+            fpr_data_c = get_mean_and_error(1./np.array(fpr_c[f'{window}']))
             
-            fpr_over_data_q = 1./fpr_data_q[0]
-            fpr_over_data_c = 1./fpr_data_c[0]
+            fpr_over_data_q = fpr_data_q[0]
+            fpr_over_data_c = fpr_data_c[0]
 
-            fpr_over_error_q = fpr_data_q[1]*(1./np.power(fpr_data_q[0],2)) # sigma_x*(1/x^2)
-            fpr_over_error_c = fpr_data_c[1]*(1./np.power(fpr_data_c[0],2))
+            fpr_over_error_q = fpr_data_q[1]
+            fpr_over_error_c = fpr_data_c[1]
             
             df_output[f'TPR={window}'] = [f'{fpr_over_data_q:.2f} +/- {fpr_over_error_q:.2f}', f'{fpr_over_data_c:.2f} +/- {fpr_over_error_c:.2f}']
         print(df_output.to_latex(index=False, caption=f'Latent space: {ids[i]}, TPR value +/- {tolerance*100}\%'))

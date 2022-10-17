@@ -37,8 +37,8 @@ def main(args: dict):
         + f"{output_path}"
         + tcols.ENDC
     )
-    np.save(output_path + "sig_scores.npy", score_sig)
-    np.save(output_path + "bkg_scores.npy", score_bkg)
+    np.save(output_path + f"sig_scores_n{args['ntest']}_k{args['kfolds']}.npy", score_sig)
+    np.save(output_path + f"bkg_scores_n{args['ntest']}_k{args['kfolds']}.npy", score_bkg)
 
 def get_arguments() -> dict:
     """
