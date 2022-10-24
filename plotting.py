@@ -20,22 +20,25 @@ def get_FPR_for_fixed_TPR(tpr_window, fpr_loss, tpr_loss, true_data, pred_data, 
 def get_mean_and_error(data):
     return [np.mean(data, axis=0), np.std(data, axis=0)]
 
-def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, title, 
-                       pic_id=None, xlabel='True Positive Rate', ylabel=r'1/False Positive Rate', legend_loc='best', legend_title='$ROC$', save_dir=None):
+def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, colors, title, 
+                       pic_id=None, xlabel='TPR', ylabel=r'1/FPR', legend_loc='best', legend_title='$ROC$', save_dir=None):
     
-    palette = ['#3E96A1', '#EC4E20', '#FF9505']
+    #palette = ['#3E96A1', '#EC4E20', '#FF9505']#, '#713E5A']
+    #palette = ['orange', 'chocolate', 'coral'] #--> train size
+    #palette = ['#3E96A1', 'forestgreen', 'chocolate'] #--> signal comparison
+    palette = ['hotpink', 'chocolate', 'purple']#, 'gold'] --> latent space comparison
     styles = ['solid', 'dashed']
-    plt.style.use(hep.style.CMS)
+    plt.style.use(hep.style.CMS)   
     fig = plt.figure(figsize=(8, 8))
-    anomaly_auc_legend = []
-    for i in range(len(ids)): # for each latent space or train size
+    anomaly_auc_legend = []; study_legend=[]
+    for i, id_name in enumerate(ids): # for each latent space or train size
         fpr_q=[]; fpr_c=[]
         auc_q=[]; auc_c=[]
         tpr_q=[]; tpr_c=[]
         for j in range(n_folds):
             # quantum data
             fq, tq = get_roc_data(quantum_loss_qcd[i][j], quantum_loss_sig[i][j])
-            # classical data
+            # classic data
             fc, tc = get_roc_data(classic_loss_qcd[i][j], classic_loss_sig[i][j])
 
             auc_q.append(auc(fq, tq)); auc_c.append(auc(fc, tc))
@@ -45,8 +48,8 @@ def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, cl
         auc_data_q = get_mean_and_error(np.array(auc_q))
         auc_data_c = get_mean_and_error(np.array(auc_c))
         
-        fpr_data_q = get_mean_and_error(1./np.array(fpr_q))
-        fpr_data_c = get_mean_and_error(1./np.array(fpr_c))
+        fpr_data_q = get_mean_and_error(1.0/np.array(fpr_q))
+        fpr_data_c = get_mean_and_error(1.0/np.array(fpr_c))
         
         tpr_mean_q = np.mean(np.array(tpr_q), axis=0)
         tpr_mean_c = np.mean(np.array(tpr_c), axis=0)
@@ -60,28 +63,34 @@ def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, cl
         plt.plot(tpr_mean_c, fpr_data_c[0], linewidth=1.5, color=palette[i], linestyle='dashed')
         plt.fill_between(tpr_mean_q[band_ind], fpr_data_q[0][band_ind]-fpr_data_q[1][band_ind], fpr_data_q[0][band_ind]+fpr_data_q[1][band_ind], alpha=0.2, color=palette[i])
         plt.fill_between(tpr_mean_c[band_ind], fpr_data_c[0][band_ind]-fpr_data_c[1][band_ind], fpr_data_c[0][band_ind]+fpr_data_c[1][band_ind], alpha=0.2, color=palette[i])
-        anomaly_auc_legend.append(ids[i] + f" AUCs: {auc_data_q[0]*100:.2f}"f"± {auc_data_q[1]*100:.2f} "
+        anomaly_auc_legend.append(f" {auc_data_q[0]*100:.2f}"f"± {auc_data_q[1]*100:.2f} "
                                   f"/ {auc_data_c[0]*100:.2f}"f"± {auc_data_c[1]*100:.2f}")
-                                
+        study_legend.append(id_name)                    
     dummy_res_lines = [Line2D([0,1],[0,1],linestyle=s, color='black') for s in styles[:2]]
     lines = plt.gca().get_lines()
-    plt.semilogy(np.linspace(0, 1, num=int(1e4)), 1./np.linspace(0, 1, num=int(1e4)), linewidth=1.5, color='black')
-    legend1 = plt.legend(dummy_res_lines, [r'Quantum', r'Classical'], loc='lower left', frameon=False, \
-            handlelength=1.5, fontsize=14, title_fontsize=17, bbox_to_anchor=(0.7,0.8),)
+    plt.semilogy(np.linspace(0, 1, num=int(1e4)), 1./np.linspace(0, 1, num=int(1e4)), linewidth=1.5, linestyle='--', color='0.75')
+    legend1 = plt.legend(dummy_res_lines, [r'Quantum', r'Classical'], frameon=False, loc='upper right', \
+            handlelength=1.5, fontsize=12, title_fontsize=14, bbox_to_anchor=(0.97,0.74)) # bbox_to_anchor=(0.97,0.78) -> except for latent study
 
     legend2 = plt.legend([lines[i*2] for i in range(len(palette))], anomaly_auc_legend, loc='lower left', \
-            frameon=False, title='', fontsize=14, title_fontsize=17)
+            frameon=True, title='AUC', fontsize=12, title_fontsize=14)
+    legend3 = plt.legend([lines[i*2] for i in range(len(palette))], study_legend, markerscale=0.5, loc='upper right', alignment='left', frameon=True, title='Latent Dim.', fontsize=12, title_fontsize=14,  bbox_to_anchor=(0.95,0.97))
+    
     legend1._legend_box.align = "left"
     legend2._legend_box.align = "left"
+    legend3._legend_box.align = "center"
+    
     for leg in legend1.legendHandles:
         leg.set_linewidth(2.2)
         leg.set_color('gray')
     for leg in legend2.legendHandles:
         leg.set_linewidth(2.2) 
+        
     plt.gca().add_artist(legend1)
     plt.gca().add_artist(legend2)
-    plt.ylabel(ylabel)
-    plt.xlabel(xlabel)
+    plt.gca().add_artist(legend3)
+    plt.ylabel(ylabel, fontsize=20)
+    plt.xlabel(xlabel, fontsize=20)
     plt.yscale('log')
     plt.xlim(0.0, 1.05)
     plt.title(title)
