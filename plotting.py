@@ -20,13 +20,10 @@ def get_FPR_for_fixed_TPR(tpr_window, fpr_loss, tpr_loss, true_data, pred_data, 
 def get_mean_and_error(data):
     return [np.mean(data, axis=0), np.std(data, axis=0)]
 
-def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, colors, title, 
-                       pic_id=None, xlabel='TPR', ylabel=r'1/FPR', legend_loc='best', legend_title='$ROC$', save_dir=None):
+def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, classic_loss_sig, ids, n_folds, 
+                       pic_id=None, xlabel='TPR', ylabel=r'1/FPR', legend_loc='best', legend_title='$ROC$', save_dir=None,
+                       palette=['#3E96A1', '#EC4E20', '#FF9505']):
     
-    #palette = ['#3E96A1', '#EC4E20', '#FF9505']#, '#713E5A']
-    #palette = ['orange', 'chocolate', 'coral'] #--> train size
-    #palette = ['#3E96A1', 'forestgreen', 'chocolate'] #--> signal comparison
-    palette = ['hotpink', 'chocolate', 'purple']#, 'gold'] --> latent space comparison
     styles = ['solid', 'dashed']
     plt.style.use(hep.style.CMS)   
     fig = plt.figure(figsize=(8, 8))
@@ -57,24 +54,25 @@ def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, cl
         if ids[i]=='Narrow 'r'G $\to$ WW 3.5 TeV': # uncertainties are bigger for G_NA
             band_ind = np.where(tpr_mean_q > 0.6)[0] 
         else:
-            band_ind = np.where(tpr_mean_q > 0.3)[0]
+            band_ind = np.where(tpr_mean_q > 0.35)[0]
         
         plt.plot(tpr_mean_q, fpr_data_q[0], linewidth=1.5, color=palette[i])
         plt.plot(tpr_mean_c, fpr_data_c[0], linewidth=1.5, color=palette[i], linestyle='dashed')
         plt.fill_between(tpr_mean_q[band_ind], fpr_data_q[0][band_ind]-fpr_data_q[1][band_ind], fpr_data_q[0][band_ind]+fpr_data_q[1][band_ind], alpha=0.2, color=palette[i])
         plt.fill_between(tpr_mean_c[band_ind], fpr_data_c[0][band_ind]-fpr_data_c[1][band_ind], fpr_data_c[0][band_ind]+fpr_data_c[1][band_ind], alpha=0.2, color=palette[i])
         anomaly_auc_legend.append(f" {auc_data_q[0]*100:.2f}"f"± {auc_data_q[1]*100:.2f} "
-                                  f"/ {auc_data_c[0]*100:.2f}"f"± {auc_data_c[1]*100:.2f}")
+                                  f"| {auc_data_c[0]*100:.2f}"f"± {auc_data_c[1]*100:.2f}")
         study_legend.append(id_name)                    
     dummy_res_lines = [Line2D([0,1],[0,1],linestyle=s, color='black') for s in styles[:2]]
     lines = plt.gca().get_lines()
     plt.semilogy(np.linspace(0, 1, num=int(1e4)), 1./np.linspace(0, 1, num=int(1e4)), linewidth=1.5, linestyle='--', color='0.75')
     legend1 = plt.legend(dummy_res_lines, [r'Quantum', r'Classical'], frameon=False, loc='upper right', \
-            handlelength=1.5, fontsize=12, title_fontsize=14, bbox_to_anchor=(0.97,0.74)) # bbox_to_anchor=(0.97,0.78) -> except for latent study
-
+            handlelength=1.5, fontsize=16, title_fontsize=14)#, bbox_to_anchor=(0.01,0.65)) # bbox_to_anchor=(0.97,0.78) -> except for latent study
     legend2 = plt.legend([lines[i*2] for i in range(len(palette))], anomaly_auc_legend, loc='lower left', \
-            frameon=True, title='AUC', fontsize=12, title_fontsize=14)
-    legend3 = plt.legend([lines[i*2] for i in range(len(palette))], study_legend, markerscale=0.5, loc='upper right', alignment='left', frameon=True, title='Latent Dim.', fontsize=12, title_fontsize=14,  bbox_to_anchor=(0.95,0.97))
+            frameon=True, title=r'AUC $\;\quad$Quantum $\quad\;\;\;$ Classical', fontsize=15, title_fontsize=14,markerscale=0.5)
+    legend3 = plt.legend([lines[i*2] for i in range(len(palette))], study_legend, markerscale=0.5, loc='center right', 
+                         frameon=True, title=legend_title, fontsize=14, title_fontsize=15, bbox_to_anchor=(0.95,0.75))
+    legend3.get_frame().set_alpha(0.35)
     
     legend1._legend_box.align = "left"
     legend2._legend_box.align = "left"
@@ -89,11 +87,11 @@ def plot_ROC_kfold_mean(quantum_loss_qcd, quantum_loss_sig, classic_loss_qcd, cl
     plt.gca().add_artist(legend1)
     plt.gca().add_artist(legend2)
     plt.gca().add_artist(legend3)
-    plt.ylabel(ylabel, fontsize=20)
-    plt.xlabel(xlabel, fontsize=20)
+    plt.ylabel(ylabel, fontsize=24)
+    plt.xlabel(xlabel, fontsize=24)
     plt.yscale('log')
     plt.xlim(0.0, 1.05)
-    plt.title(title)
+    #plt.title(title)
     fig.tight_layout()
     if save_dir:
         plt.savefig(f'{save_dir}/ROC_{pic_id}.pdf', dpi = fig.dpi, bbox_inches='tight')
