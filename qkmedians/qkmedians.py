@@ -3,25 +3,36 @@ import time
 import distance_calc as distc
 
 def initialize_centroids(points, k):
-    """
-    Randomly initialize centroids of data points.
-    Args:
-        points: array of shape (N, X)
-                    N = number of samples,
-                    X = dimension of latent space - number of features
-        k: int - number of clusters
+    """Randomly initialize centroids of data points.
+    
+    Parameters
+    ----------
+    points : `numpy.ndarray`
+        Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
+    k : int
+        Number of clusters.
+    
+    Returns
+    -------
+    `numpy.ndarray`
+        `k` number of centroids.
     """
     indexes = np.random.randint(points.shape[0], size=k)
     return points[indexes]
 
 def find_distance_matrix_quantum(points, centroid, device_name):
-    """ 
-    Modified version of scipy.spatial.distance.cdist() function.
-    Args:
-        points: array of shape (N, X)
-                    N = number of samples,
-                    X = dimension of latent space - number of features
-        centroid: array of shape (1, X)
+    """Modified version of scipy.spatial.distance.cdist() function.
+    Parameters
+    ----------
+    points : `numpy.ndarray`
+        Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
+    centroid : `numpy.ndarray`
+        Centroid of shape ``(1, X)``
+    
+    Returns
+    -------
+    `numpy.ndarray`
+        Distance matrix - distance of each point to centroid
     """
     
     points = np.asarray(points)
@@ -40,12 +51,19 @@ def find_distance_matrix_quantum(points, centroid, device_name):
     return dist_matrix
 
 def geometric_median(points, median, eps=1e-6, device_name='/GPU:0'):
-    """
-    Implementation from Reference - DOI: 10.1007/s00180-011-0262-4
-    Args:
-        points: array of shape (N, X)
-                    N = number of samples,
-                    X = dimension of latent space - number of features
+    """Implementation from Reference - DOI: 10.1007/s00180-011-0262-4
+    
+    Parameters
+    ----------
+    points : `numpy.ndarray`
+        Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
+    median : `numpy.ndarray`
+        Initial median (centroid) of shape ``(1, X)``.
+    
+    Returns
+    -------
+    `numpy.ndarray`
+        Median
     """
     
     if points.size==0: 
@@ -80,13 +98,21 @@ def geometric_median(points, median, eps=1e-6, device_name='/GPU:0'):
         
         
 def find_centroids_GM(points, cluster_labels, start_centroids, clusters=2):
-    """
-    Args:
-        points: array of shape (N, X)
-                    N = number of samples,
-                    X = dimension of latent space - number of features
-        cluster_labels: array of shape (N,) - cluster labels assigned to each data point
-        clusters: int - number of clusters
+    """Finds cluster centroids .
+    
+    Parameters
+    ----------
+    points : `numpy.ndarray`
+        Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
+    cluster_labels : `numpy.ndarray`
+        Cluster labels assigned to each data point - shape `(N,)`
+    clusters : int
+        Number of clusters
+        
+    Returns
+    -------
+    `numpy.ndarray`
+        Centroids
     """
     
     centroids = np.zeros([clusters, points.shape[1]])
@@ -98,15 +124,21 @@ def find_centroids_GM(points, cluster_labels, start_centroids, clusters=2):
     return np.array(centroids)
 
 def find_nearest_neighbour_DI(points, centroids, device_name='/GPU:0'):
-    """
-    Args:
-        points: array of shape (N, X)
-                    N = number of samples,
-                    X = dimension of latent space;
-        centroids: array of shape (N, X)
-    Returns:
-        cluster labels: array of shape (N,) specifying to which cluster each point is assigned
-        distances: array of shape (N,) specifying distances to nearest cluster for each point
+    """ Find cluster assignments for points.
+    
+    Parameters
+    -----------
+    points : `numpy.ndarray`
+        Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
+    centroids : `numpy.ndarray`
+        Centroids of shape ``(k, X)``
+    
+    Returns
+    -------
+    `numpy.ndarray`
+        Cluster labels : array of shape `(N,)` specifying to which cluster each point is assigned.
+    `numpy.ndarray`
+        Distances: array of shape `(N,)` specifying distances to nearest cluster for each point.
     """
     
     n = points.shape[0]
