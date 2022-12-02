@@ -4,6 +4,18 @@ from qibo import gates
 from util import calc_norm
 
 def pad_input(X):
+    """Pads X.
+    
+    Parameters
+    ----------
+    X : `numpy.ndarray`
+        Input data
+    
+    Returns
+    -------
+    `numpy.ndarray`
+        Padded X
+    """
     num_features = len(X)
     if not float(np.log2(num_features)).is_integer():
         size_needed = pow(2, math.ceil(math.log(num_features)/math.log(2)))
@@ -11,7 +23,25 @@ def pad_input(X):
     return X
 
 def DistCalc_DI(a, b, device_name='/GPU:0', shots_n=10000):
-    """ Distance calculation using destructive interference """
+    """Distance calculation using destructive interference.
+    
+    Parameters
+    ----------
+    a : `numpy.ndarray`
+        First point - shape = (latent space dimension,)
+    b : `numpy.ndarray`
+        First point - shape = (latent space dimension,)
+    device_name : str
+        Name of device for executing a simulation of quantum circuit.
+    shots_n : int
+        Number of shots for executing a quantum circuit - to get frequencies.
+    
+    Returns
+    -------
+    (float, `Circuit`)
+        (distance, quantum circuit)
+    
+    """
     num_features = len(a)
     norm = calc_norm(a, b)
     a_norm = a/norm
