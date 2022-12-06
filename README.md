@@ -3,7 +3,7 @@
 Supervised and unsupervised anomaly detection in the latent space of high energy physics events with quantum machine learning
 
 ## Plotting
-You can get the plots by running in a jupyter notebook the following. I am using the convention that I have for the `.h5` file paths, maybe you need to tweak that in the code.
+You can get the plots by running in a jupyter notebook the following. The convention for the `.h5` file paths maybe you needs to be change depending on file type.
 
 ### The 3 different signals for 8 latent dimensions and n_train=600, n_test=100k, k=5 folds
 Firstly, load the score values from the saved files using our convention
@@ -17,13 +17,13 @@ import plotting as pl
 %load_ext autoreload
 %autoreload 2
 
-read_dir='/eos/path/to/the/.h5/files/lat8/unsupervised'
+read_dir='path_to_file'
 n_folds = 5
 latent_dim = '8'
 n_samples_train=600
 mass=['35', '15', '35']
 br_na=['NA', 'BR', ''] # narrow (NA) or broad (BR)
-signal_name=['RSGraviton_WW', 'RSGraviton_WW', 'AtoHZ_to_ZZZ']
+signal_name=['RSGraviton_WW', 'RSGraviton_WW', 'AtoHZ_to_ZZZ'] # type of signal
 
 q_loss_qcd=[]; q_loss_sig=[]; c_loss_qcd=[]; c_loss_sig=[]
 for i in range(len(signal_name)):
@@ -48,7 +48,7 @@ Example for the unsupervised kernel machine:
 ### The 4, 8, 16 latent dimension plot with n_train=600, n_test=40k, k=5 folds, for AtoHZ
 Likewise, load the scores,
 ```
-read_dir='/eos/user/v/vabelis/mpp_collab/journal_data/journal_plots/'
+read_dir='path_to_file'
 n_folds = 5
 latent_dim = ['4', '8', '16']
 n_samples_train=600
