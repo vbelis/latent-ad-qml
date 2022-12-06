@@ -7,6 +7,25 @@ import kmedians as KMed
 import utils as u
 
 def train_kmedians(latent_dim, train_size, read_file, seed=None, k=2, tolerance=1.e-3, save_dir=None):
+    """Performs training of k-medians.
+    
+    Parameters
+    ----------
+    latent_dim : int
+        Latent dimension of input data.
+    train_size : int
+        Number of training samples.
+    read_file : str
+        Name of the file where training data is saved.
+    seed : int
+        Seed for data shuffling.
+    k : int
+        Number of classes in k-medians.
+    tolerance : float
+        Tolerance for algorithm convergence.
+    save_dir : str
+        Name of the file for saving results.    
+    """
 
     # read train data
     with h5py.File(read_file, 'r') as file:

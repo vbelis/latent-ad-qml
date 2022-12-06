@@ -4,7 +4,7 @@ from qibo import gates
 from util import calc_norm
 
 def pad_input(X):
-    """Pads X.
+    """Adds 0s if X log2(X.dim) != round int.
     
     Parameters
     ----------
