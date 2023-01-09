@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 from sklearn.metrics import roc_curve, auc
 import mplhep as hep
 from matplotlib.lines import Line2D
@@ -101,7 +102,7 @@ def create_table_for_fixed_TPR(quantum_loss_qcd, quantum_loss_sig, classic_loss_
     
     # output to latex
     df_output = pd.DataFrame({'1/FPR': ['Quantum', 'Classic']})
-    
+    df_delta = pd.DataFrame(columns=['q_model', 'tpr', 'delta_qc', 'delta_qc_unc'])
     for i in range(len(ids)): # for each latent space or train size
         fpr_q={f'{tpr}':[] for tpr in tpr_windows}; fpr_c={f'{tpr}':[] for tpr in tpr_windows}
         for j in range(n_folds):
@@ -127,9 +128,21 @@ def create_table_for_fixed_TPR(quantum_loss_qcd, quantum_loss_sig, classic_loss_
             fpr_over_error_c = fpr_data_c[1]
             
             df_output[f'TPR={window}'] = [f'{fpr_over_data_q:.2f} +/- {fpr_over_error_q:.2f}', f'{fpr_over_data_c:.2f} +/- {fpr_over_error_c:.2f}']
+            if window != 0.4:
+                #delta_qc = (fpr_over_data_q-fpr_over_data_c)/fpr_over_data_c
+                delta_qc = fpr_over_data_q/fpr_over_data_c
+                delta_qc_unc = math.sqrt((fpr_over_error_q/fpr_over_data_c)**2 
+                                         + (fpr_over_data_q/fpr_over_data_c**2*fpr_over_error_c)**2)
+                d = {
+                    "q_model": ids[i],
+                    "tpr": window,
+                    "delta_qc": delta_qc,
+                    "delta_qc_unc": delta_qc_unc,
+                }
+                df_delta = df_delta.append(d, ignore_index=True)
         print(df_output.to_latex(index=False, caption=f'Latent space: {ids[i]}, TPR value +/- {tolerance*100}\%'))
-        
-    return
+
+    return df_delta
         
         
         
