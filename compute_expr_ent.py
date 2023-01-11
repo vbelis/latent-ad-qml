@@ -6,7 +6,7 @@ import pandas as pd
 import h5py
 from itertools import combinations
 import argparse
-from typing import Tuple, List
+from typing import Tuple, List, Union
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 from triple_e import expressibility
@@ -20,6 +20,35 @@ np.random.seed(42)
 
 
 def main(args):
+    circuit_list_expr_ent, circuit_labels = prepare_circs(args)
+    data = None 
+    if args["data_dependent"]: 
+        data = get_data(args["data_path"])
+    
+    switcher = {
+        "expr_ent_vs_circ": lambda: compute_expr_ent_vs_circuit(
+            args, 
+            circuit_list_expr_ent,
+            circuit_labels, 
+            data=data
+        ),
+        "expr_vs_qubits": lambda: expr_vs_nqubits(
+            args=args,
+            data=data
+        )
+    }
+    df_results = switcher.get(args["compute"], lambda: None)()
+    if df_results is None:
+        raise TypeError(
+            tcols.FAIL + "Given computation run does not exist!" + tcols.ENDC
+        )
+    # TODO variance of the kernel matrix vs. n_qubits (For exponential concentration)
+
+
+def prepare_circs(args: dict) -> Tuple[List, List]:
+    """Prepares the list of circuit needed for evaluation along with their names."""
+    circuit_labels = ['NE_0', 'NE_1', 'L=1', 'L=2', 'L=3', 'L=4', 'L=5', 'L=6', 'FE']
+    
     circuit_list_expr_ent = [lambda x, rep=rep: u_dense_encoding(x, nqubits=\
                              args["n_qubits"], reps=rep) for rep in range(1,7)]
     # Add the two no-entanglement circuits (NE_0, NE_1) at the beginning of the list
@@ -36,28 +65,12 @@ def main(args):
         -1,
         lambda x: u_dense_encoding_all(x, nqubits=args["n_qubits"], reps=3)
     )
-    circuit_labels = ['NE_0', 'NE_1', 'L=1', 'L=2', 'L=3', 'L=4', 'L=5', 'L=6', 'FE']
-    data = None 
-
-    switcher = {
-        "expr_ent_vs_circ": lambda: compute_expr_ent_vs_circuit(
-            args, 
-            circuit_list_expr_ent,
-            circuit_labels, 
-        ),
-        "expr_vs_qubits": lambda: expr_vs_qubits(
-            args=args,
-        )
-    }
-    switcher.get(args["compute"], lambda: None)()
-    exit(1)
- #   if args["compute"] == "expr_vs_qubits":
-    expr_vs_nqubits(args=args, data=data)
-    # TODO variance of the kernel matrix vs. n_qubits (For exponential concentration)
+    return circuit_list_expr_ent, circuit_labels
 
 
 def compute_expr_ent_vs_circuit(args: dict, circuits: List[callable], 
-                                circuit_labels: List[str]):
+                                circuit_labels: List[str], data: np.ndarray = None) \
+-> pd.DataFrame:
     """
     Computes the expressibility and entanglement capability of a list of circuits, in 
     the conventional (uniformly sampled parameters from [0, 2pi]) and data-dependent manner.
@@ -65,9 +78,7 @@ def compute_expr_ent_vs_circuit(args: dict, circuits: List[callable],
     print("\nComputing expressibility and entanglement capability of the circuits, "
           f"for {args['n_exp']} evaluations and n_shots = {args['n_shots']}." 
           f"\nCircuits: {circuit_labels}")
-    data = None
-    if args["data_dependent"]: 
-        data = get_data(args["data_path"])
+
     n_params = 2*args["n_qubits"]
     df_expr_ent = pd.DataFrame(columns=['circuit', 'expr', 'expr_err', 
                                'ent', 'ent_err'])
@@ -111,11 +122,12 @@ def compute_expr_ent_vs_circuit(args: dict, circuits: List[callable],
     print("\nResults: \n", df_expr_ent)
     df_expr_ent.to_csv(f"{args['out_path']}.csv")
     print(f"Saving in {args['out_path']}.csv " + tcols.ROCKET)
+    return df_expr_ent
 
 
-def expr_vs_nqubits(args: dict rep: int = 3, 
-                    n_qubits: List = range(1, 13),
-                    n_exp: str = 20):
+def expr_vs_nqubits(args: dict, rep: int = 3, n_exp: str = 20, 
+                    data: Union[np.ndarray, List[np.ndarray]] = None)\
+-> pd.DataFrame:
     """
     Computes the (data-dependent) expressibility of a data embedding circuit as a 
     function of the qubit number. Saves the output in a dataframe (.h5) with the 
@@ -127,22 +139,20 @@ def expr_vs_nqubits(args: dict rep: int = 3,
     """
     print(f"Computing expressibility as a function of the qubit number, "
           f"for rep = {rep} of the data encoding circuit ansatz.")
-    print(f"Calculating for n_qubits = {n_qubits}...")
     df_expr = pd.DataFrame(columns=['expr', 'expr_err'])
-    
-    data = None
-    if args["data_dependent"]: 
-        data = get_data(args["data_path"]) # FIXME get a list of lat4, lat8, lat16
+    n_qubits = range(1, 10)
+    if data is not None:
+        n_qubits = [4, 8, 16]
 
     train_time_init = perf_counter()
-    for n in n_qubits:
+    for idx, n in enumerate(n_qubits):
         print(f"For n_qubits = {n}: ", end='')
         n_params = 2*n
         expr = []
         for _ in range(args["n_exp"]):
             val = expressibility(lambda x : u_dense_encoding(x, nqubits=n, reps=rep), 
                                  method="full", n_params=n_params, n_shots=args["n_shots"],
-                                 n_bins=75, data=data)
+                                 n_bins=75, data=None if data is None else data[idx])
             expr.append(val)
         
         expr = np.array(expr)
@@ -162,22 +172,36 @@ def expr_vs_nqubits(args: dict rep: int = 3,
     print("\nResults: \n", df_expr)
     df_expr.to_csv(f"{args['out_path']}.csv")
     print(f"Saving in {args['out_path']}.csv " + tcols.ROCKET)
+    return df_expr
 
 
-def get_data(data_path: str) -> Tuple[np.ndarray]:
+def get_data(data_path: Union[str, List[str]], mult_qubits: bool = False) \
+-> Tuple[np.ndarray]:
     """
     Loads the data, signal or background, given a path and returns the scaled to 
     (0, 2pi) numpy arrays.
-    """
-    print(tcols.BOLD + f"\nLoading the dataset {data_path}... " + tcols.ENDC)
-    h5_data = h5py.File(data_path, "r")
-    data= np.asarray(h5_data.get("latent_space"))
-    data= np.reshape(data, (len(data), -1))
-    print(f"Loaded data array of shape {data.shape}")
     
-    # rescaling to (0, 2pi) needed for the expr. and ent. computations.
-    data *= np.pi
-    data += np.pi
+    Args:
+        data_path: Path to the .h5 dataset, or list of paths for multiple dataset 
+                   loading.
+        mult_qubits: If True the specified dataset (in data_path) is loaded for 
+                     different qubit numbers, i.e., latent dimensions (4, 8, 16)
+                     for the kernel machine training/testing.
+    """
+    print(tcols.BOLD + f"\nLoading the datasets: {data_path} " + tcols.ENDC)
+    h5_data = [h5py.File(dataset_path, "r") for dataset_path in data_path]
+    data = [np.asarray(h5_dataset.get("latent_space")) for h5_dataset in h5_data]
+    data = [np.reshape(dataset, (len(dataset), -1)) for dataset in data]
+    
+    print(f"Loaded {len(data)} datasets array of shapes: ", end="")
+    for dataset in data:
+        print(f"{dataset.shape} ", end="")
+        # rescaling to (0, 2pi) needed for the expr. and ent. computations.
+        dataset *= np.pi
+        dataset += np.pi
+    print()
+    
+    if len(data) == 1: data = data[0]
     return data
 
 
@@ -248,63 +272,6 @@ def u_dense_encoding_all(x, nqubits: int = 8, reps: int = 3) -> QuantumCircuit:
             qc.u(x[feature], x[feature + 1], 0, qubit)
     return Statevector.from_instruction(qc)
 
-'''
-print("computing entanglement capability")
-for rep in range(20):
-    if rep == 0: continue
-    ent = []
-    print(f"L={rep}: ", end='')
-    for i in range(6):
-        val = entanglement_capability(lambda x : u_dense_encoding(x, nqubits=n_qubits, reps=rep), 
-                    n_params, n_shots=n_shots)
-        ent.append(val)
-        print(f"{i}: expr = {val}")
-    ent = np.array(ent)
-    print(f"ent = {np.mean(ent)} ± {np.std(ent)}")   
-
-    for n in range(1,12):
-        print(f"For n = {n}: ", end='')
-        n_params = 2*n
-        val, hist = expressibility(lambda x : u_dense_encoding(x, nqubits=n, reps=reps), 
-                             n_params, n_shots=n_shots, n_bins=75, return_histogram=True)
-        expr.append(val)
-        print(f"expr = {val}")
-    expr = np.array(expr)
-    np.save("expr_qubits.npy", expr)
-    print(expr)
-    print(f"histogram values: {hist}")
-n_qubits = 8
-reps = 2
-n_params = 2*n_qubits
-n_shots = int(10000)
-
-#print("computing expressibility")
-#for rep in range(7):
-#    if rep == 0: continue
-#    expr = []
-#    print(f"L={rep}: ", end='')
-#    for i in range(20):
-#        val = expressibility(lambda x : u_dense_encoding(x, nqubits=n_qubits, reps=rep), 
-#                    n_params, n_shots=n_shots, n_bins=75)
-#        expr.append(val)
-#        print(f"{i}: expr = {val}")
-#    expr = np.array(expr)
-#    print(f"expr = {np.mean(expr)} ± {np.std(expr)}")
-#
-#print("computing entanglement capability")
-#for rep in range(20):
-#    if rep == 0: continue
-#    ent = []
-#    print(f"L={rep}: ", end='')
-#    for i in range(6):
-#        val = entanglement_capability(lambda x : u_dense_encoding(x, nqubits=n_qubits, reps=rep), 
-#                    n_params, n_shots=n_shots)
-#        ent.append(val)
-#        print(f"{i}: expr = {val}")
-#    ent = np.array(ent)
-#    print(f"ent = {np.mean(ent)} ± {np.std(ent)}")   
-'''
-
 
 def get_arguments() -> dict:
     """
@@ -341,9 +308,10 @@ def get_arguments() -> dict:
     )
     parser.add_argument(
         "--data_path",
-        type=str,
+        nargs="+",
         help="Path to signal dataset (background or signal .h5 file) to be used in "
-             "expr. calculation",
+             "expr. calculation. Multiple datasets can also be given for the `expr_vs_qubit` "
+             "data-dependent computation." ,
     )
     parser.add_argument(
         "--compute",
