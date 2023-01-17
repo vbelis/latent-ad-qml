@@ -11,12 +11,17 @@ from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 from triple_e import expressibility
 from triple_e import entanglement_capability
+from qiskit import Aer
+from qiskit.utils import QuantumInstance
+from qiskit_machine_learning.kernels import QuantumKernel
 
 from kernel_machines.terminal_enhancer import tcols
+from kernel_machines.feature_map_circuits import u_dense_encoding as u_dense
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) # For pandas frame.append method
 
-np.random.seed(42)
+seed=42
+np.random.seed(seed)
 
 
 def main(args):
@@ -32,7 +37,11 @@ def main(args):
             circuit_labels, 
             data=data
         ),
-        "expr_vs_qubits": lambda: expr_vs_nqubits(
+        "expr_vs_nqubits": lambda: expr_vs_nqubits(
+            args=args,
+            data=data
+        ),
+        "var_kernel_vs_nqubits": lambda: var_kernel_vs_nqubits(
             args=args,
             data=data
         )
@@ -42,12 +51,12 @@ def main(args):
         raise TypeError(
             tcols.FAIL + "Given computation run does not exist!" + tcols.ENDC
         )
-    # TODO variance of the kernel matrix vs. n_qubits (For exponential concentration)
 
 
 def prepare_circs(args: dict) -> Tuple[List, List]:
     """Prepares the list of circuit needed for evaluation along with their names."""
-    circuit_labels = ['NE_0', 'NE_1', 'L=1', 'L=2', 'L=3', 'L=4', 'L=5', 'L=6', 'FE']
+    circuit_labels = [r'NE$_0$', r'NE$_1$', 'L=1', 'L=2', 'L=3', 'L=4', 'L=5', 'L=6',
+                      'FE']
     
     circuit_list_expr_ent = [lambda x, rep=rep: u_dense_encoding(x, nqubits=\
                              args["n_qubits"], reps=rep) for rep in range(1,7)]
@@ -60,9 +69,8 @@ def prepare_circs(args: dict) -> Tuple[List, List]:
         0,
         lambda x: u_dense_encoding_no_ent(x, nqubits=args["n_qubits"], reps=1, type=0)
     )
-    # Add the full ent rep3 (FE)
-    circuit_list_expr_ent.insert(
-        -1,
+    # Add the all-to-all CNOT rep3
+    circuit_list_expr_ent.append(
         lambda x: u_dense_encoding_all(x, nqubits=args["n_qubits"], reps=3)
     )
     return circuit_list_expr_ent, circuit_labels
@@ -90,10 +98,11 @@ def compute_expr_ent_vs_circuit(args: dict, circuits: List[callable],
         expr = []
         # Compute entanglement cap. only once, it fluctuates less than 0.1%
         # and does not require that high statistics
-        if circuit_labels[i] in ['NE_0', 'NE_1']:
+        if circuit_labels[i] in ['NE$_0$', 'NE$_1$']:
             val_ent = 0 # by construction
         else:
-            val_ent = entanglement_capability(circuit, n_params, n_shots=10)
+            val_ent = entanglement_capability(circuit, n_params, n_shots=1000, 
+                                              data=data)
         
         for _ in range(args["n_exp"]):
             val_ex = expressibility(circuit, n_params, method='full', 
@@ -140,9 +149,10 @@ def expr_vs_nqubits(args: dict, rep: int = 3, n_exp: str = 20,
     print(f"Computing expressibility as a function of the qubit number, "
           f"for rep = {rep} of the data encoding circuit ansatz.")
     df_expr = pd.DataFrame(columns=['expr', 'expr_err'])
-    n_qubits = range(1, 10)
+    n_qubits = range(2, 11)
     if data is not None:
-        n_qubits = [4, 8, 16]
+        #n_qubits = [4, 8, 16]
+        n_qubits = [8, 16]
 
     train_time_init = perf_counter()
     for idx, n in enumerate(n_qubits):
@@ -173,6 +183,51 @@ def expr_vs_nqubits(args: dict, rep: int = 3, n_exp: str = 20,
     df_expr.to_csv(f"{args['out_path']}.csv")
     print(f"Saving in {args['out_path']}.csv " + tcols.ROCKET)
     return df_expr
+
+
+def var_kernel_vs_nqubits(args: dict, data: np.ndarray, rep: int = 3)\
+-> pd.DataFrame():
+    """
+    Computes the variance of the quantum kernel matrix as a function of the number
+    of qubits.
+    """
+    n_qubits = [4, 8, 16]
+    print(f"\n Computing variance of the kernel matrix elements for rep = {rep}"
+          " as a function of n_qubits.")
+    df_var = pd.DataFrame(columns=['n_qubits', 'var'])
+    
+    train_time_init = perf_counter()
+    for idx, n in enumerate(n_qubits):
+        quantum_instance = QuantumInstance(
+            backend=Aer.get_backend("aer_simulator_statevector")
+        )
+        quantum_kernel = QuantumKernel(
+            u_dense(nqubits=n, reps=3), 
+            quantum_instance=quantum_instance
+        )
+        kernel_matrix_elements = []
+        for _ in range(args["n_exp"]):
+            data_samples = data[idx][np.random.choice(data[idx].shape[0], 
+                                                 size=args["n_shots"])]
+            kernel_matrix_elements.append(quantum_kernel.evaluate(data_samples))
+        kernel_matrix_elements = np.array(kernel_matrix_elements)
+        print(f"For n_qubits={n}:  var(K_ij)= {np.var(kernel_matrix_elements)}")
+        d = {
+            "n_qubits": n,
+            "var": np.var(kernel_matrix_elements),
+        }
+        df_var = df_var.append(d, ignore_index=True)
+
+    train_time_fina = perf_counter()
+    exec_time = train_time_fina - train_time_init
+    print(
+        "\nFull computation completed in: " + tcols.OKGREEN + f"{exec_time:.2e} sec. "
+        f"or {exec_time/60:.2e} min. " + tcols.ENDC + tcols.SPARKS
+    )
+    print("\nResults: \n", df_var)
+    df_var.to_csv(f"{args['out_path']}.csv")
+    print(f"Saving in {args['out_path']}.csv " + tcols.ROCKET)
+    return df_var
 
 
 def get_data(data_path: Union[str, List[str]], mult_qubits: bool = False) \
@@ -223,8 +278,7 @@ def u_dense_encoding_no_ent(x, nqubits: int = 8, reps: int = 3, type: int = 0
             #qc.h(qubit)
             qc.u(np.pi / 2, x[feature], x[feature + 1], qubit)  # u2(φ,λ) = u(π/2,φ,λ)
         
-        # Comment the below if only one layer is needed for the no entanglement test
-        if type == 0: 
+        if type == 1:
             for feature, qubit in zip(range(0, 2 * nqubits, 2), range(nqubits)):
                 qc.u(x[feature], x[feature + 1], 0, qubit)
         
@@ -317,7 +371,7 @@ def get_arguments() -> dict:
         "--compute",
         type=str,
         required=True,
-        choices=["expr_ent_vs_circ", "expr_vs_qubits", "var_kernel_vs_circ"],
+        choices=["expr_ent_vs_circ", "expr_vs_nqubits", "var_kernel_vs_nqubits"],
         help="Run different calculations: compute expressibility and entanglement "
         "capability of different circuits, compute expressibility as a function of the "
         "number of qubits, and TODO",
