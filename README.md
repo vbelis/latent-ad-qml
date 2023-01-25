@@ -1,6 +1,6 @@
-# Quantum anomaly detection in the latent space of particle physics events
+# Quantum anomaly detection in the latent space of proton collision events at the LHC
 
-Supervised and unsupervised anomaly detection in the latent space of high energy physics events with quantum machine learning
+Unsupervised anomaly detection in the latent space of high energy physics events with quantum machine learning
 
 ## Plotting
 You can get the plots by running in a jupyter notebook the following. The convention for the `.h5` file paths maybe you needs to be change depending on file type.
