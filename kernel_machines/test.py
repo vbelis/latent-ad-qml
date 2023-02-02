@@ -5,6 +5,10 @@ import util
 import argparse
 import data_processing
 from terminal_enhancer import tcols
+import json
+from qiskit_machine_learning.kernels import QuantumKernel
+
+from one_class_qsvm import OneClassQSVM
 
 
 def main(args: dict):
@@ -17,12 +21,53 @@ def main(args: dict):
     )
     output_path = args["model"]
     model = util.load_model(output_path + "model")
-
+    initial_layout = [5, 8, 11, 14, 13, 12, 10, 7]
+    seed = 12345
+    with open("private_config_vasilis.json") as pconfig:
+        private_configuration = json.load(pconfig)
+    
     print("Computing model scores... ", end="")
     scores_time_init = perf_counter()
-    score_sig = np.array([model.decision_function(fold) for fold in sig_fold])
-    score_bkg = np.array([model.decision_function(fold) for fold in bkg_fold])
-    scores_time_fina = perf_counter()
+    if args["kfolds"] == 1:
+        print("Only one fold...")
+        if args["mod_quantum_instance"]: 
+            model._backend_config = {
+            "optimization_level": 3,
+            "initial_layout": initial_layout,
+            "seed_transpiler": seed,
+            "shots": 10000,
+            }
+            model._quantum_instance, model._backend = util.configure_quantum_instance(
+                ibmq_api_config=private_configuration["IBMQ"],
+                run_type='hardware',
+                backend_name='ibmq_toronto',
+                **model._backend_config,
+            )
+            model._quantum_kernel = QuantumKernel(
+                model._feature_map,
+                quantum_instance=model._quantum_instance,
+            )
+        scores = model.decision_function(test_features)
+        np.save(output_path + f"scores_n{args['ntest']}_k{args['kfolds']}.npy", scores)
+        np.save(output_path + f"kernel_matrix_test.npy", model._kernel_matrix_test)
+        scores_time_fina = perf_counter()
+    else:
+        print(f"Multiple k={args['kfolds']} folds...")
+        score_sig = np.array([model.decision_function(fold) for fold in sig_fold])
+        score_bkg = np.array([model.decision_function(fold) for fold in bkg_fold])
+        scores_all = model.decision_function(test_features)
+        print(
+        f"Saving the signal and background k-fold scores in the folder: "
+        + tcols.OKCYAN
+        + f"{output_path}"
+        + tcols.ENDC
+    )
+        np.save(output_path + f"sig_scores_n{args['ntest']}_k{args['kfolds']}.npy", score_sig)
+        np.save(output_path + f"bkg_scores_n{args['ntest']}_k{args['kfolds']}.npy", score_bkg)
+        
+        if isinstance(model, OneClassQSVM):
+            np.save(output_path + f"kernel_matrix_test.npy", model._kernel_matrix_test)
+        scores_time_fina = perf_counter()
     exec_time = scores_time_fina - scores_time_init
     print(
         tcols.OKGREEN
@@ -31,14 +76,7 @@ def main(args: dict):
         + f"{exec_time:2.2e} sec. or {exec_time/60:2.2e} min. "
         + tcols.ROCKET
     )
-    print(
-        f"Saving the signal and background k-fold scores in the folder: "
-        + tcols.OKCYAN
-        + f"{output_path}"
-        + tcols.ENDC
-    )
-    np.save(output_path + f"sig_scores_n{args['ntest']}_k{args['kfolds']}.npy", score_sig)
-    np.save(output_path + f"bkg_scores_n{args['ntest']}_k{args['kfolds']}.npy", score_bkg)
+
 
 def get_arguments() -> dict:
     """
@@ -74,6 +112,10 @@ def get_arguments() -> dict:
     parser.add_argument(
         "--kfolds", type=int, default=5, help="Number of k-validation/test folds used."
     )
+    parser.add_argument(
+        "--mod_quantum_instance", action="store_true", help="Reconfigure the quantum "
+        "instance and backend."
+    )
     args = parser.parse_args()
 
     args = {
@@ -83,6 +125,7 @@ def get_arguments() -> dict:
         "model": args.model,
         "ntest": args.ntest,
         "kfolds": args.kfolds,
+        "mod_quantum_instance": args.mod_quantum_instance,
     }
     return args
 

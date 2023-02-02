@@ -9,6 +9,7 @@ import json
 from time import perf_counter
 from typing import Callable
 from qiskit.utils import algorithm_globals
+from qiskit.utils.mitigation import CompleteMeasFitter
 
 import util
 import data_processing
@@ -22,16 +23,18 @@ def main(args: dict):
     train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
-
+    print(test_features[:6])
+    exit(1)
     model = util.init_kernel_machine(args)
     out_path = util.create_output_folder(args, model)
 
     time_and_train(model.fit, train_features, train_labels)
     util.print_model_info(model)
-
-    util.eval_metrics(model, train_features, train_labels, test_features, test_labels, out_path)
-    util.save_model(model, out_path)
     util.export_hyperparameters(model, out_path)
+    if args["run_type"] != 'hardware':
+        util.eval_metrics(model, train_features, train_labels, 
+                          test_features, test_labels, out_path)
+    util.save_model(model, out_path)
 
 
 def time_and_train(fit: Callable, *args):
@@ -133,8 +136,9 @@ def get_arguments() -> dict:
 
     # Different configuration keyword arguments for the QuantumInstance depending
     # on the run_type. They can be tweaked as desired before running.
-    initial_layout = [22, 25, 24, 23, 21, 18, 15, 12]  # for Cairo
-
+    #initial_layout = [5, 8, 11, 14, 13, 12, 10, 7]  # for Toronto
+    #initial_layout = [2, 3, 5, 8, 11, 14, 16, 19, 22, 25, 24, 23, 21, 18, 15, 12]  # for Toronto
+    initial_layout = [5, 8, 11, 14, 16, 19, 22, 25]  # for Toronto
     seed = 12345
     config_noisy = {
         "optimization_level": 3,
@@ -147,7 +151,8 @@ def get_arguments() -> dict:
         "optimization_level": 3,
         "initial_layout": initial_layout,
         "seed_transpiler": seed,
-        "shots": 5000,
+        "shots": 10000,
+        #"measurement_error_mitigation_cls": CompleteMeasFitter,
     }
     config_ideal = {"seed_simulator": seed}
 

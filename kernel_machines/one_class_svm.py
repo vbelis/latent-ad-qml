@@ -32,7 +32,7 @@ class CustomOneClassSVM(OneClassSVM):
             degree=degree,
             gamma=gamma,
             coef0=coef0,
-            tol=tol,
+            tol=1e-9,
             nu=nu,
             shrinking=shrinking,
             cache_size=cache_size,

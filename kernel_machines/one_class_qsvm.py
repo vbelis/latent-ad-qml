@@ -31,7 +31,7 @@ class OneClassQSVM(OneClassSVM):
             hpars: Hyperparameters of the model and configuration parameters
                    for the training.
         """
-        super().__init__(kernel="precomputed", nu=hpars["nu_param"])
+        super().__init__(kernel="precomputed", nu=hpars["nu_param"], tol=1e-9)
 
         self._nqubits = hpars["nqubits"]
         self._feature_map_name = hpars["feature_map"]
@@ -51,8 +51,12 @@ class OneClassQSVM(OneClassSVM):
         self._quantum_kernel = QuantumKernel(
             self._feature_map,
             quantum_instance=self._quantum_instance,
+            #batch_size=1,
+            #enforce_psd=False,
+            #evaluate_duplicates="all",
         )
         self._kernel_matrix_train = None
+        self._kernel_matrix_test = None
         self._train_data = None
 
     @property
@@ -146,14 +150,14 @@ class OneClassQSVM(OneClassSVM):
         Returns: Mean accuracy of ``self.predict(X)`` wrt. `y`.
         """
         if train_data:
-            y_pred = self.predict(x)
+            y_pred = self.predict(x) # FIXME maybe it's wrong and need np.zeros.
             y = np.ones(len(x))  # To compute the fraction of outliers in training.
             return accuracy_score(y, y_pred, sample_weight=sample_weight)
 
         y_pred = self.predict(x)
         return accuracy_score(y, y_pred, sample_weight=sample_weight)
 
-    def predict(self, x: np.ndarray) -> np.ndarray:
+    def predict(self, x: np.ndarray, input_is_matrix: bool = False) -> np.ndarray:
         """
         Predicts the label of a data vector X.
         Maps the prediction label of the one-class SVM from 1 -> 0
@@ -165,10 +169,13 @@ class OneClassQSVM(OneClassSVM):
 
         Returns: The predicted labels of the input data vectors, of shape (n_samples).
         """
-        test_kernel_matrix = self._quantum_kernel.evaluate(
-            x_vec=x,
-            y_vec=self._train_data,
-        )
+        if input_is_matrix:
+            test_kernel_matrix = x
+        else:
+            test_kernel_matrix = self._quantum_kernel.evaluate(
+                x_vec=x,
+                y_vec=self._train_data,
+            )
         y = super().predict(test_kernel_matrix)
         y[y == 1] = 0
         y[y == -1] = 1
@@ -197,6 +204,7 @@ class OneClassQSVM(OneClassSVM):
             x_vec=x_test,
             y_vec=self._train_data,
         )
+        self._kernel_matrix_test = test_kernel_matrix
         return -1.0*super().decision_function(test_kernel_matrix)
 
     def get_transpiled_kernel_circuit(
