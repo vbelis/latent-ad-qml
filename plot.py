@@ -1,3 +1,7 @@
+# Create plots ROC plots for the paper.
+
+
+from typing import Tuple, List
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,7 +11,26 @@ import mplhep as hep
 from matplotlib.lines import Line2D
 
 
-def get_roc_data(qcd, bsm, fix_tpr=False):
+def get_roc_data(qcd: np.ndarray, bsm: np.ndarray, fix_tpr: bool = False) -> Tuple[np.ndarray]:
+    """Compute roc curves given the background and anomaly datasets.
+
+    Parameters
+    ----------
+    qcd : np.ndarray
+        Background QCD dataset.
+    bsm : np.ndarray
+        Anomaly, Beyond the Standard Model (BSM) dataset.
+    fix_tpr : bool, optional
+        Constant threshold selection for ROC curve calculation, by default False
+
+    Returns
+    -------
+    Tuple
+        np.ndarray
+        False Positive Rate array.
+        np.ndarray
+        True Positive Rate array.
+    """
     true_val = np.concatenate((np.ones(bsm.shape[0]), np.zeros(qcd.shape[0])))
     pred_val = np.nan_to_num(np.concatenate((bsm, qcd)))
     fpr_loss, tpr_loss, threshold_loss = roc_curve(
@@ -19,34 +42,107 @@ def get_roc_data(qcd, bsm, fix_tpr=False):
 
 
 def get_FPR_for_fixed_TPR(
-    tpr_window, fpr_loss, tpr_loss, true_data, pred_data, tolerance
-):
+    tpr_window:float, fpr_loss: np.ndarray, tpr_loss: np.ndarray, tolerance: float
+) -> float:
+    """Get FPR for a fixed value of TPR. 
+
+    Calculation of the ROC curve is in discrete steps. A window of tolerance is defined
+    around the desired TPR working point and the mean of FPR is taken there.
+
+    Parameters
+    ----------
+    tpr_window : float
+        TPR working point, typically 0.6 or 0.8
+    fpr_loss : np.ndarray
+        FPR array of the ROC curve.
+    tpr_loss : np.ndarray
+        TPR array of the ROC curve.
+    tolerance : float
+        Tolerance around working point. 0.1-1% window.
+
+    Returns
+    -------
+    float
+        Mean FPR at the tolerance window around the TPR working point
+    """
     position = np.where(
         (tpr_loss >= tpr_window - tpr_window * tolerance)
         & (tpr_loss <= tpr_window + tpr_window * tolerance)
     )[0]
+    
     return np.mean(fpr_loss[position])
 
 
-def get_mean_and_error(data):
+def get_mean_and_error(data: np.ndarray) -> Tuple[float]:
+    """Compute the mean and std of an array.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The input array.
+
+    Returns
+    -------
+    Tuple
+        float: 
+            The mean.
+        float:
+            The standard deviation.
+    """
     return [np.mean(data, axis=0), np.std(data, axis=0)]
 
 
 def plot_ROC_kfold_mean(
-    quantum_loss_qcd,
-    quantum_loss_sig,
-    classic_loss_qcd,
-    classic_loss_sig,
-    ids,
-    n_folds,
-    pic_id=None,
-    xlabel="TPR",
-    ylabel=r"1/FPR",
-    legend_loc="best",
-    legend_title="$ROC$",
-    save_dir=None,
-    palette=["#3E96A1", "#EC4E20", "#FF9505"],
+    quantum_loss_qcd: List[np.ndarray],
+    quantum_loss_sig: List[np.ndarray],
+    classic_loss_qcd: List[np.ndarray],
+    classic_loss_sig: List[np.ndarray],
+    ids: List[str],
+    n_folds: int,
+    pic_id: str = None,
+    xlabel: str = "TPR",
+    ylabel: str = r"1/FPR",
+    legend_title: str = "$ROC$",
+    save_dir: str = None,
+    palette: List[str] = ["#3E96A1", "#EC4E20", "#FF9505"],
 ):
+    """Calculate the mean ROC curve and its std uncertainty band.
+
+    Using the scores of the the classical and quantum models, the ROC curves are
+    computed for each on of the k-folds. The mean and std is computed, and the ROC
+    mean ROC curve is plotted with its error band. The AUC mean and std is also
+    calculated and presented in the legend of the figure.
+
+    Parameters
+    ----------
+    quantum_loss_qcd : List[np.ndarray]
+        List of scores of the quantum model on the background (QCD) data.
+    quantum_loss_sig : List[np.ndarray]
+        List of scores of the quantum model on the signal (anomaly) data.
+    classic_loss_qcd : List[np.ndarray]
+        List of scores of the classical model on the background (QCD) data.
+    classic_loss_sig : List[np.ndarray]
+        List of scores of the classical model on the signal (anomaly) data.
+    ids : List[str]
+        Identifier of the different scores corresponing to the lists of scores.
+        Namely, 3 different anomalies, 3 different latent dimensions or 
+        3 different training sizes.
+    n_folds : int
+        Number of k-folds.
+    pic_id : str, optional
+        Name of the output figure, by default None
+    xlabel : str, optional
+        Label for the x-axis of the figure, by default "TPR"
+    ylabel : str, optional
+        Label for the y-axis of the figure, by default r"1/FPR"
+    legend_title : str, optional
+        Title of the main legend, by default "$"
+    save_dir : str, optional
+        Output directory for the produced figure, by default None
+    palette : List[str], optional
+        Colors for the 3 ROC curves per plot based on the ids, 
+        by default ["#3E96A1", "#EC4E20", "#FF9505"]
+    """
 
     styles = ["solid", "dashed"]
     plt.style.use(hep.style.CMS)
@@ -178,7 +274,6 @@ def plot_ROC_kfold_mean(
     plt.xlabel(xlabel, fontsize=24)
     plt.yscale("log")
     plt.xlim(0.0, 1.05)
-    # plt.title(title)
     fig.tight_layout()
     if save_dir:
         plt.savefig(f"{save_dir}/ROC_{pic_id}.pdf", dpi=fig.dpi, bbox_inches="tight")
@@ -187,16 +282,43 @@ def plot_ROC_kfold_mean(
 
 
 def create_table_for_fixed_TPR(
-    quantum_loss_qcd,
-    quantum_loss_sig,
-    classic_loss_qcd,
-    classic_loss_sig,
-    ids,
-    n_folds,
-    tpr_windows=[0.4, 0.6, 0.8],
-    tolerance=0.01,
-):
+    quantum_loss_qcd: List[np.ndarray],
+    quantum_loss_sig: List[np.ndarray],
+    classic_loss_qcd: List[np.ndarray],
+    classic_loss_sig: List[np.ndarray],
+    ids: List[str],
+    n_folds: int,
+    tpr_windows: List[float] = [0.4, 0.6, 0.8],
+    tolerance: float =0.01,
+)-> pd.DataFrame:
+    """Compute mean and std of FPR @FPR working point.
 
+    Parameters
+    ----------
+    quantum_loss_qcd : List[np.ndarray]
+        List of scores of the quantum model on the background (QCD) data.
+    quantum_loss_sig : List[np.ndarray]
+        List of scores of the quantum model on the signal (anomaly) data.
+    classic_loss_qcd : List[np.ndarray]
+        List of scores of the classical model on the background (QCD) data.
+    classic_loss_sig : List[np.ndarray]
+        List of scores of the classical model on the signal (anomaly) data.
+    ids : List[str]
+        Identifier of the different scores corresponing to the lists of scores.
+        Namely, 3 different anomalies, 3 different latent dimensions or 
+        3 different training sizes.
+    n_folds : int
+        Number of k-folds.
+    tpr_windows : List[float]
+        TPR working point, by default [0.4, 0.6, 0.8]
+    tolerance : float
+        Tolerance around working point, by default 0.01
+
+    Returns
+    -------
+    pd.DataFrame
+        Latex table of the results.
+    """
     # output to latex
     df_output = pd.DataFrame({"1/FPR": ["Quantum", "Classic"]})
     df_delta = pd.DataFrame(columns=["q_model", "tpr", "delta_qc", "delta_qc_unc"])
