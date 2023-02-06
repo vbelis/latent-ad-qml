@@ -1,4 +1,4 @@
-# In this module the quantum one-class QSVM model class is defined.
+# Definition of the unsupervised kernel machine model class.
 
 from sklearn.svm import OneClassSVM
 from sklearn.metrics import accuracy_score
@@ -20,16 +20,62 @@ from terminal_enhancer import tcols
 
 
 class OneClassQSVM(OneClassSVM):
-    """
-    One-class Quantum Support Vector Machine class. The construction is similar to
-    the QSVM but the training here is unsupervised.
+    """Unsupervised quantum kernel machine. 
+    
+    The construction is similar to
+    the QSVM but the training here is unlabeled. The model is equipped with
+    a quantum feature map, implemented by a data encoding circuit.
+    
+    Attributes
+    ----------
+    _nqubits: int
+        Number of qubits of the data encoding circuit.
+    _feature_map_name: str
+        Name of the designed quantum circuit. As defined in `feature_map_circuits`
+    _backend_config: dict
+        Configuration of the IBMQ backend, e.g. number of shots, qubit layout.
+    _quantum_instance: QuantumInstance
+        `QuantumInstance` object required for execution using qiskit.
+    _quantum_kernel: QuantumKernel
+        Quantum kernel function constructed from the data encoding circuit.
+    _kernel_matrix_train: np.ndarray
+        Kernel matrix constructed using the training dataset. Saved for computational
+        efficiency.
+    _kernel_matrix_test: np.ndarray
+        Kernel matrix constructed using the testing dataset. Saved for computational
+        efficiency.
+    _train_data: np.ndarray
+        Training dataset. Also saved for computational efficiency, since we don't go
+        above a training size of approx 6k.
+   
+    Methods
+    ----------
+    fit
+        Train the QSVM model, save the training data in `self._train_data` and 
+        calculate the execution time.
+    score(train_data: bool = False, sample_weight: np.ndarray = None,)
+        Compute the mean accuracy on the given test data and labels.
+    decision_function
+        Output score of the model on a given dataset.
+     get_transpiled_kernel_circuit(output_format: str = "mpl")
+        Construct, save, and return the transpiled quantum kernel circuit figure.
+    save_circuit_physical_layout
+        Plot and save the quantum circuit and its physical layout on the backend.
+        Used only for hardware or noisy simulation runs.
+    save_backend_properties
+        Saves a dictionary to file using Joblib. The dictionary contains quantum
+        hardware properties, or noisy simulator properties, when the QSVM is not
+        trained with ideal simulation.
     """
 
     def __init__(self, hpars: dict):
-        """
-        Args:
-            hpars: Hyperparameters of the model and configuration parameters
-                   for the training.
+        """Initialise the quantum feature map, the quantum instance and quantum kernel.
+
+        Parameters
+        ----------
+        hpars : dict
+            Hyperparameters of the model and configuration parameters for the training.
+            This dictionary is defined through `argparse`.
         """
         super().__init__(kernel="precomputed", nu=hpars["nu_param"], tol=1e-9)
 
@@ -104,8 +150,7 @@ class OneClassQSVM(OneClassSVM):
         return self._quantum_kernel
 
     def fit(self, train_data: np.ndarray, train_labels=None):
-        """
-        Train the one-class QSVM model. In the case of `kernel=precomputed`
+        """Train the one-class QSVM model. In the case of `kernel=precomputed`
         the kernel_matrix elements from the inner products of training data
         vectors need to be passed to fit. Thus, the quantum kernel matrix
         elements are first evaluated and then passed to the OneClassSVM.fit
@@ -114,10 +159,12 @@ class OneClassQSVM(OneClassSVM):
         The method also, times the kernel matrix element calculation and saves
         the matrix for later use, such as score calculation.
 
-        Args:
-            train_data: The training data vectors array,
-                        of shape (ntrain, n_features).
-            train_labels: Ignored, present only for API consistency by convention.
+        Parameters
+        ----------
+        train_data : np.ndarray
+            The training data vectors array of shape (ntrain, n_features).
+        train_labels : _type_, optional
+            Ignored, present only for API consistency by convention, by default None
         """
         self._train_data = train_data
         print("Calculating the quantum kernel matrix elements... ", end="")
@@ -138,19 +185,32 @@ class OneClassQSVM(OneClassSVM):
         train_data: bool = False,
         sample_weight: np.ndarray = None,
     ) -> float:
-        """
-        Return the mean accuracy on the given test data x and labels y.
+        """Returns the mean accuracy on the given test data and labels.
+        Need to compute the corresponding kernel matrix elements and then pass
+        to the SVC.score.
 
-        Args:
-            x : array-like of shape (n_samples, n_features). Test samples.
-            y : array-like of shape (n_samples,). True labels for `x`.
+        Parameters
+        ----------
+        x : np.ndarray
+            Training dataset of shape (ntrain, nfeatures)
+        y : np.ndarray
+            Target (ground truth) labels of the x_train or of x_test data arrays
+        train_data : bool, optional
+            Flag that specifies whether the score is computed on
+            the training data or new dataset (test). The reason
+            behind this flag is to not compute the kernel matrix
+            on the training data more than once, since it is the
+            computationally expensive task in training the QSVM., by default False
+        sample_weight : np.ndarray, optional
+            Weights of the testing samples, of shape (ntrain,), by default None
 
-            sample_weight : array-like of shape (n_samples,), default=None.
-
-        Returns: Mean accuracy of ``self.predict(X)`` wrt. `y`.
+        Returns
+        -------
+        float
+            The accuracy of the model on the given dataset x.
         """
         if train_data:
-            y_pred = self.predict(x) # FIXME maybe it's wrong and need np.zeros.
+            y_pred = self.predict(x)
             y = np.ones(len(x))  # To compute the fraction of outliers in training.
             return accuracy_score(y, y_pred, sample_weight=sample_weight)
 
@@ -158,16 +218,23 @@ class OneClassQSVM(OneClassSVM):
         return accuracy_score(y, y_pred, sample_weight=sample_weight)
 
     def predict(self, x: np.ndarray, input_is_matrix: bool = False) -> np.ndarray:
-        """
-        Predicts the label of a data vector X.
+        """Predicts the label of a data vector X.
         Maps the prediction label of the one-class SVM from 1 -> 0
         and -1 -> 1 for inliers (background) and outliers
         (anomalies/signal), respectively.
 
-        Args:
-            x: Data vector array of shape (n_samples, n_features)
+        Parameters
+        ----------
+        x : np.ndarray
+            Data vector array of shape (n_samples, n_features)
+        input_is_matrix : bool, optional
+            Flag to enable the flxebility of being able to pass the dataset or 
+            the kernel matrix directly, by default False
 
-        Returns: The predicted labels of the input data vectors, of shape (n_samples).
+        Returns
+        -------
+        np.ndarray
+            The predicted labels of the input data vectors, of shape (n_samples).
         """
         if input_is_matrix:
             test_kernel_matrix = x
@@ -182,8 +249,7 @@ class OneClassQSVM(OneClassSVM):
         return y
 
     def decision_function(self, x_test: np.ndarray) -> np.ndarray:
-        """
-        Computes the score value (test statistic) of the QSVM model. It computes
+        """Computes the score value (test statistic) of the QSVM model. It computes
         the displacement of the data vector x from the decision boundary. If the
         sign is positive then the predicted label of the model is +1 and -1
         (or 0) otherwise. 
@@ -194,11 +260,15 @@ class OneClassQSVM(OneClassSVM):
         have the opposite sign for signal and background for SVC.decision_function
         and OneClassSVM.decision_function.
 
-        Args:
-            x_test: Array of data vectors of which the scores we want to
-                    compute.
-        Returns:
-            The corresponding array of scores of x.
+        Parameters
+        ----------
+        x_test : np.ndarray
+            Array of data vectors of which the scores we want to compute.
+
+        Returns
+        -------
+        np.ndarray
+            The corresponding array of scores of `x`.
         """
         test_kernel_matrix = self._quantum_kernel.evaluate(
             x_vec=x_test,
@@ -213,20 +283,20 @@ class OneClassQSVM(OneClassSVM):
         output_format: str = "mpl",
         **kwargs: dict,
     ) -> QuantumCircuit:
-        """
-        Save the transpiled quantum kernel circuit figure.
+        """Construct, save, and return the transpiled quantum kernel circuit figure.
 
-        Args:
-             quantum_kernel: QuantumKernel object used in the
-                                                QSVM training.
-             path: Path to save the output figure.
-             output_format: The format of the image. Formats:
-                            'text', 'mlp', 'latex', 'latex_source'.
-             kwargs: Keyword arguemnts for QuantumCircuit.draw().
+        Parameters
+        ----------
+        path : str
+            Path for the output figure
+        output_format : str, optional
+            Output image file format, by default "mpl"
 
-        Returns:
-                Transpiled QuantumCircuit that represents the quantum kernel.
-                i.e., the circuit that will be executed on the backend.
+        Returns
+        -------
+        QuantumCircuit
+            Transpiled QuantumCircuit that represents the quantum kernel.
+            i.e., the circuit that will be executed on the backend.
         """
         print("\nCreating the quantum kernel circuit...")
         n_params = self._quantum_kernel.feature_map.num_parameters
@@ -247,12 +317,15 @@ class OneClassQSVM(OneClassSVM):
         return qc_transpiled
 
     def save_circuit_physical_layout(self, circuit: QuantumCircuit, save_path: str):
-        """
-        Plot and save the quantum circuit and its physical layout on the backend.
+        """Plot and save the quantum circuit and its physical layout on the backend.
+        Used only for hardware or noisy simulation runs.
 
-        Args:
-             circuit: Circuit to plot on the backend.
-             save_path: Path to save figure.
+        Parameters
+        ----------
+        circuit : QuantumCircuit
+            Circuit to map to the physical qubits of the backend.
+        save_path : str
+            Path to save the figure.
         """
         fig = plot_circuit_layout(circuit, self._backend)
         save_path += "/circuit_physical_layout"
@@ -262,15 +335,14 @@ class OneClassQSVM(OneClassSVM):
         fig.savefig(save_path)
 
     def save_backend_properties(self, path: str):
-        """
-        Saves a dictionary to file using Joblib. The dictionary contains quantum
+        """Saves a dictionary to file using Joblib. The dictionary contains quantum
         hardware properties, or noisy simulator properties, when the QSVM is not
         trained with ideal simulation.
 
-        Args:
-            backend: IBM Quantum computer backend from which we save the
-                     calibration data.
-            path: String of full path to save the model in.
+        Parameters
+        ----------
+        path : str
+            Output path.
         """
         properties_dict = self._backend.properties().to_dict()
         path += "/backend_properties_dict"

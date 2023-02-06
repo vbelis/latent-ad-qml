@@ -10,18 +10,23 @@ from terminal_enhancer import tcols
 
 
 def save_scores_h5(classical_path: str, quantum_path: str, out_path: str, name_suffix: str):
-    """
-    Save the scores of a model to an .h5 file following the following convention.
+    """Save the scores of a model to an .h5 file following the following convention.
     Data frame with keys 'classic_loss_qcd', 'classic_loss_sig' for the classical
     model background and signal test scores respectively. Correspondingly,
     for the quantum 'quantum_loss_qcd', 'quantum_loss_sig'.
 
-    Args:
-        classical_path: path to the classical model to load sig and bkg scores
-                        of shape: (kfolds, n_test/kfolds)
-        bkg_scores: path to the quantum model, to load sig and bkg scores
-                    of shape: (kfolds, n_test/kfolds)
-        output_path: Path to the generated .h5 file.
+    Parameters
+    ----------
+    classical_path : str
+        path to the classical model to load sig and bkg scores 
+        of shape: (kfolds, n_test/kfolds)
+    quantum_path : str
+        path to the quantum model to load sig and bkg scores 
+        of shape: (kfolds, n_test/kfolds)
+    out_path : str
+        Path to the generated .h5 file.
+    name_suffix : str
+        Flag in the file names to distinguish different test runs.
     """
     print(
         "Loading scores of the quantum model: "

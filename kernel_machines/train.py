@@ -1,8 +1,7 @@
-# The quantum and classical SVM training script. Here, the model is instantiated
-# with some parameters, the circuit is built, and then it is trained on a data set.
-# The model is then checked for overtraining by computing the accuracy on the test
-# and train data sets. The model along  are saved in a folder
-# with the name of a user's choosing..
+# The quantum and classical kernel machine training script. 
+# The model is instantiated with some parameters, the data encoding circuit is built,
+# it is trained on a data set, and is saved in a folder.
+
 
 import argparse
 import json
@@ -38,11 +37,14 @@ def main(args: dict):
 
 
 def time_and_train(fit: Callable, *args):
-    """
-    Trains and computes the training runtime of the qsvm model.
-    Args:
-        fit: The training function object of the QSVM.
-        *args: Arguments required by the `fit` method.
+    """Trains and computes the training runtime of the qsvm model.
+
+    Parameters
+    ----------
+    fit : Callable
+        Fitting function of the corresponding model.
+    args: dict
+        Arguments of the fit function.
     """
     print("Training the QSVM... ", end="")
     train_time_init = perf_counter()
@@ -55,9 +57,12 @@ def time_and_train(fit: Callable, *args):
     )
 
 def get_arguments() -> dict:
-    """
-    Parses command line arguments and gives back a dictionary.
-    Returns: Dictionary with the arguments
+    """Parses command line arguments and gives back a dictionary.
+
+    Returns
+    -------
+    dict
+        Dictionary with the arguments.
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
@@ -123,11 +128,6 @@ def get_arguments() -> dict:
     parser.add_argument(
         "--ntest", type=int, default=720, help="Number of test events for the QSVM."
     )
-    parser.add_argument(
-        "--grid_search",
-        action="store_true",
-        help="Initiate grid search on the C hyperparameter.",
-    )
     args = parser.parse_args()
 
     # Load private configuration file for ibmq_api_token and provider details.
@@ -136,8 +136,6 @@ def get_arguments() -> dict:
 
     # Different configuration keyword arguments for the QuantumInstance depending
     # on the run_type. They can be tweaked as desired before running.
-    #initial_layout = [5, 8, 11, 14, 13, 12, 10, 7]  # for Toronto
-    #initial_layout = [2, 3, 5, 8, 11, 14, 16, 19, 22, 25, 24, 23, 21, 18, 15, 12]  # for Toronto
     initial_layout = [5, 8, 11, 14, 16, 19, 22, 25]  # for Toronto
     seed = 12345
     config_noisy = {
@@ -182,25 +180,11 @@ def get_arguments() -> dict:
         "ntrain": args.ntrain,
         "ntest": args.ntest,
         "seed": seed,  # For the data shuffling.
-        "grid_search": args.grid_search,
     }
     return args
 
 
 if __name__ == "__main__":
-    args = get_arguments()
-    if not args["grid_search"]:
-        main(args)
-    else:
-        c_values = [0.01, 0.1, 1.0, 10.0, 100.0]
-        print(
-            tcols.BOLD
-            + tcols.HEADER
-            + f"\nInitialising grid search for C = {c_values}..."
-            + tcols.ENDC
-        )
-        for c in c_values:
-            print(tcols.UNDERLINE + tcols.BOLD + f"\nC = {c}" + tcols.ENDC)
-            args["c_param"] = c
-            main(args)
+    main(args)
+
     

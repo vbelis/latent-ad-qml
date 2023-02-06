@@ -7,9 +7,8 @@ import numpy as np
 
 
 class CustomOneClassSVM(OneClassSVM):
-    """
-    Wrapper class of the `OneClassSVM` class, to redifine the `predict` and
-    `score` to accommodate for the `train.py` and `test.py` scripts.
+    """Wrapper class of the `OneClassSVM` class, to redifine the `predict` and
+    `score` to accommodate for the `train.py` and `test.py` design.
     """
 
     def __init__(
@@ -47,16 +46,24 @@ class CustomOneClassSVM(OneClassSVM):
         train_data: bool = False,
         sample_weight: np.ndarray = None,
     ) -> float:
-        """
-        Return the mean accuracy on the given test data x and labels y.
+        """Return the mean accuracy on the given test data x and labels y.
 
-        Args:
-            x : array-like of shape (n_samples, n_features). Test samples.
-            y : array-like of shape (n_samples,). True labels for `x`.
+        Parameters
+        ----------
+        x : np.ndarray
+            array-like of shape (n_samples, n_features). Test samples.
+        y : np.ndarray
+            array-like of shape (n_samples,). True labels for `x`.
+        train_data : bool, optional
+            To flag if the computation is on the training or testing datasets,
+            by default False
+        sample_weight : np.ndarray, optional
+            array-like of shape (n_samples,), by default None
 
-            sample_weight : array-like of shape (n_samples,), default=None.
-
-        Returns: Mean accuracy of ``self.predict(X)`` wrt. `y`.
+        Returns
+        -------
+        float
+            Mean accuracy of the model given `x` and `y`.
         """
         if train_data:
             y = np.ones(len(x))  # To compute the fraction of outliers in training.
@@ -65,16 +72,20 @@ class CustomOneClassSVM(OneClassSVM):
         return accuracy_score(y, self.predict(x), sample_weight=sample_weight)
 
     def predict(self, x: np.ndarray) -> np.ndarray:
-        """
-        Predicts the label of a data vector X.
+        """Predicts the label of a data vector X.
         Maps the prediction label of the one-class SVM from 1 -> 0
         and -1 -> 1 for inliers (background) and outliers
         (anomalies/signal), respectively.
 
-        Args:
-            x: Data vector array of shape (n_samples, n_features)
+        Parameters
+        ----------
+        x : np.ndarray
+            Data vector array of shape (n_samples, n_features)
 
-        Returns: The predicted labels of the input data vectors, of shape (n_samples).
+        Returns
+        -------
+        np.ndarray
+            The predicted labels of the input data vectors, of shape (n_samples).
         """
         y = super().predict(x)
         y[y == 1] = 0
@@ -82,8 +93,7 @@ class CustomOneClassSVM(OneClassSVM):
         return y
 
     def decision_function(self, x: np.ndarray) -> np.ndarray:
-        """
-        Signed distance to the separating hyperplane, positive for an inlier
+        """Signed distance to the separating hyperplane, positive for an inlier
         and negative for an outlier. The output of `super().decision_function`
         is multiplied by -1 in order to have the same sign convention between
         supervised and unsupervised kernel machines. For some reason the scores

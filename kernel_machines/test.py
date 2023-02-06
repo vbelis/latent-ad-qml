@@ -1,3 +1,6 @@
+# Assessing the model performance using k-fold testing. The test dataset is 
+# comprised of background (QCD) data and unseen anomalies (new-physics) data.
+
 from time import perf_counter
 import numpy as np
 
@@ -12,6 +15,17 @@ from one_class_qsvm import OneClassQSVM
 
 
 def main(args: dict):
+    """Asesses the performance of the trained models using k-fold testing. 
+    The test dataset is comprised of background (QCD) data and unseen during 
+    training, anomalous (new-physics) data.
+
+    If the chosen model is tested on hardware, then only 1 fold is computed.
+
+    Parameters
+    ----------
+    args : dict
+        Configuration arguments.
+    """
     _, test_loader = data_processing.get_data(args)
     test_features, test_labels = test_loader[0], test_loader[1]
     sig_fold, bkg_fold = data_processing.get_kfold_data(
@@ -28,6 +42,7 @@ def main(args: dict):
     
     print("Computing model scores... ", end="")
     scores_time_init = perf_counter()
+    
     if args["kfolds"] == 1:
         print("Only one fold...")
         if args["mod_quantum_instance"]: 
@@ -79,9 +94,12 @@ def main(args: dict):
 
 
 def get_arguments() -> dict:
-    """
-    Parses command line arguments and gives back a dictionary.
-    Returns: Dictionary with the arguments
+    """Parses command line arguments and gives back a dictionary.
+
+    Returns
+    -------
+    dict
+        Dictionary with parsed arguments
     """
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

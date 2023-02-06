@@ -1,4 +1,4 @@
-# Module that defines the main object Quantum Support Vector Machine.
+# Definition of the supervised Quantum Support Vector Machine.
 # Based on the kernel machine sklearn.svm.SVC implementation.
 
 import joblib
@@ -21,21 +21,59 @@ from terminal_enhancer import tcols
 
 
 class QSVM(SVC):
-    """
-    Quantum Support Vector Machine (QSVM) class. The SVM optimisation
-    objective function is optimised on a classical device, using convex
-    optimisation libraries utilised by sklearn. The quantum part is the
-    kernel.
+    """Quantum support vector machine. Supervised SVM model equipped with a 
+    quantum feature map, implemented by a data encoding circuit. 
+
+    Attributes
+    ----------
+    _nqubits: int
+        Number of qubits of the data encoding circuit.
+    _feature_map_name: str
+        Name of the designed quantum circuit. As defined in `feature_map_circuits`
+    _backend_config: dict
+        Configuration of the IBMQ backend, e.g. number of shots, qubit layout.
+    _quantum_instance: QuantumInstance
+        `QuantumInstance` object required for execution using qiskit.
+    _quantum_kernel: QuantumKernel
+        Quantum kernel function constructed from the data encoding circuit.
+    _kernel_matrix_train: np.ndarray
+        Kernel matrix constructed using the training dataset. Saved for computational
+        efficiency.
+    _train_data: np.ndarray
+        Training dataset. Also saved for computational efficiency, since we don't go
+        above a training size of approx 6k.
+    
+    Methods
+    ----------
+    fit
+        Train the QSVM model, save the training data in `self._train_data` and 
+        calculate the execution time.
+    score(train_data: bool = False, sample_weight: np.ndarray = None,)
+        Compute the mean accuracy on the given test data and labels.
+    decision_function
+        Output score of the model on a given dataset.
+     get_transpiled_kernel_circuit(output_format: str = "mpl")
+        Construct, save, and return the transpiled quantum kernel circuit figure.
+    save_circuit_physical_layout
+        Plot and save the quantum circuit and its physical layout on the backend.
+        Used only for hardware or noisy simulation runs.
+    save_backend_properties
+        Saves a dictionary to file using Joblib. The dictionary contains quantum
+        hardware properties, or noisy simulator properties, when the QSVM is not
+        trained with ideal simulation.
+    
     """
 
     def __init__(self, hpars: dict):
+        """Initialise the quantum feature map, the quantum instance and quantum kernel.
+
+        Parameters
+        ----------
+        hpars : dict
+            Hyperparameters of the model and configuration parameters for the training.
+            This dictionary is defined through `argparse`.
         """
-        Args:
-            hpars: Hyperparameters of the model and configuration parameters
-                   for the training.
-        Attributes: TODO
-        Methods: TODO?
-        """
+
         super().__init__(kernel="precomputed", C=hpars["c_param"])
 
         self._nqubits = hpars["nqubits"]
@@ -105,20 +143,21 @@ class QSVM(SVC):
         return self._quantum_kernel
 
     def fit(self, train_data: np.ndarray, train_labels: np.ndarray):
-        """
-        Train the QSVM model. In the case of QSVM where `kernel=precomputed`
+        """Train the QSVM model. In the case of QSVM where `kernel=precomputed`
         the kernel_matrix elements from the inner products of training data
         vectors need to be passed to fit. Thus, the quantum kernel matrix
-        elements are first evaluated and then passed to the SVC.fit appropriately.
+        elements are first evaluated and then passed to the `SVC.fit` appropriately.
 
         The method also, times the kernel matrix element calculation and saves
         the matrix for later use, such as score calculation.
 
-        Args:
-            train_data: The training data vectors array,
-                        of shape (ntrain, n_features).
-            train_labels: The labels of training data vectors, 1 (signal) and 0
-                          or -1 (background), of shape (ntrain,).
+        Parameters
+        ----------
+        train_data : np.ndarray
+            The training data vectors array of shape (ntrain, n_features).
+        train_labels : np.ndarray
+            The labels of training data vectors, 1 (signal) and 0 
+            or -1 (background), of shape (ntrain,).
         """
         self._train_data = train_data
         print("Calculating the quantum kernel matrix elements... ", end="")
@@ -139,22 +178,28 @@ class QSVM(SVC):
         train_data: bool = False,
         sample_weight: np.ndarray = None,
     ) -> float:
-        """
-        Return the mean accuracy on the given test data and labels.
+        """Returns the mean accuracy on the given test data and labels.
         Need to compute the corresponding kernel matrix elements and then pass
         to the SVC.score.
 
-        Args:
-            x: Training data set of shape (ntrain, nfeatures)
-            y: Target (ground truth) labels of the x data array OR of x_test
-               if not None, of shape (ntrain,)
-            train_data: Flag that specifies whether the score is computed on
-                        the training data or new dataset (test). The reason
-                        behind this flag is to not compute the kernel matrix
-                        on the training data more than once, since it is the
-                        computationally expensive task in training the QSVM.
-            sample_weight: Weights of the testing samples, of shape (ntrain,)
-        Returns:
+        Parameters
+        ----------
+        x : np.ndarray
+            Training dataset of shape (ntrain, nfeatures)
+        y : np.ndarray
+            Target (ground truth) labels of the x_train or of x_test data arrays
+        train_data : bool, optional
+            Flag that specifies whether the score is computed on
+            the training data or new dataset (test). The reason
+            behind this flag is to not compute the kernel matrix
+            on the training data more than once, since it is the
+            computationally expensive task in training the QSVM., by default False
+        sample_weight : np.ndarray, optional
+            Weights of the testing samples, of shape (ntrain,), by default None
+
+        Returns
+        -------
+        float
             The accuracy of the model on the given dataset x.
         """
         if train_data:
@@ -167,17 +212,20 @@ class QSVM(SVC):
         return super().score(kernel_matrix_test, y, sample_weight)
 
     def decision_function(self, x_test: np.ndarray) -> np.ndarray:
-        """
-        Computes the score value (test statistic) of the QSVM model. It computes
+        """Computes the score value (test statistic) of the QSVM model. It computes
         the displacement of the data vector x from the decision boundary. If the
         sign is positive then the predicted label of the model is +1 and -1
         (or 0) otherwise.
 
-        Args:
-            x_test: Array of data vectors of which the scores we want to
-                    compute.
-        Returns:
-            The corresponding array of scores of x.
+        Parameters
+        ----------
+        x_test : np.ndarray
+            Test dataset data vectors.
+
+        Returns
+        -------
+        np.ndarray
+            Score array of x.
         """
         test_kernel_matrix = self._quantum_kernel.evaluate(
             x_vec=x_test,
@@ -191,20 +239,20 @@ class QSVM(SVC):
         output_format: str = "mpl",
         **kwargs: dict,
     ) -> QuantumCircuit:
-        """
-        Save the transpiled quantum kernel circuit figure.
+        """Construct, save, and return the transpiled quantum kernel circuit figure.
 
-        Args:
-             quantum_kernel: QuantumKernel object used in the
-                                                QSVM training.
-             path: Path to save the output figure.
-             output_format: The format of the image. Formats:
-                            'text', 'mlp', 'latex', 'latex_source'.
-             kwargs: Keyword arguemnts for QuantumCircuit.draw().
+        Parameters
+        ----------
+        path : str
+            Path for the output figure
+        output_format : str, optional
+            Output image file format, by default "mpl"
 
-        Returns:
-                Transpiled QuantumCircuit that represents the quantum kernel.
-                i.e., the circuit that will be executed on the backend.
+        Returns
+        -------
+        QuantumCircuit
+            Transpiled QuantumCircuit that represents the quantum kernel.
+            i.e., the circuit that will be executed on the backend.
         """
         print("\nCreating the quantum kernel circuit...")
         n_params = self._quantum_kernel.feature_map.num_parameters
@@ -226,12 +274,15 @@ class QSVM(SVC):
         return qc_transpiled
 
     def save_circuit_physical_layout(self, circuit: QuantumCircuit, save_path: str):
-        """
-        Plot and save the quantum circuit and its physical layout on the backend.
+        """Plot and save the quantum circuit and its physical layout on the backend.
+        Used only for hardware or noisy simulation runs.
 
-        Args:
-             circuit: Circuit to plot on the backend.
-             save_path: Path to save figure.
+        Parameters
+        ----------
+        circuit : QuantumCircuit
+            Circuit to map to the physical qubits of the backend.
+        save_path : str
+            Path to save the figure.
         """
         fig = plot_circuit_layout(circuit, self._backend)
         save_path += "/circuit_physical_layout"
@@ -241,15 +292,14 @@ class QSVM(SVC):
         fig.savefig(save_path)
 
     def save_backend_properties(self, path: str):
-        """
-        Saves a dictionary to file using Joblib. The dictionary contains quantum
+        """Saves a dictionary to file using Joblib. The dictionary contains quantum
         hardware properties, or noisy simulator properties, when the QSVM is not
         trained with ideal simulation.
 
-        Args:
-            backend: IBM Quantum computer backend from which we save the
-                     calibration data.
-            path: String of full path to save the model in.
+        Parameters
+        ----------
+        path : str
+            Output path.
         """
         properties_dict = self._backend.properties().to_dict()
         path += "/backend_properties_dict"
