@@ -22,8 +22,6 @@ def main(args: dict):
     train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
-    print(test_features[:6])
-    exit(1)
     model = util.init_kernel_machine(args)
     out_path = util.create_output_folder(args, model)
 
@@ -186,5 +184,3 @@ def get_arguments() -> dict:
 
 if __name__ == "__main__":
     main(args)
-
-    

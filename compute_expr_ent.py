@@ -1,4 +1,6 @@
-# Compute the expressibility and entanglement capability metrics of a given circuit
+# Compute the expressibility, entanglement capability, or kernel variance metrics 
+# of a given circuit. Expressibility and entanglement capability are computed in
+# data-dependent setting.
 
 from time import perf_counter
 import numpy as np
@@ -17,8 +19,9 @@ from qiskit_machine_learning.kernels import QuantumKernel
 
 from kernel_machines.terminal_enhancer import tcols
 from kernel_machines.feature_map_circuits import u_dense_encoding as u_dense
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning) # For pandas frame.append method
+
+import warnings # For pandas frame.append method
+warnings.simplefilter(action='ignore', category=FutureWarning) 
 
 seed=42
 np.random.seed(seed)
@@ -54,7 +57,21 @@ def main(args):
 
 
 def prepare_circs(args: dict) -> Tuple[List, List]:
-    """Prepares the list of circuit needed for evaluation along with their names."""
+    """Prepares the list of circuit needed for evaluation along with their names.
+
+    Parameters
+    ----------
+    args : dict
+        Argument dictionary, here used for the number of qubits.
+
+    Returns
+    -------
+    Tuple[List, List]
+        circuit_list_expr_ent:
+            Circuit lambda-function callables.
+        circuit_labels:
+            Corresponding labels as defined in the paper.
+    """
     circuit_labels = [r'NE$_0$', r'NE$_1$', 'L=1', 'L=2', 'L=3', 'L=4', 'L=5', 'L=6',
                       'FE']
     
@@ -76,12 +93,28 @@ def prepare_circs(args: dict) -> Tuple[List, List]:
     return circuit_list_expr_ent, circuit_labels
 
 
-def compute_expr_ent_vs_circuit(args: dict, circuits: List[callable], 
-                                circuit_labels: List[str], data: np.ndarray = None) \
--> pd.DataFrame:
-    """
-    Computes the expressibility and entanglement capability of a list of circuits, in 
-    the conventional (uniformly sampled parameters from [0, 2pi]) and data-dependent manner.
+def compute_expr_ent_vs_circuit(args: dict, circuits: List[callable], circuit_labels: List[str], data: np.ndarray = None) -> pd.DataFrame:
+    """Computes the expressibility and entanglement capability of a list of circuits,
+    in the conventional (uniformly sampled parameters from [0, 2pi]) 
+    and data-dependent manner.
+
+    Parameters
+    ----------
+    args : dict
+        Argparse configuration arguments
+    circuits : List[callable]
+        List of circuits to compute.
+    circuit_labels : List[str]
+        Corresponding list of circuit names.
+    data : np.ndarray, optional
+        Data distribution. If `None` the circuit parameters are sampled from the
+        uniform distribution, by default None
+
+    Returns
+    -------
+    pd.DataFrame
+        Pandas dataframe containing the circuit name and its computed
+        expressibility and entanglement capability, along with their uncertainty.
     """
     print("\nComputing expressibility and entanglement capability of the circuits, "
           f"for {args['n_exp']} evaluations and n_shots = {args['n_shots']}." 
@@ -135,16 +168,28 @@ def compute_expr_ent_vs_circuit(args: dict, circuits: List[callable],
 
 
 def expr_vs_nqubits(args: dict, rep: int = 3, n_exp: str = 20, 
-                    data: Union[np.ndarray, List[np.ndarray]] = None)\
--> pd.DataFrame:
-    """
-    Computes the (data-dependent) expressibility of a data embedding circuit as a 
+                    data: Union[np.ndarray, List[np.ndarray]] = None) -> pd.DataFrame:
+    """Computes the (data-dependent) expressibility of a data embedding circuit as a 
     function of the qubit number. Saves the output in a dataframe (.h5) with the 
     computed mean values and uncertainties.
-    
-    Args:
-        data: List of the datasets available for n_qubits = 4, 8, 16 or None for 
-              computation with uniformly sampled circuit parameters [0, 2pi].
+
+    Parameters
+    ----------
+    args : dict
+        Argparse configuration arguments
+    rep : int, optional
+        Number of repetitions of the data encoding circuit, by default 3
+    n_exp : str, optional
+        Number of repetitions of the computation (experiments) to assess
+        the uncertainty of the stochastically calculated metrics, by default 20
+    data : Union[np.ndarray, List[np.ndarray]], optional
+        List of the datasets available for n_qubits = 4, 8, 16 or None for 
+        computation with uniformly sampled circuit parameters [0, 2pi]., by default None
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe containing the computed expressibility as a function of `n_qubits`.
     """
     print(f"Computing expressibility as a function of the qubit number, "
           f"for rep = {rep} of the data encoding circuit ansatz.")
@@ -185,11 +230,23 @@ def expr_vs_nqubits(args: dict, rep: int = 3, n_exp: str = 20,
     return df_expr
 
 
-def var_kernel_vs_nqubits(args: dict, data: np.ndarray, rep: int = 3)\
--> pd.DataFrame():
-    """
-    Computes the variance of the quantum kernel matrix as a function of the number
+def var_kernel_vs_nqubits(args: dict, data: np.ndarray, rep: int = 3) -> pd.DataFrame():
+    """Computes the variance of the quantum kernel matrix as a function of the number
     of qubits.
+
+    Parameters
+    ----------
+    args : dict
+        Argparse configuration arguments. 
+    data: np.ndarray
+        Dataset from which to sample.
+    rep : int, optional
+        Number of repetitions of the data encoding circuit, by default 3
+
+    Returns
+    -------
+    pd.DataFrame
+        Variance of the kernel and its correpsonding qubit number.
     """
     n_qubits = [4, 8, 16]
     print(f"\n Computing variance of the kernel matrix elements for rep = {rep}"
@@ -230,18 +287,23 @@ def var_kernel_vs_nqubits(args: dict, data: np.ndarray, rep: int = 3)\
     return df_var
 
 
-def get_data(data_path: Union[str, List[str]], mult_qubits: bool = False) \
--> Tuple[np.ndarray]:
-    """
-    Loads the data, signal or background, given a path and returns the scaled to 
+def get_data(data_path: Union[str, List[str]], mult_qubits: bool = False) -> Tuple[np.ndarray]:
+    """Loads the data, signal or background, given a path and returns the scaled to 
     (0, 2pi) numpy arrays.
-    
-    Args:
-        data_path: Path to the .h5 dataset, or list of paths for multiple dataset 
-                   loading.
-        mult_qubits: If True the specified dataset (in data_path) is loaded for 
-                     different qubit numbers, i.e., latent dimensions (4, 8, 16)
-                     for the kernel machine training/testing.
+
+    Parameters
+    ----------
+    data_path : Union[str, List[str]]
+        Path to the .h5 dataset, or list of paths for multiple dataset loading.
+    mult_qubits : bool, optional
+        If True the specified dataset (in data_path) is loaded for 
+        different qubit numbers, i.e., latent dimensions (4, 8, 16)
+        for the kernel machine training/testing., by default False
+
+    Returns
+    -------
+    Tuple[np.ndarray]
+        The loaded dataset or list of the numpy datasets.
     """
     print(tcols.BOLD + f"\nLoading the datasets: {data_path} " + tcols.ENDC)
     h5_data = [h5py.File(dataset_path, "r") for dataset_path in data_path]
@@ -260,16 +322,27 @@ def get_data(data_path: Union[str, List[str]], mult_qubits: bool = False) \
     return data
 
 
-def u_dense_encoding_no_ent(x, nqubits: int = 8, reps: int = 3, type: int = 0
-) -> QuantumCircuit:
-    """
-    Constructs a feature map based on u_dense_encoding but removing entanglement.
+def u_dense_encoding_no_ent(x: np.ndarray, nqubits: int = 8, reps: int = 3, type: int = 0
+) -> Statevector:
+    """Constructs a feature map based on u_dense_encoding but removing entanglement.
     The 'type' argument corresponds the two No-Entanglement (NE) circuits in the paper.
 
-    Args:
-        nqubits: Int number of qubits used.
+    Parameters
+    ----------
+    x : np.ndarray
+        Values of the circuit parameters.
+    nqubits : int, optional
+        Number of qubits, by default 8
+    reps : int, optional
+        Repetition of the data encoding circuit, by default 3
+    type : int, optional
+        Flag to differenciate which type of "Non-entanglement" circuit is used, 
+        by default 0
 
-    Returns: The quantum circuit qiskit object used in the QSVM algorithm.
+    Returns
+    -------
+    Statevector
+        State vector `qiskit` object corresponding to the state generated by the circuit.
     """
     nfeatures = 2 * nqubits
     qc = QuantumCircuit(nqubits)
@@ -285,7 +358,23 @@ def u_dense_encoding_no_ent(x, nqubits: int = 8, reps: int = 3, type: int = 0
     return Statevector.from_instruction(qc)
 
 
-def u_dense_encoding(x, nqubits=8, reps=1,):
+def u_dense_encoding(x:np.ndarray, nqubits=8, reps=1,) -> Statevector:
+    """Designed feature map circuit for the paper.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Values of the circuit parameters.
+    nqubits : int, optional
+        Number of qubits for the circuit, by default 8
+    reps : int, optional
+        Repetitions of the data encoding ansatz, by default 1
+
+    Returns
+    -------
+    Statevector
+        State vector `qiskit` object corresponding to the state generated by the circuit.
+    """
     nfeatures = 2 * nqubits
     qc = QuantumCircuit(nqubits)
     for rep in range(reps):
@@ -302,15 +391,22 @@ def u_dense_encoding(x, nqubits=8, reps=1,):
     return Statevector.from_instruction(qc)
 
 
-def u_dense_encoding_all(x, nqubits: int = 8, reps: int = 3) -> QuantumCircuit:
-    """
-    Constructs a feature map, inspired by the dense encoding and data
-    re-uploading methods.
+def u_dense_encoding_all(x: np.ndarray, nqubits: int = 8, reps: int = 3) -> Statevector:
+    """Data encoding circuit with all-to-all entanglement gates.
 
-    Args:
-        nqubits: Int number of qubits used.
+    Parameters
+    ----------
+    x : np.ndarray
+        Values of the circuit parameters.
+    nqubits : int, optional
+        Number of qubits for the circuit, by default 8
+    reps : int, optional
+        Repetitions of the data encoding circuit, by default 3
 
-    Returns: The quantum circuit qiskit object used in the QSVM algorithm.
+    Returns
+    -------
+    Statevector
+        State vector `qiskit` object corresponding to the state generated by the circuit.
     """
     nfeatures = 2 * nqubits
     qc = QuantumCircuit(nqubits)
@@ -328,9 +424,12 @@ def u_dense_encoding_all(x, nqubits: int = 8, reps: int = 3) -> QuantumCircuit:
 
 
 def get_arguments() -> dict:
-    """
-    Parses command line arguments and gives back a dictionary.
-    Returns: Dictionary with the arguments
+    """Parses command line arguments and gives back a dictionary.
+    
+    Returns
+    -------
+        dict
+            Dictionary with the arguments
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
