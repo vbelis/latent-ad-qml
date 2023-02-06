@@ -20,12 +20,12 @@ from terminal_enhancer import tcols
 
 
 class OneClassQSVM(OneClassSVM):
-    """Unsupervised quantum kernel machine. 
-    
+    """Unsupervised quantum kernel machine.
+
     The construction is similar to
     the QSVM but the training here is unlabeled. The model is equipped with
     a quantum feature map, implemented by a data encoding circuit.
-    
+
     Attributes
     ----------
     _nqubits: int
@@ -47,11 +47,11 @@ class OneClassQSVM(OneClassSVM):
     _train_data: np.ndarray
         Training dataset. Also saved for computational efficiency, since we don't go
         above a training size of approx 6k.
-   
+
     Methods
     ----------
     fit
-        Train the QSVM model, save the training data in `self._train_data` and 
+        Train the QSVM model, save the training data in `self._train_data` and
         calculate the execution time.
     score(train_data: bool = False, sample_weight: np.ndarray = None,)
         Compute the mean accuracy on the given test data and labels.
@@ -97,9 +97,9 @@ class OneClassQSVM(OneClassSVM):
         self._quantum_kernel = QuantumKernel(
             self._feature_map,
             quantum_instance=self._quantum_instance,
-            #batch_size=1,
-            #enforce_psd=False,
-            #evaluate_duplicates="all",
+            # batch_size=1,
+            # enforce_psd=False,
+            # evaluate_duplicates="all",
         )
         self._kernel_matrix_train = None
         self._kernel_matrix_test = None
@@ -228,7 +228,7 @@ class OneClassQSVM(OneClassSVM):
         x : np.ndarray
             Data vector array of shape (n_samples, n_features)
         input_is_matrix : bool, optional
-            Flag to enable the flxebility of being able to pass the dataset or 
+            Flag to enable the flxebility of being able to pass the dataset or
             the kernel matrix directly, by default False
 
         Returns
@@ -252,8 +252,8 @@ class OneClassQSVM(OneClassSVM):
         """Computes the score value (test statistic) of the QSVM model. It computes
         the displacement of the data vector x from the decision boundary. If the
         sign is positive then the predicted label of the model is +1 and -1
-        (or 0) otherwise. 
-        
+        (or 0) otherwise.
+
         The output of `super().decision_function`
         is multiplied by -1 in order to have the same sign convention between
         supervised and unsupervised kernel machines. For some reason the scores
@@ -275,7 +275,7 @@ class OneClassQSVM(OneClassSVM):
             y_vec=self._train_data,
         )
         self._kernel_matrix_test = test_kernel_matrix
-        return -1.0*super().decision_function(test_kernel_matrix)
+        return -1.0 * super().decision_function(test_kernel_matrix)
 
     def get_transpiled_kernel_circuit(
         self,

@@ -21,8 +21,8 @@ from terminal_enhancer import tcols
 
 
 class QSVM(SVC):
-    """Quantum support vector machine. Supervised SVM model equipped with a 
-    quantum feature map, implemented by a data encoding circuit. 
+    """Quantum support vector machine. Supervised SVM model equipped with a
+    quantum feature map, implemented by a data encoding circuit.
 
     Attributes
     ----------
@@ -42,11 +42,11 @@ class QSVM(SVC):
     _train_data: np.ndarray
         Training dataset. Also saved for computational efficiency, since we don't go
         above a training size of approx 6k.
-    
+
     Methods
     ----------
     fit
-        Train the QSVM model, save the training data in `self._train_data` and 
+        Train the QSVM model, save the training data in `self._train_data` and
         calculate the execution time.
     score(train_data: bool = False, sample_weight: np.ndarray = None,)
         Compute the mean accuracy on the given test data and labels.
@@ -61,7 +61,7 @@ class QSVM(SVC):
         Saves a dictionary to file using Joblib. The dictionary contains quantum
         hardware properties, or noisy simulator properties, when the QSVM is not
         trained with ideal simulation.
-    
+
     """
 
     def __init__(self, hpars: dict):
@@ -156,7 +156,7 @@ class QSVM(SVC):
         train_data : np.ndarray
             The training data vectors array of shape (ntrain, n_features).
         train_labels : np.ndarray
-            The labels of training data vectors, 1 (signal) and 0 
+            The labels of training data vectors, 1 (signal) and 0
             or -1 (background), of shape (ntrain,).
         """
         self._train_data = train_data

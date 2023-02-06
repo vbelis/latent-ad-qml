@@ -100,4 +100,4 @@ class CustomOneClassSVM(OneClassSVM):
         have the opposite sign for signal and background for SVC.decision_function
         and OneClassSVM.decision_function.
         """
-        return -1.0*super().decision_function(x)
+        return -1.0 * super().decision_function(x)

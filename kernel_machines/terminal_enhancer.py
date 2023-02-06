@@ -3,9 +3,10 @@
 
 
 class tcols:
-    """Class of colors and emotes to be used for displaying colorful things 
+    """Class of colors and emotes to be used for displaying colorful things
     in the terminal to improve the readability.
     """
+
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
     OKCYAN = "\033[96m"

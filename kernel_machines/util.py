@@ -60,14 +60,14 @@ def create_output_folder(
     args : dict
         Arparse configuration arguments dictionary.
     model : Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]
-        Kernel machine, classical or quantum. 
+        Kernel machine, classical or quantum.
 
     Returns
     -------
     str
         The output path.
     """
-    
+
     if args["unsup"]:
         out_path = args["output_folder"] + f"_nu={model.nu}"
     else:
@@ -201,7 +201,7 @@ def get_backend_configuration(backend: Backend) -> Tuple:
             Gates that are physically implemented on the hardware.
             the transpiler decomposes the generic/abstract circuit to these
             physical basis gates, taking into acount also the coupling_map.
-    """    
+    """
     noise_model = NoiseModel.from_backend(backend)
     coupling_map = backend.configuration().coupling_map
     basis_gates = noise_model.basis_gates
@@ -225,7 +225,9 @@ def ideal_simulation(**kwargs) -> QuantumInstance:
     return quantum_instance, None
 
 
-def noisy_simulation(ibmq_api_config: dict, backend_name: str, **kwargs) -> Tuple[QuantumInstance, Backend]:
+def noisy_simulation(
+    ibmq_api_config: dict, backend_name: str, **kwargs
+) -> Tuple[QuantumInstance, Backend]:
     """Prepare a QuantumInstance object for simulation with noise based on the
     real quantum computer calibration data.
 
@@ -255,7 +257,9 @@ def noisy_simulation(ibmq_api_config: dict, backend_name: str, **kwargs) -> Tupl
     return quantum_instance, quantum_computer_backend
 
 
-def hardware_run(backend_name: str, ibmq_api_config: dict, **kwargs) -> Tuple[QuantumInstance, Backend]:
+def hardware_run(
+    backend_name: str, ibmq_api_config: dict, **kwargs
+) -> Tuple[QuantumInstance, Backend]:
     """Configure QuantumInstance based on a quantum computer. The circuits will
     be sent as jobs to be exececuted on the specified device in IBMQ.
 
@@ -293,12 +297,12 @@ def configure_quantum_instance(
     ibmq_api_config : dict
         Configuration file for the IBMQ API token and provider information.
     run_type : str
-        Takes values the possible values {ideal,noisy, hardware} to specify 
+        Takes values the possible values {ideal,noisy, hardware} to specify
         what type of backend will be provided to the quantum instance object.
     backend_name : str, optional
-        Name of the quantum computer to run or base the noisy simulation on. 
+        Name of the quantum computer to run or base the noisy simulation on.
         For ideal runs it can be set to "none"., by default None.
-    kwargs: 
+    kwargs:
         Dictionary of keyword arguments for the QuantumInstance.
     Returns
     -------
@@ -313,7 +317,7 @@ def configure_quantum_instance(
     TypeError
         When `run_type` is not in {ideal, noisy, hardware}.
     """
-    
+
     if (run_type == "noisy" or run_type == "hardware") and (backend_name is None):
         raise TypeError(
             tcols.FAIL + "Need to specify backend name ('ibmq_<city_name>')"
@@ -361,7 +365,9 @@ def time_and_exec(func: Callable, *args) -> float:
     return exec_time
 
 
-def init_kernel_machine(args: dict) -> Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]:
+def init_kernel_machine(
+    args: dict,
+) -> Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]:
     """Initialises the kernel machine. Depending on the flag, this will be
     a SVM or a QSVM.
 
@@ -393,7 +399,9 @@ def init_kernel_machine(args: dict) -> Union[SVC, QSVM, CustomOneClassSVM, OneCl
             tcols.OKCYAN + "\nConfiguring the one-class Classical Support Vector"
             " Machine..." + tcols.ENDC
         )
-        return CustomOneClassSVM(kernel=args["feature_map"], nu=args["nu_param"], gamma=args["gamma"])
+        return CustomOneClassSVM(
+            kernel=args["feature_map"], nu=args["nu_param"], gamma=args["gamma"]
+        )
     print(
         tcols.OKCYAN + "\nConfiguring the Classical Support Vector"
         " Machine..." + tcols.ENDC
@@ -409,8 +417,8 @@ def eval_metrics(
     test_labels: np.ndarray,
     out_path: str,
 ):
-    """Computes different evaluation metrics of the kernel machine models. 
-    ROC curve, FPR @TPR (working point), and accuracy. Prints and saves 
+    """Computes different evaluation metrics of the kernel machine models.
+    ROC curve, FPR @TPR (working point), and accuracy. Prints and saves
     corresponding plots. The execution of this function is also timed.
 
     Parameters
@@ -433,9 +441,7 @@ def eval_metrics(
     TypeError
         Passed model not of the correct type.
     """
-    print(
-        "Computing the test dataset accuracy of the models, ROC and PR plots..."
-    )
+    print("Computing the test dataset accuracy of the models, ROC and PR plots...")
     test_time_init = perf_counter()
     train_acc = None
     if (
@@ -455,22 +461,23 @@ def eval_metrics(
     y_score = model.decision_function(test_data)
     compute_roc_pr_curves(test_labels, y_score, out_path, model)
     plot_score_distributions(y_score, test_labels, out_path)
-    
-    y_score[y_score>0.] = 1
-    y_score[y_score<0.] = 0
+
+    y_score[y_score > 0.0] = 1
+    y_score[y_score < 0.0] = 0
     test_acc = accuracy_score(test_labels, y_score)
     print_accuracy_scores(test_acc, train_acc, isinstance(model, OneClassSVM))
-    
+
     test_time_fina = perf_counter()
     exec_time = test_time_fina - test_time_init
     print(
         f"Completed evaluation in: {exec_time:.2e} sec. or "
         f"{exec_time/60:.2e} min. " + tcols.ROCKET
-    )    
+    )
+
 
 def plot_score_distributions(y_score: np.ndarray, y_label: np.ndarray, out_path: str):
     """Plots and saves the score distributions for signal and background as a histogram.
-    
+
     Parameters
     ----------
     y_score : np.ndarray
@@ -480,11 +487,25 @@ def plot_score_distributions(y_score: np.ndarray, y_label: np.ndarray, out_path:
     out_path : str
         Output path to save the plot in.
     """
-    fig = plt.figure(figsize=(8,6))
-    plt.hist(y_score[y_label==1], histtype = 'step', linewidth=2, bins=60, 
-             label='Signal', density=True, color="royalblue")
-    plt.hist(y_score[y_label==0], histtype = 'step', linewidth=2, bins=60, 
-             label='Background', density=True, color="red")
+    fig = plt.figure(figsize=(8, 6))
+    plt.hist(
+        y_score[y_label == 1],
+        histtype="step",
+        linewidth=2,
+        bins=60,
+        label="Signal",
+        density=True,
+        color="royalblue",
+    )
+    plt.hist(
+        y_score[y_label == 0],
+        histtype="step",
+        linewidth=2,
+        bins=60,
+        label="Background",
+        density=True,
+        color="red",
+    )
     plt.xlabel("score")
     plt.ylabel("A.U.")
     plt.yscale("log")
@@ -494,8 +515,12 @@ def plot_score_distributions(y_score: np.ndarray, y_label: np.ndarray, out_path:
     print("\n Saving score distributions for signal and background " + tcols.SPARKS)
 
 
-def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path: str,
-                          model: Union[SVC, QSVM, OneClassQSVM, CustomOneClassSVM]):
+def compute_roc_pr_curves(
+    test_labels: np.ndarray,
+    y_score: np.ndarray,
+    out_path: str,
+    model: Union[SVC, QSVM, OneClassQSVM, CustomOneClassSVM],
+):
     """Computes the ROC and Precision-Recall (PR) curves and saves them in the model
     out_path. Also, prints the 1/FPR value around a TPR working point, default=0.8.
 
@@ -510,13 +535,16 @@ def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path
     model : Union[SVC, QSVM, OneClassQSVM, CustomOneClassSVM]
         Kernel machine model.
     """
-    def create_plot_model_label(model,) -> str:
-        """Creates the label for the legend, include hyperparameter and 
+
+    def create_plot_model_label(
+        model,
+    ) -> str:
+        """Creates the label for the legend, include hyperparameter and
         feature map or kernel name info.
 
         Parameters
         ----------
-        model : Union[SVC, QSVM, OneClassQSVM, CustomOneClassSVM] 
+        model : Union[SVC, QSVM, OneClassQSVM, CustomOneClassSVM]
             Kernel machine model.
 
         Returns
@@ -525,21 +553,29 @@ def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path
             Label for the plot.
         """
         if isinstance(model, OneClassSVM):
-            label = f"\nFeature map: {model.feature_map_name}\n" + r"$\nu$ = " + f"{model.nu}"
+            label = (
+                f"\nFeature map: {model.feature_map_name}\n"
+                + r"$\nu$ = "
+                + f"{model.nu}"
+            )
         elif isinstance(model, QSVM):
             label = f"\nFeature map: {model.feature_map_name}" + f"\nC = {model.C}"
         else:
             label = f"\nFeature map: {model.kernel}" + f"\nC = {model.C}"
         return label
-    
+
     fpr, tpr, thresholds = roc_curve(y_true=test_labels, y_score=y_score)
     auc = roc_auc_score(test_labels, y_score)
     one_over_fpr = get_fpr_around_tpr_point(fpr, tpr)
-    plt.plot(tpr, 1./fpr, label=f"AUC: {auc:.3f}\n" + r"FPR$^{-1}$:" + f" {one_over_fpr[0]:.3f}" 
-             f" ± {one_over_fpr[1]:.3f}" + create_plot_model_label(model))
+    plt.plot(
+        tpr,
+        1.0 / fpr,
+        label=f"AUC: {auc:.3f}\n" + r"FPR$^{-1}$:" + f" {one_over_fpr[0]:.3f}"
+        f" ± {one_over_fpr[1]:.3f}" + create_plot_model_label(model),
+    )
     plt.yscale("log")
     plt.xlabel("TPR")
-    plt.xlim([0., 1.1])
+    plt.xlim([0.0, 1.1])
     plt.ylabel(r"FPR$^{-1}$")
     plt.legend()
     plt.savefig(out_path + "/roc.pdf")
@@ -553,9 +589,12 @@ def compute_roc_pr_curves(test_labels: np.ndarray, y_score: np.ndarray, out_path
     print("\nComputed ROC and PR curves " + tcols.SPARKS)
     plt.clf()
 
-def get_fpr_around_tpr_point(fpr: np.ndarray, tpr: np.ndarray, tpr_working_point: float = 0.8) -> Tuple[float]:
+
+def get_fpr_around_tpr_point(
+    fpr: np.ndarray, tpr: np.ndarray, tpr_working_point: float = 0.8
+) -> Tuple[float]:
     """Computes the mean 1/FPR value that corresponds to a small window aroun a given
-    TPR working point (default: 0.8). If there are no values in the window, it widened 
+    TPR working point (default: 0.8). If there are no values in the window, it widened
     sequentially until it includes some values around the working point.
 
     Parameters
@@ -573,18 +612,24 @@ def get_fpr_around_tpr_point(fpr: np.ndarray, tpr: np.ndarray, tpr_working_point
         The mean and standard deviation of 1/FPR @ TPR=`tpr_working_point`.
     """
     ind = np.array([])
-    low_bound = tpr_working_point*0.999
-    up_bound = tpr_working_point*1.001
+    low_bound = tpr_working_point * 0.999
+    up_bound = tpr_working_point * 1.001
     while len(ind) == 0:
-        ind = np.where(np.logical_and(tpr>=low_bound, tpr<=up_bound))[0]
-        low_bound *= 0.99 # open the window by 1%
+        ind = np.where(np.logical_and(tpr >= low_bound, tpr <= up_bound))[0]
+        low_bound *= 0.99  # open the window by 1%
         up_bound *= 1.01
     fpr_window_no_zeros = fpr[ind][fpr[ind] != 0]
-    one_over_fpr_mean = np.mean(1./fpr_window_no_zeros), np.std(1./fpr_window_no_zeros)
-    print(f"\nTPR values around {tpr_working_point} window with lower bound {low_bound}"
-          f" and upper bound: {up_bound}")
-    print(f"Corresponding mean 1/FPR value in that window: {one_over_fpr_mean[0]:.3f} ± " 
-          f"{one_over_fpr_mean[1]:.3f}")
+    one_over_fpr_mean = np.mean(1.0 / fpr_window_no_zeros), np.std(
+        1.0 / fpr_window_no_zeros
+    )
+    print(
+        f"\nTPR values around {tpr_working_point} window with lower bound {low_bound}"
+        f" and upper bound: {up_bound}"
+    )
+    print(
+        f"Corresponding mean 1/FPR value in that window: {one_over_fpr_mean[0]:.3f} ± "
+        f"{one_over_fpr_mean[1]:.3f}"
+    )
     return one_over_fpr_mean
 
 
@@ -608,7 +653,7 @@ def export_hyperparameters(
             "nqubits": model.nqubits,
             "feature_map_name": model.feature_map_name,
             "backend_config": model.backend_config,
-        } # FIXME this doesn't include OneClassQSVM
+        }  # FIXME this doesn't include OneClassQSVM
     else:
         hp = {"C": model.C}
     params_file = open(file_path, "w")

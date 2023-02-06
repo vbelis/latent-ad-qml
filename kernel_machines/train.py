@@ -1,4 +1,4 @@
-# The quantum and classical kernel machine training script. 
+# The quantum and classical kernel machine training script.
 # The model is instantiated with some parameters, the data encoding circuit is built,
 # it is trained on a data set, and is saved in a folder.
 
@@ -28,9 +28,10 @@ def main(args: dict):
     time_and_train(model.fit, train_features, train_labels)
     util.print_model_info(model)
     util.export_hyperparameters(model, out_path)
-    if args["run_type"] != 'hardware':
-        util.eval_metrics(model, train_features, train_labels, 
-                          test_features, test_labels, out_path)
+    if args["run_type"] != "hardware":
+        util.eval_metrics(
+            model, train_features, train_labels, test_features, test_labels, out_path
+        )
     util.save_model(model, out_path)
 
 
@@ -54,6 +55,7 @@ def time_and_train(fit: Callable, *args):
         f"or {exec_time/60:.2e} min. " + tcols.ENDC + tcols.SPARKS
     )
 
+
 def get_arguments() -> dict:
     """Parses command line arguments and gives back a dictionary.
 
@@ -62,7 +64,9 @@ def get_arguments() -> dict:
     dict
         Dictionary with the arguments.
     """
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "--sig_path",
         type=str,
@@ -85,13 +89,18 @@ def get_arguments() -> dict:
         "--quantum", action="store_true", help="Flag to choose between QSVM and SVM."
     )
     parser.add_argument(
-        "--unsup", action="store_true", help="Flag to choose between unsupervised and supervised models"
+        "--unsup",
+        action="store_true",
+        help="Flag to choose between unsupervised and supervised models",
     )
     parser.add_argument(
         "--nqubits", type=int, help="Number of qubits for quantum feature map circuit."
     )
-    parser.add_argument("--feature_map", type=str, 
-                        help="Feature map circuit for the QSVM or classical (!) kernel name.")
+    parser.add_argument(
+        "--feature_map",
+        type=str,
+        help="Feature map circuit for the QSVM or classical (!) kernel name.",
+    )
     parser.add_argument(
         "--backend_name",
         type=str,
@@ -112,7 +121,10 @@ def get_arguments() -> dict:
         "--c_param", type=float, default=1.0, help="The C parameter of the SVM."
     )
     parser.add_argument(
-        "--nu_param", type=float, default=1.0, help="The nu parameter of the one-class SVM."
+        "--nu_param",
+        type=float,
+        default=1.0,
+        help="The nu parameter of the one-class SVM.",
     )
     parser.add_argument(
         "--gamma",
@@ -121,7 +133,10 @@ def get_arguments() -> dict:
         help="The gamma parameter of the SVM with rbf kernel.",
     )
     parser.add_argument(
-        "--ntrain", type=int, default=600, help="Number of training events for the QSVM."
+        "--ntrain",
+        type=int,
+        default=600,
+        help="Number of training events for the QSVM.",
     )
     parser.add_argument(
         "--ntest", type=int, default=720, help="Number of test events for the QSVM."
@@ -148,7 +163,7 @@ def get_arguments() -> dict:
         "initial_layout": initial_layout,
         "seed_transpiler": seed,
         "shots": 10000,
-        #"measurement_error_mitigation_cls": CompleteMeasFitter,
+        # "measurement_error_mitigation_cls": CompleteMeasFitter,
     }
     config_ideal = {"seed_simulator": seed}
 

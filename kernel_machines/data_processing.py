@@ -42,7 +42,7 @@ def get_data(args: dict) -> Tuple:
         )
         train_loader = None
 
-    test_loader = get_test_dataset(x_sig, x_bkg_test, args["ntest"])#, args["unsup"])
+    test_loader = get_test_dataset(x_sig, x_bkg_test, args["ntest"])  # , args["unsup"])
     return train_loader, test_loader
 
 
@@ -140,7 +140,10 @@ def get_train_dataset(
 
 
 def get_test_dataset(
-    sig: np.ndarray, bkg_test: np.ndarray, ntest: int, is_unsup: bool = False,
+    sig: np.ndarray,
+    bkg_test: np.ndarray,
+    ntest: int,
+    is_unsup: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Constructing the testing dataset based on the conventions used for this work.
     Namely, first ntest/2 samples from the signal and first ntest/2 from the
@@ -165,16 +168,16 @@ def get_test_dataset(
         case the latter is `None`.
     """
     if is_unsup:
-        sig = sig[: int(ntest*0.05)]
-        bkg_test = bkg_test[: int(ntest*0.95)]
-        y_data_test = create_output_y(n=(len(sig),len(bkg_test)))
+        sig = sig[: int(ntest * 0.05)]
+        bkg_test = bkg_test[: int(ntest * 0.95)]
+        y_data_test = create_output_y(n=(len(sig), len(bkg_test)))
         print(f"Signal shape {sig.shape} and Background shape {bkg_test.shape}")
     else:
         sig = sig[: int(ntest / 2)]
         bkg_test = bkg_test[: int(ntest / 2)]
         y_data_test = create_output_y(int(ntest / 2))
         print(f"Signal shape {sig.shape} and Background shape {bkg_test.shape}")
-    
+
     x_data_test = np.concatenate((sig, bkg_test))
     print(f"Created testing dataset of shape: {x_data_test.shape}")
     return x_data_test, y_data_test

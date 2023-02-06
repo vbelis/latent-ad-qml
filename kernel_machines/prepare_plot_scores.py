@@ -9,7 +9,9 @@ import h5py
 from terminal_enhancer import tcols
 
 
-def save_scores_h5(classical_path: str, quantum_path: str, out_path: str, name_suffix: str):
+def save_scores_h5(
+    classical_path: str, quantum_path: str, out_path: str, name_suffix: str
+):
     """Save the scores of a model to an .h5 file following the following convention.
     Data frame with keys 'classic_loss_qcd', 'classic_loss_sig' for the classical
     model background and signal test scores respectively. Correspondingly,
@@ -18,10 +20,10 @@ def save_scores_h5(classical_path: str, quantum_path: str, out_path: str, name_s
     Parameters
     ----------
     classical_path : str
-        path to the classical model to load sig and bkg scores 
+        path to the classical model to load sig and bkg scores
         of shape: (kfolds, n_test/kfolds)
     quantum_path : str
-        path to the quantum model to load sig and bkg scores 
+        path to the quantum model to load sig and bkg scores
         of shape: (kfolds, n_test/kfolds)
     out_path : str
         Path to the generated .h5 file.
@@ -42,8 +44,12 @@ def save_scores_h5(classical_path: str, quantum_path: str, out_path: str, name_s
         + f"{classical_path}"
         + tcols.ENDC
     )
-    classical_sig = np.load(args.classical_folder + "sig_scores_" + name_suffix + ".npy")
-    classical_bkg = np.load(args.classical_folder + "bkg_scores_" + name_suffix + ".npy")
+    classical_sig = np.load(
+        args.classical_folder + "sig_scores_" + name_suffix + ".npy"
+    )
+    classical_bkg = np.load(
+        args.classical_folder + "bkg_scores_" + name_suffix + ".npy"
+    )
 
     h5f = h5py.File(args.out_path, "w")
     h5f.create_dataset("quantum_loss_qcd", data=quantum_bkg)
@@ -88,8 +94,7 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="String to append at the end of the sig_scores_<name_suffix>.npy and "
-             "bkg_score<name_suffix>.npy output files.",
-        
+        "bkg_score<name_suffix>.npy output files.",
     )
     args = parser.parse_args()
 

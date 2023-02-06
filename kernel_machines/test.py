@@ -1,4 +1,4 @@
-# Assessing the model performance using k-fold testing. The test dataset is 
+# Assessing the model performance using k-fold testing. The test dataset is
 # comprised of background (QCD) data and unseen anomalies (new-physics) data.
 
 from time import perf_counter
@@ -15,8 +15,8 @@ from one_class_qsvm import OneClassQSVM
 
 
 def main(args: dict):
-    """Asesses the performance of the trained models using k-fold testing. 
-    The test dataset is comprised of background (QCD) data and unseen during 
+    """Asesses the performance of the trained models using k-fold testing.
+    The test dataset is comprised of background (QCD) data and unseen during
     training, anomalous (new-physics) data.
 
     If the chosen model is tested on hardware, then only 1 fold is computed.
@@ -29,9 +29,7 @@ def main(args: dict):
     _, test_loader = data_processing.get_data(args)
     test_features, test_labels = test_loader[0], test_loader[1]
     sig_fold, bkg_fold = data_processing.get_kfold_data(
-        test_features,
-        test_labels,
-        args["kfolds"]
+        test_features, test_labels, args["kfolds"]
     )
     output_path = args["model"]
     model = util.load_model(output_path + "model")
@@ -39,23 +37,23 @@ def main(args: dict):
     seed = 12345
     with open("private_config_vasilis.json") as pconfig:
         private_configuration = json.load(pconfig)
-    
+
     print("Computing model scores... ", end="")
     scores_time_init = perf_counter()
-    
+
     if args["kfolds"] == 1:
         print("Only one fold...")
-        if args["mod_quantum_instance"]: 
+        if args["mod_quantum_instance"]:
             model._backend_config = {
-            "optimization_level": 3,
-            "initial_layout": initial_layout,
-            "seed_transpiler": seed,
-            "shots": 10000,
+                "optimization_level": 3,
+                "initial_layout": initial_layout,
+                "seed_transpiler": seed,
+                "shots": 10000,
             }
             model._quantum_instance, model._backend = util.configure_quantum_instance(
                 ibmq_api_config=private_configuration["IBMQ"],
-                run_type='hardware',
-                backend_name='ibmq_toronto',
+                run_type="hardware",
+                backend_name="ibmq_toronto",
                 **model._backend_config,
             )
             model._quantum_kernel = QuantumKernel(
@@ -72,14 +70,20 @@ def main(args: dict):
         score_bkg = np.array([model.decision_function(fold) for fold in bkg_fold])
         scores_all = model.decision_function(test_features)
         print(
-        f"Saving the signal and background k-fold scores in the folder: "
-        + tcols.OKCYAN
-        + f"{output_path}"
-        + tcols.ENDC
-    )
-        np.save(output_path + f"sig_scores_n{args['ntest']}_k{args['kfolds']}.npy", score_sig)
-        np.save(output_path + f"bkg_scores_n{args['ntest']}_k{args['kfolds']}.npy", score_bkg)
-        
+            f"Saving the signal and background k-fold scores in the folder: "
+            + tcols.OKCYAN
+            + f"{output_path}"
+            + tcols.ENDC
+        )
+        np.save(
+            output_path + f"sig_scores_n{args['ntest']}_k{args['kfolds']}.npy",
+            score_sig,
+        )
+        np.save(
+            output_path + f"bkg_scores_n{args['ntest']}_k{args['kfolds']}.npy",
+            score_bkg,
+        )
+
         if isinstance(model, OneClassQSVM):
             np.save(output_path + f"kernel_matrix_test.npy", model._kernel_matrix_test)
         scores_time_fina = perf_counter()
@@ -102,7 +106,9 @@ def get_arguments() -> dict:
         Dictionary with parsed arguments
     """
 
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "--sig_path",
         type=str,
@@ -131,8 +137,9 @@ def get_arguments() -> dict:
         "--kfolds", type=int, default=5, help="Number of k-validation/test folds used."
     )
     parser.add_argument(
-        "--mod_quantum_instance", action="store_true", help="Reconfigure the quantum "
-        "instance and backend."
+        "--mod_quantum_instance",
+        action="store_true",
+        help="Reconfigure the quantum " "instance and backend.",
     )
     args = parser.parse_args()
 
@@ -151,4 +158,3 @@ def get_arguments() -> dict:
 if __name__ == "__main__":
     args = get_arguments()
     main(args)
-

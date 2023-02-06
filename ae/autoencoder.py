@@ -5,13 +5,22 @@ import tensorflow as tf
 import vande.vae.layers as layers
 
 
-
 class ParticleAutoencoder(tf.keras.Model):
-    '''
-        Particle conv1D Autoencoder inheriting form keras.Model
-    '''
+    """
+    Particle conv1D Autoencoder inheriting form keras.Model
+    """
 
-    def __init__(self, input_shape=(100,3), latent_dim=6, x_mean_stdev=(0,1), kernel_n=16, kernel_sz=3, activation='elu', activation_latent=tf.keras.activations.linear,**kwargs):
+    def __init__(
+        self,
+        input_shape=(100, 3),
+        latent_dim=6,
+        x_mean_stdev=(0, 1),
+        kernel_n=16,
+        kernel_sz=3,
+        activation="elu",
+        activation_latent=tf.keras.activations.linear,
+        **kwargs
+    ):
         super(ParticleAutoencoder, self).__init__(**kwargs)
         self._input_shape = input_shape
         self.latent_dim = latent_dim
@@ -19,84 +28,171 @@ class ParticleAutoencoder(tf.keras.Model):
         self.kernel_sz = kernel_sz
         self.activation = activation
         self.activation_latent = activation_latent
-        self.initializer = 'he_uniform'
+        self.initializer = "he_uniform"
         self.kernel_1D_sz = 3
         self.x_mean_stdev = x_mean_stdev
         self.encoder = self.build_encoder(*self.x_mean_stdev)
         self.decoder = self.build_decoder(*self.x_mean_stdev)
 
-
     def build_encoder(self, mean, stdev):
-        inputs = tf.keras.layers.Input(shape=self._input_shape, dtype=tf.float32, name='encoder_input')
+        inputs = tf.keras.layers.Input(
+            shape=self._input_shape, dtype=tf.float32, name="encoder_input"
+        )
         # normalize
         normalized = layers.StdNormalization(mean_x=mean, std_x=stdev)(inputs)
         # add channel dim
-        x = tf.keras.layers.Lambda(lambda x: tf.expand_dims(x, axis=3))(normalized) # [B x 100 x 3] => [B x 100 x 3 x 1]
+        x = tf.keras.layers.Lambda(lambda x: tf.expand_dims(x, axis=3))(
+            normalized
+        )  # [B x 100 x 3] => [B x 100 x 3 x 1]
         # 2D Conv
-        x = tf.keras.layers.Conv2D(filters=self.kernel_n, kernel_size=self.kernel_sz, activation=self.activation, kernel_initializer=self.initializer)(x)
+        x = tf.keras.layers.Conv2D(
+            filters=self.kernel_n,
+            kernel_size=self.kernel_sz,
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(x)
         # Squeeze
-        x = tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=2))(x)  # remove width axis for 1D Conv [ B x int(100-kernel_width/2) x 1 x kernel_n ] -> [ B x int(100-kernel_width/2) x kernel_n ]
+        x = tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=2))(
+            x
+        )  # remove width axis for 1D Conv [ B x int(100-kernel_width/2) x 1 x kernel_n ] -> [ B x int(100-kernel_width/2) x kernel_n ]
         # 1D Conv * 2
         self.kernel_n += 4
-        x = tf.keras.layers.Conv1D(filters=self.kernel_n, kernel_size=self.kernel_1D_sz, activation=self.activation, kernel_initializer=self.initializer)(x) # [ B x 96 x 10 ]
+        x = tf.keras.layers.Conv1D(
+            filters=self.kernel_n,
+            kernel_size=self.kernel_1D_sz,
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(
+            x
+        )  # [ B x 96 x 10 ]
         self.kernel_n += 4
-        x = tf.keras.layers.Conv1D(filters=self.kernel_n, kernel_size=self.kernel_1D_sz, activation=self.activation, kernel_initializer=self.initializer)(x) # [ B x 94 x 14 ]
+        x = tf.keras.layers.Conv1D(
+            filters=self.kernel_n,
+            kernel_size=self.kernel_1D_sz,
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(
+            x
+        )  # [ B x 94 x 14 ]
         # Pool
-        x = tf.keras.layers.AveragePooling1D()(x) # [ B x 47 x 14 ]
+        x = tf.keras.layers.AveragePooling1D()(x)  # [ B x 47 x 14 ]
         # shape info needed to build decoder model
         self.shape_convolved = x.get_shape().as_list()
         # Flatten
-        x = tf.keras.layers.Flatten()(x) #[B x 658]
+        x = tf.keras.layers.Flatten()(x)  # [B x 658]
         # Dense * 3
-        x = tf.keras.layers.Dense(int(self.latent_dim*17), activation=self.activation, kernel_initializer=self.initializer)(x)  # reduce convolution output
-        x = tf.keras.layers.Dense(int(self.latent_dim*4), activation=self.activation, kernel_initializer=self.initializer)(x)  # reduce again
+        x = tf.keras.layers.Dense(
+            int(self.latent_dim * 17),
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(
+            x
+        )  # reduce convolution output
+        x = tf.keras.layers.Dense(
+            int(self.latent_dim * 4),
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(
+            x
+        )  # reduce again
         # x = Dense(8, activation=self.activation, kernel_initializer=self.initializer)(x)
 
         # *****************************
         #         latent space
-        z = tf.keras.layers.Dense(self.latent_dim, activation=self.activation_latent, name='z')(x)
+        z = tf.keras.layers.Dense(
+            self.latent_dim, activation=self.activation_latent, name="z"
+        )(x)
 
         # instantiate encoder model
-        encoder = tf.keras.Model(name='encoder', inputs=inputs, outputs=z)
+        encoder = tf.keras.Model(name="encoder", inputs=inputs, outputs=z)
         encoder.summary()
         # plot_model(encoder, to_file=CONFIG['plotdir']+'vae_cnn_encoder.png', show_shapes=True)
         return encoder
 
     def build_decoder(self, mean, stdev):
-        latent_inputs = tf.keras.layers.Input(shape=(self.latent_dim,), name='z')
+        latent_inputs = tf.keras.layers.Input(shape=(self.latent_dim,), name="z")
         # Dense * 3
-        x = tf.keras.layers.Dense(int(self.latent_dim*4), activation=self.activation, kernel_initializer=self.initializer)(latent_inputs)  # inflate to input-shape/200
-        x = tf.keras.layers.Dense(int(self.latent_dim*17), activation=self.activation, kernel_initializer=self.initializer)(x)  # double size
-        x = tf.keras.layers.Dense(np.prod(self.shape_convolved[1:]), activation=self.activation, kernel_initializer=self.initializer)(x)
+        x = tf.keras.layers.Dense(
+            int(self.latent_dim * 4),
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(
+            latent_inputs
+        )  # inflate to input-shape/200
+        x = tf.keras.layers.Dense(
+            int(self.latent_dim * 17),
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(
+            x
+        )  # double size
+        x = tf.keras.layers.Dense(
+            np.prod(self.shape_convolved[1:]),
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(x)
         # Reshape
         x = tf.keras.layers.Reshape(tuple(self.shape_convolved[1:]))(x)
         # Upsample
-        x = tf.keras.layers.UpSampling1D()(x) # [ B x 94 x 16 ]
+        x = tf.keras.layers.UpSampling1D()(x)  # [ B x 94 x 16 ]
         # 1D Conv Transpose * 2
         self.kernel_n -= 4
-        x = layers.Conv1DTranspose(filters=self.kernel_n, kernel_sz=self.kernel_1D_sz, activation=self.activation, kernel_initializer=self.initializer)(x) # [ B x 94 x 16 ] -> [ B x 96 x 8 ]
+        x = layers.Conv1DTranspose(
+            filters=self.kernel_n,
+            kernel_sz=self.kernel_1D_sz,
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(
+            x
+        )  # [ B x 94 x 16 ] -> [ B x 96 x 8 ]
         self.kernel_n -= 4
-        x = layers.Conv1DTranspose(filters=self.kernel_n, kernel_sz=self.kernel_1D_sz, activation=self.activation, kernel_initializer=self.initializer)(x) # [ B x 96 x 8 ] -> [ B x 98 x 4 ]
+        x = layers.Conv1DTranspose(
+            filters=self.kernel_n,
+            kernel_sz=self.kernel_1D_sz,
+            activation=self.activation,
+            kernel_initializer=self.initializer,
+        )(
+            x
+        )  # [ B x 96 x 8 ] -> [ B x 98 x 4 ]
         # Expand
-        x = tf.keras.layers.Lambda(lambda x: tf.expand_dims(x, axis=2))(x) #  [ B x 98 x 1 x 4 ]
+        x = tf.keras.layers.Lambda(lambda x: tf.expand_dims(x, axis=2))(
+            x
+        )  #  [ B x 98 x 1 x 4 ]
         # 2D Conv Transpose
-        x = tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=self.kernel_sz, name='conv_2d_transpose')(x)
-        x = tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=3))(x) # [B x 100 x 3 x 1] -> [B x 100 x 3]
+        x = tf.keras.layers.Conv2DTranspose(
+            filters=1, kernel_size=self.kernel_sz, name="conv_2d_transpose"
+        )(x)
+        x = tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=3))(
+            x
+        )  # [B x 100 x 3 x 1] -> [B x 100 x 3]
         outputs_decoder = layers.StdUnnormalization(mean_x=mean, std_x=stdev)(x)
 
         # instantiate decoder model
-        decoder = tf.keras.Model(latent_inputs, outputs_decoder, name='decoder')
+        decoder = tf.keras.Model(latent_inputs, outputs_decoder, name="decoder")
         decoder.summary()
         # plot_model(decoder, to_file=CONFIG['plotdir'] + 'vae_cnn_decoder.png', show_shapes=True)
         return decoder
 
-
     @classmethod
     def load(cls, path):
-        custom_objects = {'Conv1DTranspose': layers.Conv1DTranspose, 'StdNormalization': layers.StdNormalization, 'StdUnnormalization': layers.StdUnnormalization}
-        encoder = tf.keras.models.load_model(os.path.join(path,'encoder.h5'), custom_objects=custom_objects, compile=False)
-        decoder = tf.keras.models.load_model(os.path.join(path,'decoder.h5'), custom_objects=custom_objects, compile=False)
-        model = tf.keras.models.load_model(os.path.join(path,'vae.h5'), custom_objects=custom_objects, compile=False)
+        custom_objects = {
+            "Conv1DTranspose": layers.Conv1DTranspose,
+            "StdNormalization": layers.StdNormalization,
+            "StdUnnormalization": layers.StdUnnormalization,
+        }
+        encoder = tf.keras.models.load_model(
+            os.path.join(path, "encoder.h5"),
+            custom_objects=custom_objects,
+            compile=False,
+        )
+        decoder = tf.keras.models.load_model(
+            os.path.join(path, "decoder.h5"),
+            custom_objects=custom_objects,
+            compile=False,
+        )
+        model = tf.keras.models.load_model(
+            os.path.join(path, "vae.h5"), custom_objects=custom_objects, compile=False
+        )
         return encoder, decoder, model
 
     def compile(self, optimizer, reco_loss):
@@ -104,7 +200,6 @@ class ParticleAutoencoder(tf.keras.Model):
         self.optimizer = optimizer
         self.reco_loss = reco_loss
 
-    
     def call(self, x):
         encoded = self.encoder(x)
         decoded = self.decoder(encoded)
@@ -123,7 +218,7 @@ class ParticleAutoencoder(tf.keras.Model):
         # Update weights
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
         # Return a dict mapping metric names to current value
-        return {"loss" : loss}
+        return {"loss": loss}
 
     def test_step(self, x):
         # Compute predictions
@@ -131,8 +226,4 @@ class ParticleAutoencoder(tf.keras.Model):
         # Updates the metrics tracking the loss
         loss = tf.math.reduce_mean(self.reco_loss(x, x_pred))
         # Return a dict mapping metric names to current value.
-        return {'loss' : loss}
-
-
-
-    
+        return {"loss": loss}
