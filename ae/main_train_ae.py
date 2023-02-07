@@ -16,20 +16,6 @@ import pofah.util.utility_fun as utfu
 import vande.vae.losses as loss
 
 
-def compare_jet_images(test_ds, model):
-    print(">>> plotting jet image comparison original vs predicted")
-    batch = next(test_ds.as_numpy_iterator())
-    for i in np.random.choice(len(batch), 3):
-        particles = batch[i]
-        img = saco.convert_jet_particles_to_jet_image(particles)
-        plt.imshow(np.squeeze(img), cmap="viridis")
-        plt.savefig("fig/img_orig_" + str(i) + ".png")
-        plt.clf()
-        particles_pred = model.predict(particles[np.newaxis, :, :])
-        img_pred = saco.convert_jet_particles_to_jet_image(particles_pred)
-        plt.imshow(np.squeeze(img_pred), cmap="viridis")
-        plt.savefig("fig/img_pred_" + str(i) + ".png")
-
 
 def train(
     data_sample,
@@ -81,7 +67,6 @@ def train(
 #           Runtime Params
 # ****************************************#
 
-do_clustering = True
 
 Parameters = namedtuple(
     "Parameters",
