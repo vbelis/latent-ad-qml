@@ -15,72 +15,47 @@ import pofah.util.event_sample as evsa
 import inference.predict_autoencoder as pred
 
 
-"""
-    pass datasample through autoencoder to obtain latent space representation and write to disk
-    for further usage in clusering and pca
-"""
+
+def map_to_latent_space(data_sample, model) -> np.ndarray: # [N x Z]
+     """prediction by autoencoder
+
+    Parameters
+    ----------
+    data_sample: tf.data.Dataset.from_tensor_slices(data_sample).batch(2048)
+        inputs
+    model: tf.keras.Model
+        the autoencoder
+
+    Returns
+    ----------
+    np.ndarray
+        latent representation
+    """
+    
+    latent_coords = []
+
+    for batch in data_sample:
+        # run encoder
+        coords = model.encoder(batch)
+        latent_coords.append(coords)
+
+    # return latent (per jet?)
+    return np.concatenate(latent_coords, axis=0)
 
 
 # ****************************************#
-#           Runtime Params
+#           run prediction
 # ****************************************#
 
-# sample_ids = ['qcdSide', 'qcdSideExt', 'qcdSig', 'qcdSigExt', 'GtoWW35na']
-# sample_ids = ['AtoHZ35']
-sample_ids = ["GtoWW15br"]
+if __name__ == "__main__":
 
+    parser = optparse.OptionParser()
+    parser.add_option("-path", dest="path", help='model_path')
+    (options,args) = parser.parse_args()
 
-Parameters = namedtuple("Parameters", " run_n read_n")
-params = Parameters(run_n=50, read_n=int(1e6))
+    # read in data sample
+    data_sample = ...
 
-paths = safa.SamplePathDirFactory(sdi.path_dict)
-output_dir = "/eos/user/k/kiwoznia/data/laspaclu_results/latent_rep/ae_run_" + str(
-    params.run_n
-)
-pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+    ae_model = tf.saved_model.load(model_path)
 
-
-# ****************************************#
-#           Load Autoencoder
-# ****************************************#
-
-# load model
-model_path_ae = pers.make_model_path(
-    run_n=params.run_n, date="20211110", prefix="AE"
-)  # todo: remove date from model path string
-
-print("[main_predict_ae] >>> loading autoencoder " + model_path_ae)
-ae_model = tf.saved_model.load(model_path_ae)
-
-
-for sample_id in sample_ids:
-
-    # ****************************************#
-    #           Read Data
-    # ****************************************#
-
-    sample = evsa.EventSample.from_input_dir(
-        name=sample_id, path=paths.sample_dir_path(sample_id), read_n=params.read_n
-    )
-    p1, p2 = sample.get_particles()
-
-    # ****************************************#
-    #           Apply Autoencoder
-    # ****************************************#
-
-    latent_coords = pred.map_to_latent_space(
-        data_sample=np.vstack([p1, p2]), model=ae_model, read_n=params.read_n
-    )
-    latent_j1, latent_j2 = np.split(latent_coords, 2)
-    latent_coords = np.stack([latent_j1, latent_j2], axis=1)
-
-    # ****************************************#
-    #           Write results to list
-    # ****************************************#
-
-    print("[main_predict_ae] >>> writing results for " + sample_id + "to " + output_dir)
-
-    # latent results
-    sample_out = jesa.JetSampleLatent.from_event_sample(sample)
-    sample_out.add_latent_representation(latent_coords)
-    sample_out.dump(os.path.join(output_dir, sample_out.name + ".h5"))
+    latent_coords = map_to_latent_space(data_sample, ae_model)
