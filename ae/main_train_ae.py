@@ -7,13 +7,9 @@ import datetime
 from collections import namedtuple
 from matplotlib import pyplot as plt
 import numpy as np
+import optparse
 
-import data.data_sample as dasa
-import util.persistence as pers
-import models.autoencoder as auen
-import anpofah.sample_analysis.sample_converter as saco
-import pofah.util.utility_fun as utfu
-import vande.vae.losses as loss
+import autoencoder as auen
 
 
 
@@ -25,6 +21,23 @@ def train(
     read_n=int(1e4),
     act_latent=None,
 ):
+    """Trains autoencoder
+
+    Parameters
+    ----------
+    data_sample: np.ndarray
+        inputs
+    input_shape: tuple, optional
+        shape, default (100, 3),
+    latent_dim: int, optional 
+        latent dim, default 6,
+    epochs: int, optional
+        number of epochs, default 10,
+    read_n: int, optional
+        number of inputs, default int(1e4),
+    act_latent: tf.keras.Actication, optional
+        latent activation, default None,
+    """
 
     # get data
     train_ds, valid_ds = data_sample.get_datasets_for_training(
@@ -37,13 +50,6 @@ def train(
         activation_latent=act_latent,
     )
     model.compile(optimizer=tf.keras.optimizers.Adam(), reco_loss=loss.threeD_loss)
-    # print(model.summary())
-
-    # tensorboard callback
-    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(
-        log_dir=log_dir, histogram_freq=1
-    )
 
     model.fit(
         train_ds,
@@ -58,47 +64,36 @@ def train(
             tensorboard_callback,
         ],
     )
-    # callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=70, verbose=1), tf.keras.callbacks.ReduceLROnPlateau(factor=0.8, patience=7, verbose=1)])
 
     return model
 
 
 # ****************************************#
-#           Runtime Params
+#           run training
 # ****************************************#
 
+if __name__ == "__main__":
 
-Parameters = namedtuple(
-    "Parameters",
-    "run_n epochs latent_dim read_n sample_id_train cluster_alg act_latent",
-)
-params = Parameters(
-    run_n=50,
-    epochs=200,
-    latent_dim=8,
-    read_n=int(1e6),
-    sample_id_train="qcdSide",
-    cluster_alg="kmeans",
-    act_latent=tf.keras.activations.tanh,
-)
+    parser = optparse.OptionParser()
+    parser.add_option("-is", dest="is", help='input shape')
+    parser.add_option("-ld", dest="ld", help='latent_dim')
+    parser.add_option("-ep", dest="ep", help='epochs')
+    parser.add_option("-rn", dest="rn", help="read_n")
+    parser.add_option("-al", dest="al", help='latent activation')
+    (options,args) = parser.parse_args()
 
-model_path = pers.make_model_path(run_n=params.run_n, prefix="AE", mkdir=True)
-data_sample = dasa.DataSample(params.sample_id_train)
+    # read in data sample
+    data_sample = ...
 
-# ****************************************#
-#           Autoencoder
-# ****************************************#
-
-# train AE model
-print(">>> training autoencoder run " + str(params.run_n))
-ae_model = train(
+    ae_model = train(
     data_sample,
-    epochs=params.epochs,
-    latent_dim=params.latent_dim,
-    read_n=params.read_n,
-    act_latent=params.act_latent,
+    options.is,
+    options.ld,
+    options.ep,
+    options.rn,
+    options.al,
 )
 
-# model save
-print(">>> saving autoencoder to " + model_path)
-tf.saved_model.save(ae_model, model_path)
+    # model save
+    print(">>> saving autoencoder to " + model_path)
+    tf.saved_model.save(ae_model, model_path)
