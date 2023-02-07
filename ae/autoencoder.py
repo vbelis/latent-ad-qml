@@ -6,8 +6,41 @@ import vande.vae.layers as layers
 
 
 class ParticleAutoencoder(tf.keras.Model):
-    """
-    Particle conv1D Autoencoder inheriting form keras.Model
+    """Autoencoder model for dimensionality reduction.
+
+    Attributes
+    ----------
+    input_shape: tuple, optional
+        shape of input, default (100,3)
+    latent_dim: int, optional
+        size of the latent dimension, default 6
+    x_mean_stdev: tuple, optional
+        mean and standard deviation of inputs, default (0,1)
+    kernel_n: int, optional
+        number of kernels, default 16
+    kernel_sz: int, optional
+        kernel size, default 3
+    activation: string, optional
+        activation function, default "elu"
+    activation_latent: tf.keras.activations, optional
+        activation before bottleneck, default tf.keras.activations.linear
+
+    Methods
+    ----------
+    build_encoder(mean=float, stddev=float)
+        build the encoder part
+    build decoder(mean=float, stddev=float)
+        build the decoder part
+    load(path=string)
+        load trained model from path
+    compile(optimizer=tf.keras.Optimizer, reco_loss=Callable)
+        compile the model with an optimizer and a reconstruction loss function
+    call(x=np.ndarray)
+        calls model on inputs x
+    train_step(x=np.ndarray)
+        execute one training step
+    test_step(x=np.ndarray)
+        execute one test step
     """
 
     def __init__(
@@ -35,6 +68,21 @@ class ParticleAutoencoder(tf.keras.Model):
         self.decoder = self.build_decoder(*self.x_mean_stdev)
 
     def build_encoder(self, mean, stdev):
+        """Builds encoder model
+        
+        Parameters
+        ----------
+        mean : float
+            mean of data.
+        stdev : float
+            stdev of data
+
+        Returns
+        -------
+        tf.keras.Model
+            the encoder
+        """
+
         inputs = tf.keras.layers.Input(
             shape=self._input_shape, dtype=tf.float32, name="encoder_input"
         )
@@ -110,6 +158,20 @@ class ParticleAutoencoder(tf.keras.Model):
         return encoder
 
     def build_decoder(self, mean, stdev):
+        """Builds decoder model
+        
+        Parameters
+        ----------
+        mean : float
+            mean of data.
+        stdev : float
+            stdev of data
+
+        Returns
+        -------
+        tf.keras.Model
+            the decoder
+        """
         latent_inputs = tf.keras.layers.Input(shape=(self.latent_dim,), name="z")
         # Dense * 3
         x = tf.keras.layers.Dense(
@@ -175,6 +237,18 @@ class ParticleAutoencoder(tf.keras.Model):
 
     @classmethod
     def load(cls, path):
+        """loads autoencoder
+        
+        Parameters
+        ----------
+        path : string
+            model path.
+
+        Returns
+        -------
+        tf.keras.Model
+            the autoencoder
+        """
         custom_objects = {
             "Conv1DTranspose": layers.Conv1DTranspose,
             "StdNormalization": layers.StdNormalization,
@@ -196,34 +270,77 @@ class ParticleAutoencoder(tf.keras.Model):
         return encoder, decoder, model
 
     def compile(self, optimizer, reco_loss):
+        """compiles the autoencoder
+        
+        Parameters
+        ----------
+        optimizer : tf.keras.Optimizer
+            the optimizer.
+        reco_loss : Callable
+            reconstruction loss function
+
+        """
         super(ParticleAutoencoder, self).compile()
         self.optimizer = optimizer
         self.reco_loss = reco_loss
 
     def call(self, x):
+        """calls the model
+        
+        Parameters
+        ----------
+        x : np.ndarray
+            inputs
+
+        Returns
+        -------
+        np.ndarray
+            outputs
+        """
         encoded = self.encoder(x)
         decoded = self.decoder(encoded)
         return decoded
 
     def train_step(self, x):
+        """training step
+        
+        Parameters
+        ----------
+        x : np.ndarray
+            inputs
+
+        Returns
+        -------
+        dict
+            loss dictionary
+        """
 
         with tf.GradientTape() as tape:
             x_pred = self(x, training=True)  # Forward pass
-            # Compute the loss value
             loss = self.reco_loss(x, x_pred)
 
-        # Compute gradients
         trainable_vars = self.trainable_variables
         gradients = tape.gradient(loss, trainable_vars)
-        # Update weights
+
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
-        # Return a dict mapping metric names to current value
+
         return {"loss": loss}
 
     def test_step(self, x):
-        # Compute predictions
+        """inference step
+        
+        Parameters
+        ----------
+        x : np.ndarray
+            inputs
+
+        Returns
+        -------
+        dict
+            loss dictionary
+        """
+
         x_pred = self(x, training=False)
-        # Updates the metrics tracking the loss
         loss = tf.math.reduce_mean(self.reco_loss(x, x_pred))
-        # Return a dict mapping metric names to current value.
+
         return {"loss": loss}
