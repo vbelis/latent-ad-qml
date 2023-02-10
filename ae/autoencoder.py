@@ -2,7 +2,7 @@ import setGPU
 import numpy as np
 import tensorflow as tf
 
-import vande.vae.layers as layers
+import layers
 
 
 class ParticleAutoencoder(tf.keras.Model):
