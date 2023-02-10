@@ -1,6 +1,6 @@
-qkmedians/.ipynb_checkpoints
-plotting/.ipynb_checkpoints
-__pycache__
+*/.ipynb_checkpoints/*
+__pycache__/
+*/__pycache__/*
 ._*
 *.pyc
 *DS_Store*
@@ -15,3 +15,8 @@ logs/
 # Data Files
 *.h5
 *.npy
+
+# Sphinx documentation
+docs/_build/
+docs/build/
+docs/*
