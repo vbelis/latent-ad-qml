@@ -154,7 +154,7 @@ def get_metric(qcd, bsm, tpr_window=[0.5, 0.6]):
     
     return one_over_fpr_data, one_over_fpr_error
 
-def calc_AD_scores(identifiers, n_samples_train, test_size=10000, signal_name='RSGraviton_WW', mass='35', br_na=None, around_peak=None, q_dir=None, c_dir=None, read_test_dir=None, save_dir=None classic=True):
+def calc_AD_scores(identifiers, n_samples_train, test_size=10000, signal_name='RSGraviton_WW', mass='35', br_na=None, around_peak=None, q_dir=None, c_dir=None, read_test_dir=None, save_dir=None, classic=True):
     """Calculates anomaly detection scores for different study - identified by identifiers.
     
     Parameters
