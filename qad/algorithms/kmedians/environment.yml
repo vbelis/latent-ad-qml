@@ -1,4 +1,4 @@
-name: tf_gpu_env
+name: env_qad
 channels:
   - conda-forge
   - defaults

@@ -17,8 +17,8 @@ from qiskit import Aer
 from qiskit.utils import QuantumInstance
 from qiskit_machine_learning.kernels import QuantumKernel
 
-from kernel_machines.terminal_enhancer import tcols
-from kernel_machines.feature_map_circuits import u_dense_encoding as u_dense
+from qad.algorithms.kernel_machines.terminal_enhancer import tcols
+from qad.algorithms.kernel_machines.feature_map_circuits import u_dense_encoding as u_dense
 
 import warnings  # For pandas frame.append method
 

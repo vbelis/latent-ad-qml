@@ -92,7 +92,7 @@ def phi_amp(a, b):
     return np.hstack([a_mag, -b_mag]) / np.sqrt(z)
 
 
-def psi_circuit(a, b): -> QuantumCircuit:
+def psi_circuit(a, b) -> QuantumCircuit:
     """Subcircuit for state psi.
 
     Parameters

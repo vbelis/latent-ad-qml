@@ -18,3 +18,4 @@ class tcols:
     UNDERLINE = "\033[4m"
     ROCKET = "\U0001F680"
     SPARKS = "\U00002728"
+    
