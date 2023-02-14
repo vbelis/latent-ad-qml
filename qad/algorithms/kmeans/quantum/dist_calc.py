@@ -1,6 +1,4 @@
 import numpy as np
-
-# import Qiskit
 from qiskit import Aer, IBMQ, execute, assemble, transpile
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 
@@ -8,23 +6,23 @@ shots_n = 1000
 
 
 def normalize(v):
-    """Normalized real vector
+    """Normalize real vector.
 
     Parameters
     ----------
-    v : np.ndarray
+    v : :class:`numpy.ndarray`
         real vector
 
     Returns
     -------
-    np.ndarray
+    :class:`numpy.ndarray`
         normalized vector
     """
     return v / np.linalg.norm(v)
 
 
 def calc_z(a, b) -> float:
-    """Calculates magnitude as z = |a|**2 + |b|**2
+    """Calculates magnitude as :math: `{z = |a|^2 + |b|^2}`.
 
     Parameters
     ----------
@@ -45,7 +43,7 @@ def calc_z(a, b) -> float:
 
 
 def psi_amp(a, b):
-    """Prepares amplitudes for encoding state psi.
+    """Prepares amplitudes for encoding state :math:`{\psi}`.
 
     Parameters
     ----------
@@ -70,7 +68,7 @@ def psi_amp(a, b):
 
 
 def phi_amp(a, b):
-    """Prepares amplitudes for encoding state phi.
+    """Prepares amplitudes for encoding state :math:`{\phi}`.
 
     Parameters
     ----------
@@ -93,7 +91,7 @@ def phi_amp(a, b):
 
 
 def psi_circuit(a, b) -> QuantumCircuit:
-    """Subcircuit for state psi.
+    """Subcircuit for state :math:`{\psi}`.
 
     Parameters
     ----------
@@ -104,8 +102,8 @@ def psi_circuit(a, b) -> QuantumCircuit:
 
     Returns
     -------
-    QuantumCircuit
-        Quantum circuit for state phi.
+    :class:`qiskit.circuit.QuantumCircuit`
+        Quantum circuit for state :math:`{\psi}`
     """
 
     amp = psi_amp(a, b) 
@@ -119,7 +117,7 @@ def psi_circuit(a, b) -> QuantumCircuit:
 
 
 def phi_circuit(a, b) -> QuantumCircuit:
-    """Subcircuit for state phi.
+    """Subcircuit for state :math:`{\phi}`.
 
     Parameters
     ----------
@@ -130,8 +128,8 @@ def phi_circuit(a, b) -> QuantumCircuit:
 
     Returns
     -------
-    QuantumCircuit
-        Quantum circuit for state phi.
+    :class:`qiskit.circuit.QuantumCircuit`
+        Quantum circuit for state :math:`{\phi}`
     """
 
     amp = phi_amp(a, b) 
@@ -144,7 +142,7 @@ def phi_circuit(a, b) -> QuantumCircuit:
 
 
 def overlap_circuit(a, b) -> QuantumCircuit:
-    """full overlap circuit < phi | psi >
+    """Full overlap circuit <:math:`{\phi} | {\psi}`>.
 
     Parameters
     ----------
@@ -155,7 +153,7 @@ def overlap_circuit(a, b) -> QuantumCircuit:
 
     Returns
     -------
-    QuantumCircuit
+    :class:`qiskit.circuit.QuantumCircuit`
         Quantum circuit that calculates overlap of encoded quantum states.
     """
 
@@ -187,24 +185,24 @@ def overlap_circuit(a, b) -> QuantumCircuit:
 
 
 def run_circuit(qc):
-    """utility function that runs quantum circuit
+    """Utility function that runs quantum circuit
 
     Parameters
     ----------
-    qc : QuantumCircuit
+    qc : :class:`qiskit.circuit.QuantumCircuit`
         the quantum circuit
 
     Returns
     -------
     List
-        counts of measurements.
+        counts of measurements
     """
     simulator = Aer.get_backend("qasm_simulator")
     return execute(qc, backend=simulator, shots=shots_n).result().get_counts(qc)
 
 
 def calc_overlap(answer, state="0"):
-    """utility function that calculates overlap from measurement results
+    """Utility function that calculates overlap from measurement results.
 
     Parameters
     ----------
@@ -223,15 +221,15 @@ def calc_overlap(answer, state="0"):
 
 
 def calc_dist(answer, z, state="0"):
-    """utility function that calculates the distance from overlap proportional to |a-b|**2
+    """Utility function that calculates the distance from overlap proportional to :math:`{|a-b|^2}`.
 
     Parameters
     ----------
     answer : List
-        counts of measurements.
-    z: float
+        counts of measurements
+    z : float
         magnitude
-    state: string, optional
+    state : string, optional
         state that captures distance, by default 0
 
     Returns
