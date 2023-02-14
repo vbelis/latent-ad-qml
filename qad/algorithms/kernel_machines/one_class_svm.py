@@ -50,15 +50,15 @@ class CustomOneClassSVM(OneClassSVM):
 
         Parameters
         ----------
-        x : np.ndarray
+        x : :class:`numpy.ndarray`
             array-like of shape (n_samples, n_features). Test samples.
-        y : np.ndarray
+        y : :class:`numpy.ndarray`
             array-like of shape (n_samples,). True labels for `x`.
         train_data : bool, optional
             To flag if the computation is on the training or testing datasets,
             by default False
-        sample_weight : np.ndarray, optional
-            array-like of shape (n_samples,), by default None
+        sample_weight : :class:`numpy.ndarray`, optional
+            array-like of shape (n_samples,), by default `None`
 
         Returns
         -------
@@ -79,12 +79,12 @@ class CustomOneClassSVM(OneClassSVM):
 
         Parameters
         ----------
-        x : np.ndarray
+        x : :class:`numpy.ndarray`
             Data vector array of shape (n_samples, n_features)
 
         Returns
         -------
-        np.ndarray
+        :class:`numpy.ndarray`
             The predicted labels of the input data vectors, of shape (n_samples).
         """
         y = super().predict(x)
@@ -97,7 +97,7 @@ class CustomOneClassSVM(OneClassSVM):
         and negative for an outlier. The output of `super().decision_function`
         is multiplied by -1 in order to have the same sign convention between
         supervised and unsupervised kernel machines. For some reason the scores
-        have the opposite sign for signal and background for SVC.decision_function
-        and OneClassSVM.decision_function.
+        have the opposite sign for signal and background for `sklearn.svm.SVC.decision_function`
+        and `OneClassSVM.decision_function`.
         """
         return -1.0 * super().decision_function(x)

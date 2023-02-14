@@ -8,11 +8,10 @@ import json
 from time import perf_counter
 from typing import Callable
 from qiskit.utils import algorithm_globals
-from qiskit.utils.mitigation import CompleteMeasFitter
 
-import util
-import data_processing
-from terminal_enhancer import tcols
+import qad.algorithms.kernel_machines.util as util
+import qad.algorithms.kernel_machines.data_processing as data_processing
+from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
 seed = 12345
 algorithm_globals.random_seed = seed
@@ -40,7 +39,7 @@ def time_and_train(fit: Callable, *args):
 
     Parameters
     ----------
-    fit : Callable
+    fit : `Callable`
         Fitting function of the corresponding model.
     args: dict
         Arguments of the fit function.

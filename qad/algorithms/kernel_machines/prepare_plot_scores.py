@@ -6,7 +6,7 @@ import numpy as np
 import argparse
 import h5py
 
-from terminal_enhancer import tcols
+from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
 
 def save_scores_h5(
