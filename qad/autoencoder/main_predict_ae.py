@@ -4,33 +4,32 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 import numpy as np
 from collections import namedtuple
-import pathlib
 
-import pofah.jet_sample as jesa
-import pofah.util.sample_factory as safa
-import pofah.path_constants.sample_dict_file_parts_input as sdi
-import util.persistence as pers
-import pofah.util.event_sample as evsa
-import inference.predict_autoencoder as pred
+#import pofah.jet_sample as jesa
+#import pofah.util.sample_factory as safa
+#import pofah.path_constants.sample_dict_file_parts_input as sdi
+#import util.persistence as pers
+#import pofah.util.event_sample as evsa
+#import inference.predict_autoencoder as pred
 
 
 
 def map_to_latent_space(data_sample, model) -> np.ndarray: # [N x Z]
-     """prediction by autoencoder
+    """Autoencoder mapping input space to latent representation.
 
     Parameters
     ----------
-    data_sample: tf.data.Dataset.from_tensor_slices(data_sample).batch(2048)
-        inputs
-    model: tf.keras.Model
+    data_sample: :class:`tensorflow.data.Dataset`
+        :class:`tensorflow.data.Dataset`.from_tensor_slices(input_sample (:class:`numpy.ndarray`)).batch(`batch_size`)
+    model: :class:`tensorflow.keras.Model`
         the autoencoder
 
     Returns
     ----------
-    np.ndarray
+    :class:`numpy.ndarray`
         latent representation
     """
-    
+
     latent_coords = []
 
     for batch in data_sample:

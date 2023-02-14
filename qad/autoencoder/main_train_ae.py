@@ -2,13 +2,13 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
-import datetime
+#import datetime
 from collections import namedtuple
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 import numpy as np
 import optparse
 
-import autoencoder as auen
+import qad.autoencoder.autoencoder as auen
 
 
 
@@ -24,18 +24,18 @@ def train(
 
     Parameters
     ----------
-    data_sample: np.ndarray
+    data_sample: :class:`numpy.ndarray`
         inputs
     input_shape: tuple, optional
-        shape, default (100, 3),
+        shape, default `(100, 3)`
     latent_dim: int, optional 
-        latent dim, default 6,
+        latent dim, default `6`
     epochs: int, optional
-        number of epochs, default 10,
+        number of epochs, default `10`
     read_n: int, optional
-        number of inputs, default int(1e4),
-    act_latent: tf.keras.Actication, optional
-        latent activation, default None,
+        number of inputs, default `int(1e4)`
+    act_latent: :class:`tensorflow.keras.Actication`, optional
+        latent activation, default `None`
     """
 
     # get data
@@ -74,24 +74,18 @@ def train(
 if __name__ == "__main__":
 
     parser = optparse.OptionParser()
-    parser.add_option("-is", dest="is", help='input shape')
+    parser.add_option("-data_sample", dest="data_sample", help="input data as numpy.array")
+    parser.add_option("-input_shape", dest="input_shape", help='input shape')
     parser.add_option("-ld", dest="ld", help='latent_dim')
     parser.add_option("-ep", dest="ep", help='epochs')
     parser.add_option("-rn", dest="rn", help="read_n")
     parser.add_option("-al", dest="al", help='latent activation')
     (options,args) = parser.parse_args()
 
-    # read in data sample
-    data_sample = ...
+    # read in data sample - example
+    data_sample = options.data_sample
 
-    ae_model = train(
-    data_sample,
-    options.is,
-    options.ld,
-    options.ep,
-    options.rn,
-    options.al,
-)
+    ae_model = train(data_sample, options.input_shape, options.ld, options.ep, options.rn, options.al)
 
     # model save
     print(">>> saving autoencoder to " + model_path)
