@@ -1,3 +1,0 @@
-from .kmedians import (
-    Kmedians
-)

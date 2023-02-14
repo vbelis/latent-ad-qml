@@ -1,3 +1,4 @@
+from . import quantum
 from .util import (
     euclidean_dist,
     calc_norm,
