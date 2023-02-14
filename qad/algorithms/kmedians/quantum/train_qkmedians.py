@@ -6,8 +6,8 @@ import qibo
 
 qibo.set_backend("tensorflow")
 
-import qkmedians as qkmed
-import utils as u
+import qad.algorithms.kmedians.quantum.qkmedians as qkmed
+#import utils as u
 
 
 def train_qkmedians(

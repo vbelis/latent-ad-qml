@@ -1,6 +1,6 @@
 import numpy as np
 import time
-import distance_calc as distc
+import qad.algorithms.kmedians.quantum.distance_calc as distc
 
 
 def initialize_centroids(points, k):
@@ -8,7 +8,7 @@ def initialize_centroids(points, k):
 
     Parameters
     ----------
-    points : `numpy.ndarray`
+    points : :class:`numpy.ndarray`
         Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
     k : int
         Number of clusters.
@@ -23,17 +23,17 @@ def initialize_centroids(points, k):
 
 
 def find_distance_matrix_quantum(points, centroid, device_name):
-    """Modified version of scipy.spatial.distance.cdist() function.
+    """Modified version of `scipy.spatial.distance.cdist()` function.
     Parameters
     ----------
-    points : `numpy.ndarray`
+    points : :class:`numpy.ndarray`
         Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
-    centroid : `numpy.ndarray`
+    centroid : :class`numpy.ndarray`
         Centroid of shape ``(1, X)``
 
     Returns
     -------
-    `numpy.ndarray`
+    :class:`numpy.ndarray`
         Distance matrix - distance of each point to centroid
     """
 
@@ -58,14 +58,14 @@ def geometric_median(points, median, eps=1e-6, device_name="/GPU:0"):
 
     Parameters
     ----------
-    points : `numpy.ndarray`
+    points : :class:`numpy.ndarray`
         Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
-    median : `numpy.ndarray`
+    median : :class:`numpy.ndarray`
         Initial median (centroid) of shape ``(1, X)``.
 
     Returns
     -------
-    `numpy.ndarray`
+    :class:`numpy.ndarray`
         Median
     """
 
@@ -109,16 +109,16 @@ def find_centroids_GM(points, cluster_labels, start_centroids, clusters=2):
 
     Parameters
     ----------
-    points : `numpy.ndarray`
+    points : :class:`numpy.ndarray`
         Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
-    cluster_labels : `numpy.ndarray`
+    cluster_labels : :class:`numpy.ndarray`
         Cluster labels assigned to each data point - shape `(N,)`
     clusters : int
         Number of clusters
 
     Returns
     -------
-    `numpy.ndarray`
+    :class:`numpy.ndarray`
         Centroids
     """
 
@@ -136,16 +136,16 @@ def find_nearest_neighbour_DI(points, centroids, device_name="/GPU:0"):
 
     Parameters
     -----------
-    points : `numpy.ndarray`
+    points : :class:`numpy.ndarray`
         Points represented as an array of shape ``(N, X)``, where `N` = number of samples, `X` = dimension of latent space.
-    centroids : `numpy.ndarray`
+    centroids : :class:`numpy.ndarray`
         Centroids of shape ``(k, X)``
 
     Returns
     -------
-    `numpy.ndarray`
+    :class:`numpy.ndarray`
         Cluster labels : array of shape `(N,)` specifying to which cluster each point is assigned.
-    `numpy.ndarray`
+    :class:`numpy.ndarray`
         Distances: array of shape `(N,)` specifying distances to nearest cluster for each point.
     """
 
