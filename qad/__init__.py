@@ -1,14 +1,3 @@
-from .compute_expr_ent import (
-    main,
-    prepare_circs,
-    compute_expr_ent_vs_circuit,
-    expr_vs_nqubits,
-    var_kernel_vs_nqubits,
-    get_data,
-    u_dense_encoding_no_ent,
-    u_dense_encoding,
-    u_dense_encoding_all,
-)
 
 from .plot import (
     get_roc_data,

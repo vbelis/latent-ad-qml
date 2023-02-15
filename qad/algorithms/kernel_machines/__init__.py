@@ -25,10 +25,6 @@ from .one_class_svm import (
     CustomOneClassSVM,
 )
 
-from .prepare_plot_scores import (
-    save_scores_h5,
-)
-
 from .qsvm import (
     QSVM,
 )

@@ -2,6 +2,17 @@
 # of a given circuit. Expressibility and entanglement capability are computed in
 # data-dependent setting.
 
+# ----- ADD LOCATION OF "qad" MODULE ON YOUR PATH
+# import sys
+# import os
+# from pathlib import Path
+# currentdir = os.getcwd()
+# path = Path(currentdir)
+# a = path.parent.absolute()
+# b = str(a.parent.absolute())
+# sys.path.append(currentdir)
+# sys.path.append(b)
+
 from time import perf_counter
 import numpy as np
 import pandas as pd
