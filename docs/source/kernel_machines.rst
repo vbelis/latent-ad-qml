@@ -1,7 +1,7 @@
 Kernel Machines
 ===============
 
-Data preprocessing
+Data processing
 ------------------
 .. automodule:: qad.algorithms.kernel_machines.data_processing
    :members:
@@ -33,12 +33,14 @@ Quantum SVM
 
 Train
 -----
-.. autofunction:: qad.algorithms.kernel_machines.train.main
+.. autofunction:: scripts.kernel_machines.train.main
 
-Visualization
+Test
+----
+.. autofunction:: scripts.kernel_machines.test.main
+
+Functions
 -------------
-.. automodule:: qad.algorithms.kernel_machines.prepare_plot_scores
-   :members:
 
 Helper functions
 ^^^^^^^^^^^^^^^^

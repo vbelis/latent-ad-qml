@@ -1,12 +1,14 @@
 Autoencoder
------------
+===========
 
+Model
+-----
 .. autoclass:: qad.autoencoder.autoencoder.ParticleAutoencoder
    :members:
    :show-inheritance:
 
 Layers
-^^^^^^
+------
 .. autoclass:: qad.autoencoder.layers.Conv1DTranspose
    :members:
    :show-inheritance:
@@ -20,10 +22,10 @@ Layers
    :show-inheritance:
 
 Train
-^^^^^
-.. autofunction:: qad.autoencoder.main_train_ae.train
+-----
+.. autofunction:: scripts.autoencoder.main_train_ae.train
 
 Predict
-^^^^^^^
-.. autofunction:: qad.autoencoder.main_predict_ae.map_to_latent_space
+-------
+.. autofunction:: scripts.autoencoder.main_predict_ae.map_to_latent_space
     
