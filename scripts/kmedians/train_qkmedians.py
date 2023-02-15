@@ -1,13 +1,22 @@
+# ----- ADD LOCATION OF "qad" MODULE ON YOUR PATH
+# import sys
+# import os
+# from pathlib import Path
+# currentdir = os.getcwd()
+# path = Path(currentdir)
+# a = path.parent.absolute()
+# b = str(a.parent.absolute())
+# sys.path.append(currentdir)
+# sys.path.append(b)
+
 import argparse
 import numpy as np
-import math
 import h5py
 import qibo
 
 qibo.set_backend("tensorflow")
 
 import qad.algorithms.kmedians.quantum.qkmedians as qkmed
-#import utils as u
 
 
 def train_qkmedians(

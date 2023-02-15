@@ -20,7 +20,7 @@ def map_to_latent_space(data_sample, model) -> np.ndarray: # [N x Z]
     Parameters
     ----------
     data_sample: :class:`tensorflow.data.Dataset`
-        :class:`tensorflow.data.Dataset`.from_tensor_slices(input_sample (:class:`numpy.ndarray`)).batch(`batch_size`)
+        `tensorflow.data.Dataset.from_tensor_slices(input_sample (:class:`numpy.ndarray`)).batch(`batch_size`)`
     model: :class:`tensorflow.keras.Model`
         the autoencoder
 
@@ -48,11 +48,12 @@ def map_to_latent_space(data_sample, model) -> np.ndarray: # [N x Z]
 if __name__ == "__main__":
 
     parser = optparse.OptionParser()
+    parser.add_option("-data_sample", dest="data_sample", help="input data as numpy.array")
     parser.add_option("-path", dest="path", help='model_path')
     (options,args) = parser.parse_args()
 
     # read in data sample
-    data_sample = ...
+    data_sample = options.data_sample
 
     ae_model = tf.saved_model.load(model_path)
 

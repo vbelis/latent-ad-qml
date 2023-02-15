@@ -2,6 +2,16 @@
 # The model is instantiated with some parameters, the data encoding circuit is built,
 # it is trained on a data set, and is saved in a folder.
 
+# ----- ADD LOCATION OF "qad" MODULE ON YOUR PATH
+# import sys
+# import os
+# from pathlib import Path
+# currentdir = os.getcwd()
+# path = Path(currentdir)
+# a = path.parent.absolute()
+# b = str(a.parent.absolute())
+# sys.path.append(currentdir)
+# sys.path.append(b)
 
 import argparse
 import json
@@ -18,6 +28,8 @@ algorithm_globals.random_seed = seed
 
 
 def main(args: dict):
+    """Trains and saves qsvm model.
+    """
     train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
@@ -28,7 +40,7 @@ def main(args: dict):
     util.print_model_info(model)
     util.export_hyperparameters(model, out_path)
     if args["run_type"] != "hardware":
-        util.eval_metrics(
+        eval_metrics(
             model, train_features, train_labels, test_features, test_labels, out_path
         )
     util.save_model(model, out_path)
@@ -197,4 +209,5 @@ def get_arguments() -> dict:
 
 
 if __name__ == "__main__":
+    args = get_arguments()
     main(args)

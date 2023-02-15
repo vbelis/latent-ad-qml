@@ -1,10 +1,19 @@
+# ----- ADD LOCATION OF "qad" MODULE ON YOUR PATH
+# import sys
+# import os
+# from pathlib import Path
+# currentdir = os.getcwd()
+# path = Path(currentdir)
+# a = path.parent.absolute()
+# b = str(a.parent.absolute())
+# sys.path.append(currentdir)
+# sys.path.append(b)
+
 import argparse
 import numpy as np
-import math
 import h5py
 
-import kmedians as KMed
-import utils as u
+import qad.algorithms.kmedians.classical.c_kmedians as KMed
 
 
 def train_kmedians(
