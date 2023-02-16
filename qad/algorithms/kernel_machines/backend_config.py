@@ -9,6 +9,8 @@ from qiskit.providers.aer.backends import AerSimulator
 from qiskit.providers import Backend
 from qiskit.providers.ibmq import IBMQBackend
 
+from qad.algorithms.kernel_machines.terminal_enhancer import tcols
+
 def ideal_simulation(**kwargs) -> QuantumInstance:
     """Defines QuantumInstance for an ideal (statevector) simulation (no noise, no
     sampling statistics uncertainties).

@@ -15,6 +15,7 @@ from time import perf_counter
 from typing import Union, Tuple
 
 import qad.algorithms.kernel_machines.backend_config as bc
+import qad.algorithms.kernel_machines.feature_map_circuits as fm
 from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
 class OneClassQSVM(OneClassSVM):

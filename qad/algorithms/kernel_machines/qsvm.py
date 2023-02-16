@@ -15,7 +15,7 @@ import numpy as np
 from time import perf_counter
 from typing import Union
 
-#import qad.algorithms.kernel_machines.feature_map_circuits as fm
+import qad.algorithms.kernel_machines.feature_map_circuits as fm
 import qad.algorithms.kernel_machines.backend_config as bc
 from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 

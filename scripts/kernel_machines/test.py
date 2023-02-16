@@ -1,17 +1,6 @@
 # Assessing the model performance using k-fold testing. The test dataset is
 # comprised of background (QCD) data and unseen anomalies (new-physics) data.
 
-# ----- ADD LOCATION OF "qad" MODULE ON YOUR PATH
-# import sys
-# import os
-# from pathlib import Path
-# currentdir = os.getcwd()
-# path = Path(currentdir)
-# a = path.parent.absolute()
-# b = str(a.parent.absolute())
-# sys.path.append(currentdir)
-# sys.path.append(b)
-
 from time import perf_counter
 import numpy as np
 import argparse

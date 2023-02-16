@@ -28,8 +28,7 @@ algorithm_globals.random_seed = seed
 
 
 def main(args: dict):
-    """Trains and saves qsvm model.
-    """
+    """Trains and saves qsvm model."""
     train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
@@ -40,7 +39,7 @@ def main(args: dict):
     util.print_model_info(model)
     util.export_hyperparameters(model, out_path)
     if args["run_type"] != "hardware":
-        eval_metrics(
+        util.eval_metrics(
             model, train_features, train_labels, test_features, test_labels, out_path
         )
     util.save_model(model, out_path)
