@@ -2,17 +2,6 @@
 # The model is instantiated with some parameters, the data encoding circuit is built,
 # it is trained on a data set, and is saved in a folder.
 
-# ----- ADD LOCATION OF "qad" MODULE ON YOUR PATH
-# import sys
-# import os
-# from pathlib import Path
-# currentdir = os.getcwd()
-# path = Path(currentdir)
-# a = path.parent.absolute()
-# b = str(a.parent.absolute())
-# sys.path.append(currentdir)
-# sys.path.append(b)
-
 import argparse
 import json
 from time import perf_counter
