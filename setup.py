@@ -20,7 +20,7 @@ setup(
         'mplhep-data==0.0.3',
         'numpy>=1.21',
         'pandas>=1.4.0',
-        'scikit-learn>=1.1.1',
+        'scikit-learn==1.1.1',
         'scipy>=1.9',
         'qibo==0.1.10',
         'qiskit==0.36.2',
@@ -30,7 +30,8 @@ setup(
         'qiskit-machine-learning==0.4.0',
         'qiskit-terra==0.20.2',
         'triple_e @ https://github.com/vbelis/triple_e/archive/master.zip#egg=triple_e-0.1.3',
-        'tensorflow>=2.6'
+        'tensorflow>=2.6',
+        'pylatexenc==2.10'
     ],
     extra_requires={
         'docs': [

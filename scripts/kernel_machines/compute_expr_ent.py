@@ -2,17 +2,6 @@
 # of a given circuit. Expressibility and entanglement capability are computed in
 # data-dependent setting.
 
-# ----- ADD LOCATION OF "qad" MODULE ON YOUR PATH
-# import sys
-# import os
-# from pathlib import Path
-# currentdir = os.getcwd()
-# path = Path(currentdir)
-# a = path.parent.absolute()
-# b = str(a.parent.absolute())
-# sys.path.append(currentdir)
-# sys.path.append(b)
-
 from time import perf_counter
 import numpy as np
 import pandas as pd
@@ -157,7 +146,7 @@ def compute_expr_ent_vs_circuit(
             val_ent = 0  # by construction
         else:
             val_ent = entanglement_capability(
-                circuit, n_params, n_shots=1000, data=data
+                circuit, n_params, n_shots=1000 if args["n_shots"]>1000 else args["n_shots"], data=data
             )
 
         for _ in range(args["n_exp"]):
