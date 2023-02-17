@@ -51,7 +51,7 @@ class ParticleAutoencoder(tf.keras.Model):
 
     def build_encoder(self, mean, stdev):
         """Builds encoder model
-        
+
         Parameters
         ----------
         mean : float
@@ -141,7 +141,7 @@ class ParticleAutoencoder(tf.keras.Model):
 
     def build_decoder(self, mean, stdev):
         """Builds decoder model
-        
+
         Parameters
         ----------
         mean : float
@@ -220,7 +220,7 @@ class ParticleAutoencoder(tf.keras.Model):
     @classmethod
     def load(cls, path):
         """Loads autoencoder.
-        
+
         Parameters
         ----------
         path : str
@@ -253,7 +253,7 @@ class ParticleAutoencoder(tf.keras.Model):
 
     def compile(self, optimizer, reco_loss):
         """Compiles the autoencoder - set model's configuration.
-        
+
         Parameters
         ----------
         optimizer : :class:`tensorflow.keras.Optimizer`
@@ -268,7 +268,7 @@ class ParticleAutoencoder(tf.keras.Model):
 
     def call(self, x):
         """Calls the model.
-        
+
         Parameters
         ----------
         x : :class:`numpy.ndarray`
@@ -285,7 +285,7 @@ class ParticleAutoencoder(tf.keras.Model):
 
     def train_step(self, x):
         """Training step.
-        
+
         Parameters
         ----------
         x : :class:`numpy.ndarray`
@@ -310,7 +310,7 @@ class ParticleAutoencoder(tf.keras.Model):
 
     def test_step(self, x):
         """Inference step.
-        
+
         Parameters
         ----------
         x : :class:`numpy.ndarray`

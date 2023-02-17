@@ -1,7 +1,4 @@
-from .distance_calc import (
-    DistCalc_DI,
-    pad_input
-)
+from .distance_calc import DistCalc_DI, pad_input
 
 from .qkmedians import (
     initialize_centroids,

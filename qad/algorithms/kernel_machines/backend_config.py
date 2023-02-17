@@ -11,6 +11,7 @@ from qiskit.providers.ibmq import IBMQBackend
 
 from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
+
 def ideal_simulation(**kwargs) -> QuantumInstance:
     """Defines QuantumInstance for an ideal (statevector) simulation (no noise, no
     sampling statistics uncertainties).
@@ -59,6 +60,7 @@ def noisy_simulation(
     quantum_instance = QuantumInstance(backend=backend, **kwargs)
     return quantum_instance, quantum_computer_backend
 
+
 def connect_quantum_computer(ibmq_api_config: dict, backend_name: str) -> IBMQBackend:
     """Load a IBMQ-experience backend using a token (IBM-CERN hub credentials)
     This backend (i.e. quantum computer) can either be used for running on
@@ -97,6 +99,7 @@ def connect_quantum_computer(ibmq_api_config: dict, backend_name: str) -> IBMQBa
         )
     print(tcols.OKGREEN + " Loaded IBMQ backend: " + backend_name + "." + tcols.ENDC)
     return quantum_computer_backend
+
 
 def configure_quantum_instance(
     ibmq_api_config: dict, run_type: str, backend_name: str = None, **kwargs
@@ -154,6 +157,7 @@ def configure_quantum_instance(
         )
     return quantum_instance, backend
 
+
 def get_backend_configuration(backend: Backend) -> Tuple:
     """Gather backend configuration and properties from the calibration data.
     The output is used to build a noise model using the qiskit aer_simulator.
@@ -179,6 +183,7 @@ def get_backend_configuration(backend: Backend) -> Tuple:
     coupling_map = backend.configuration().coupling_map
     basis_gates = noise_model.basis_gates
     return noise_model, coupling_map, basis_gates
+
 
 def hardware_run(
     backend_name: str, ibmq_api_config: dict, **kwargs

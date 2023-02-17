@@ -17,9 +17,7 @@ from .feature_map_circuits import (
     u_dense_encoding_no_ent,
 )
 
-from .one_class_qsvm import (
-    OneClassQSVM
-)
+from .one_class_qsvm import OneClassQSVM
 
 from .one_class_svm import (
     CustomOneClassSVM,

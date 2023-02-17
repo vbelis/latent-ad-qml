@@ -5,16 +5,15 @@ import tensorflow as tf
 import numpy as np
 from collections import namedtuple
 
-#import pofah.jet_sample as jesa
-#import pofah.util.sample_factory as safa
-#import pofah.path_constants.sample_dict_file_parts_input as sdi
-#import util.persistence as pers
-#import pofah.util.event_sample as evsa
-#import inference.predict_autoencoder as pred
+# import pofah.jet_sample as jesa
+# import pofah.util.sample_factory as safa
+# import pofah.path_constants.sample_dict_file_parts_input as sdi
+# import util.persistence as pers
+# import pofah.util.event_sample as evsa
+# import inference.predict_autoencoder as pred
 
 
-
-def map_to_latent_space(data_sample, model) -> np.ndarray: # [N x Z]
+def map_to_latent_space(data_sample, model) -> np.ndarray:  # [N x Z]
     """Autoencoder mapping input space to latent representation.
 
     Parameters
@@ -48,9 +47,11 @@ def map_to_latent_space(data_sample, model) -> np.ndarray: # [N x Z]
 if __name__ == "__main__":
 
     parser = optparse.OptionParser()
-    parser.add_option("-data_sample", dest="data_sample", help="input data as numpy.array")
-    parser.add_option("-path", dest="path", help='model_path')
-    (options,args) = parser.parse_args()
+    parser.add_option(
+        "-data_sample", dest="data_sample", help="input data as numpy.array"
+    )
+    parser.add_option("-path", dest="path", help="model_path")
+    (options, args) = parser.parse_args()
 
     # read in data sample
     data_sample = options.data_sample

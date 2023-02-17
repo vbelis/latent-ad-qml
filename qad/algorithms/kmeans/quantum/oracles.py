@@ -97,7 +97,6 @@ def create_oracle_lincombi(threshold, dist_arr, oracles):
         The linear combination threshold oracle circuit.
     """
 
-
     idx = np.where(dist_arr == threshold)[0][0]
     delta_coeff = signal.unit_impulse(len(dist_arr), idx)
 

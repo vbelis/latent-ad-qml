@@ -19,6 +19,7 @@ import qad.algorithms.kernel_machines.feature_map_circuits as fm
 import qad.algorithms.kernel_machines.backend_config as bc
 from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
+
 class QSVM(SVC):
     """Quantum support vector machine. Supervised SVM model equipped with a
     quantum feature map, implemented by a data encoding circuit.

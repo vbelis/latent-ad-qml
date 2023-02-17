@@ -11,7 +11,9 @@ import mplhep as hep
 from matplotlib.lines import Line2D
 
 
-def get_roc_data(qcd: np.ndarray, bsm: np.ndarray, fix_tpr: bool = False) -> Tuple[np.ndarray]:
+def get_roc_data(
+    qcd: np.ndarray, bsm: np.ndarray, fix_tpr: bool = False
+) -> Tuple[np.ndarray]:
     """Compute roc curves given the background and anomaly datasets.
 
     Parameters
@@ -42,9 +44,9 @@ def get_roc_data(qcd: np.ndarray, bsm: np.ndarray, fix_tpr: bool = False) -> Tup
 
 
 def get_FPR_for_fixed_TPR(
-    tpr_window:float, fpr_loss: np.ndarray, tpr_loss: np.ndarray, tolerance: float
+    tpr_window: float, fpr_loss: np.ndarray, tpr_loss: np.ndarray, tolerance: float
 ) -> float:
-    """Get FPR for a fixed value of TPR. 
+    """Get FPR for a fixed value of TPR.
 
     Calculation of the ROC curve is in discrete steps. A window of tolerance is defined
     around the desired TPR working point and the mean of FPR is taken there.
@@ -69,7 +71,7 @@ def get_FPR_for_fixed_TPR(
         (tpr_loss >= tpr_window - tpr_window * tolerance)
         & (tpr_loss <= tpr_window + tpr_window * tolerance)
     )[0]
-    
+
     return np.mean(fpr_loss[position])
 
 
@@ -84,7 +86,7 @@ def get_mean_and_error(data: np.ndarray) -> Tuple[float]:
     Returns
     -------
     Tuple
-        float: 
+        float:
             The mean.
         float:
             The standard deviation.
@@ -125,7 +127,7 @@ def plot_ROC_kfold_mean(
         List of scores of the classical model on the signal (anomaly) data.
     ids : List[str]
         Identifier of the different scores corresponing to the lists of scores.
-        Namely, 3 different anomalies, 3 different latent dimensions or 
+        Namely, 3 different anomalies, 3 different latent dimensions or
         3 different training sizes.
     n_folds : int
         Number of k-folds.
@@ -140,7 +142,7 @@ def plot_ROC_kfold_mean(
     save_dir : str, optional
         Output directory for the produced figure, by default None
     palette : List[str], optional
-        Colors for the 3 ROC curves per plot based on the ids, 
+        Colors for the 3 ROC curves per plot based on the ids,
         by default ["#3E96A1", "#EC4E20", "#FF9505"]
     """
 
@@ -289,8 +291,8 @@ def create_table_for_fixed_TPR(
     ids: List[str],
     n_folds: int,
     tpr_windows: List[float] = [0.4, 0.6, 0.8],
-    tolerance: float =0.01,
-)-> pd.DataFrame:
+    tolerance: float = 0.01,
+) -> pd.DataFrame:
     """Compute mean and std of FPR @FPR working point.
 
     Parameters
@@ -305,7 +307,7 @@ def create_table_for_fixed_TPR(
         List of scores of the classical model on the signal (anomaly) data.
     ids : List[str]
         Identifier of the different scores corresponing to the lists of scores.
-        Namely, 3 different anomalies, 3 different latent dimensions or 
+        Namely, 3 different anomalies, 3 different latent dimensions or
         3 different training sizes.
     n_folds : int
         Number of k-folds.

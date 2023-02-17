@@ -18,7 +18,9 @@ from qiskit.utils import QuantumInstance
 from qiskit_machine_learning.kernels import QuantumKernel
 
 from qad.algorithms.kernel_machines.terminal_enhancer import tcols
-from qad.algorithms.kernel_machines.feature_map_circuits import u_dense_encoding as u_dense
+from qad.algorithms.kernel_machines.feature_map_circuits import (
+    u_dense_encoding as u_dense,
+)
 
 import warnings  # For pandas frame.append method
 
@@ -146,7 +148,10 @@ def compute_expr_ent_vs_circuit(
             val_ent = 0  # by construction
         else:
             val_ent = entanglement_capability(
-                circuit, n_params, n_shots=1000 if args["n_shots"]>1000 else args["n_shots"], data=data
+                circuit,
+                n_params,
+                n_shots=1000 if args["n_shots"] > 1000 else args["n_shots"],
+                data=data,
             )
 
         for _ in range(args["n_exp"]):

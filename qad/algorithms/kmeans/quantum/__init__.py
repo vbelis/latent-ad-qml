@@ -8,7 +8,7 @@ from .dist_calc import (
     overlap_circuit,
     run_circuit,
     calc_overlap,
-    calc_dist
+    calc_dist,
 )
 
 from .grover import (

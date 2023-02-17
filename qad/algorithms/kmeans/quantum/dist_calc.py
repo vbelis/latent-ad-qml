@@ -58,7 +58,6 @@ def psi_amp(a, b):
         list of amplitudes (floats)
     """
 
-
     a_norm = normalize(a)
     b_norm = normalize(b)
 
@@ -106,10 +105,10 @@ def psi_circuit(a, b) -> QuantumCircuit:
         Quantum circuit for state :math:`{\psi}`
     """
 
-    amp = psi_amp(a, b) 
+    amp = psi_amp(a, b)
     sz = int(np.log2(len(amp)))
 
-    qc = QuantumCircuit(sz) 
+    qc = QuantumCircuit(sz)
 
     qc.initialize(amp, range(sz))
 
@@ -132,9 +131,9 @@ def phi_circuit(a, b) -> QuantumCircuit:
         Quantum circuit for state :math:`{\phi}`
     """
 
-    amp = phi_amp(a, b) 
-    sz = 1 
-    qc = QuantumCircuit(sz) 
+    amp = phi_amp(a, b)
+    sz = 1
+    qc = QuantumCircuit(sz)
 
     qc.initialize(amp, [0])
 
@@ -176,7 +175,7 @@ def overlap_circuit(a, b) -> QuantumCircuit:
     qc.barrier()
 
     qc.h(0)
-    qc.cswap(0, qr_psi[-1], qr_phi[0])  
+    qc.cswap(0, qr_psi[-1], qr_phi[0])
     qc.h(0)
 
     qc.measure(0, 0)

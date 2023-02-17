@@ -8,5 +8,5 @@ from .util import (
     get_auc,
     get_metric,
     calc_AD_scores,
-    get_roc_data
+    get_roc_data,
 )
