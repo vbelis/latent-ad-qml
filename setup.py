@@ -30,7 +30,7 @@ setup(
         'qiskit-machine-learning==0.4.0',
         'qiskit-terra==0.20.2',
         'triple_e @ https://github.com/vbelis/triple_e/archive/master.zip#egg=triple_e-0.1.3',
-        'tensorflow-macos>=2.6'
+        'tensorflow>=2.6'
     ],
     extra_requires={
         'docs': [
