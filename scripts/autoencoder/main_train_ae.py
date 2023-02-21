@@ -1,14 +1,3 @@
-# ----- ADD LOCATION OF "qad" MODULE ON YOUR PATH
-# import sys
-# import os
-# from pathlib import Path
-# currentdir = os.getcwd()
-# path = Path(currentdir)
-# a = path.parent.absolute()
-# b = str(a.parent.absolute())
-# sys.path.append(currentdir)
-# sys.path.append(b)
-
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
