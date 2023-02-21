@@ -1,72 +1,42 @@
 # Producing figures
-You can get the plots by running in a jupyter notebook the following. The convention for the `.h5` file paths maybe you needs to be change depending on file type.
-
-### The 3 different signals for 8 latent dimensions and n_train=600, n_test=100k, k=5 folds
-Firstly, load the score values from the saved files using our convention
+After the unsuperised quantum and classical kernel machines have been trained and test scores have been saved, one can summarise their performance with a ROC curve plot. Firstly, following our convention the test scores are prepared for plotting using [`scripts/kernel_machines/scripts/prepare_plot_scores.py`](https://github.com/vbelis/latent-ad-qml/blob/docs-reformat/scripts/kernel_machines/prepare_plot_scores.py), and by running
+```python
+python prepare_plot_scores.py --classical_folder trained_qsvms/c_test_nu\=0.01/ --quantum_folder trained_qsvms/q_test_nu\=0.01_ideal/ --out_path test_plot --name_suffix n<n_test>_k<k_folds>
 ```
-import h5py
-import sys
-sys.path.append("..")
 
-import numpy as np
-import plotting as pl
-%load_ext autoreload
-%autoreload 2
+Then, we load the score values from the saved files using our convention, e.g. for the case of three different signals, with eight latent dimensions,  600 training datapoints, 100k testing datapoints, and k=5 folds
 
-read_dir='path_to_file'
+```python
+read_dir='/path/to/data'
 n_folds = 5
 latent_dim = '8'
 n_samples_train=600
-mass=['35', '15', '35']
-br_na=['NA', 'BR', ''] # narrow (NA) or broad (BR)
-signal_name=['RSGraviton_WW', 'RSGraviton_WW', 'AtoHZ_to_ZZZ'] # type of signal
+mass=['35', '35', '15']
+br_na=['NA', '', 'BR'] # narrow (NA) or broad (BR)
+signal_name=['RSGraviton_WW', 'AtoHZ_to_ZZZ', 'RSGraviton_WW']
+ntest = ['100', '100', '100']
 
 q_loss_qcd=[]; q_loss_sig=[]; c_loss_qcd=[]; c_loss_sig=[]
 for i in range(len(signal_name)):
-    with h5py.File(f'{read_dir}/Latent_{latent_dim}_trainsize_{n_samples_train}_{signal_name[i]}{mass[i]}{br_na[i]}_n100k_kfold{n_folds}.h5', 'r') as file:
+    #if br_na[i]: 
+    with h5py.File(f'{read_dir}/Latent_{latent_dim}_trainsize_{n_samples_train}_{signal_name[i]}'
+                   '{mass[i]}{br_na[i]}_n{ntest[i]}k_kfold{n_folds}.h5', 'r') as file:
         q_loss_qcd.append(file['quantum_loss_qcd'][:])
         q_loss_sig.append(file['quantum_loss_sig'][:])
         c_loss_qcd.append(file['classic_loss_qcd'][:])
         c_loss_sig.append(file['classic_loss_sig'][:])
 ```
 
-Then plot the results like so, making sure the `save_dir` exists.
+The final ROC plot, as it appears in the paper in Fig. 3, can be obtained 
 
-```
-legend_signal_names=['Narrow 'r'G $\to$ WW 3.5 TeV', 'Broad 'r'G $\to$ WW 1.5 TeV', r'A $\to$ HZ $\to$ ZZZ 3.5 TeV']
+```python
+colors = ['forestgreen', '#EC4E20', 'darkorchid']
+legend_signal_names=['Narrow 'r'G $\to$ WW 3.5 TeV', r'A $\to$ HZ $\to$ ZZZ 3.5 TeV', 'Broad 'r'G $\to$ WW 1.5 TeV']
 pl.plot_ROC_kfold_mean(q_loss_qcd, q_loss_sig, c_loss_qcd, c_loss_sig, legend_signal_names, n_folds,\
-                title=r'testlat=8', save_dir='../jupyter_plots', pic_id='test')
+                legend_title=r'Anomaly signature', save_dir='../jupyter_plots', pic_id='test',
+                palette=colors, xlabel=r'$TPR$', ylabel=r'$FPR^{-1}$')
 ```
-Example for the unsupervised kernel machine:
-
-<img width="450" alt="image" src="https://user-images.githubusercontent.com/48251467/196224459-c9e18b6a-12e1-4a5f-8e66-e6ae979e27ef.png">
-
-### The 4, 8, 16 latent dimension plot with n_train=600, n_test=40k, k=5 folds, for AtoHZ
-Likewise, load the scores,
-```
-read_dir='path_to_file'
-n_folds = 5
-latent_dim = ['4', '8', '16']
-n_samples_train=600
-mass='35'
-br_na=''
-signal_name='AtoHZ_to_ZZZ'
-n_test = ['40k', '40k', '40k']
-
-q_loss_qcd=[]; q_loss_sig=[]; c_loss_qcd=[]; c_loss_sig=[]
-for i in range(len(latent_dim)):
-    with h5py.File(f'{read_dir}/lat{latent_dim[i]}/unsupervised/Latent_{latent_dim[i]}_trainsize_{n_samples_train}_{signal_name}{mass}{br_na}_n{n_test[i]}_kfold{n_folds}.h5', 'r') as file:
-        q_loss_qcd.append(file['quantum_loss_qcd'][:])
-        q_loss_sig.append(file['quantum_loss_sig'][:])
-        c_loss_qcd.append(file['classic_loss_qcd'][:])
-        c_loss_sig.append(file['classic_loss_sig'][:])
-```
-and plot:
-```
-legend_signal_names=['lat4', 'lat8', 'lat16']
-pl.plot_ROC_kfold_mean(q_loss_qcd, q_loss_sig, c_loss_qcd, c_loss_sig, legend_signal_names, n_folds,\
-                title=r'test A $\to$ HZ $\to$ ZZZ', save_dir='../jupyter_plots', pic_id='test')
-```
-Example for the unsupervised QSVM in lat=4, 8, 16:
-
-<img width="450" alt="image" src="https://user-images.githubusercontent.com/48251467/196227976-63ed8cae-9709-4697-879b-f64cf579a197.png">
+Example for the unsupervised kernel machine performance on different anomalies:
+<p align="center">
+<img width="550" alt="image" src="https://user-images.githubusercontent.com/48251467/220371963-0dbd3ef5-a1db-474d-a976-900a71fd8cc4.png">
+</p>
