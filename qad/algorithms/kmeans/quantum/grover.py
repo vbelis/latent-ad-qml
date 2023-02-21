@@ -5,7 +5,7 @@ from qiskit.quantum_info.operators import Operator, Pauli
 
 
 def diffuser(n):
-    """Subcircuit for Diffuser of Grover algorithm
+    """Subcircuit for Diffuser of Grover algorithm.
 
     Parameters
     ----------
@@ -14,8 +14,8 @@ def diffuser(n):
 
     Returns
     -------
-    QuantumCircuit
-        Grover diffuser
+    :class:`qiskit.circuit.QuantumCircuit`
+        circuit for Grover diffuser
     """
 
     qc = QuantumCircuit(n)
@@ -40,20 +40,20 @@ def diffuser(n):
 
 
 def grover_circuit(n, oracle, marked_n=1):
-    """Full Grover circuit
+    """Full Grover quantum circuit.
 
     Parameters
     ----------
     n : int
         number of qubits
-    oracle : QuantumCircuit
+    oracle : :class:`qiskit.circuit.QuantumCircuit`
         the preconstructed oracle circuit
     marked_n : int, optional
         number of marked entries, default 1
 
     Returns
     -------
-    QuantumCircuit
+    :class:`qiskit.circuit.QuantumCircuit`
         Grover circuit.
     """
 

@@ -1,7 +1,7 @@
 import numpy as np
 from qibo.models import Circuit
 from qibo import gates
-from util import calc_norm
+from qad.algorithms.kmedians.util import calc_norm
 
 
 def pad_input(X):
@@ -29,9 +29,9 @@ def DistCalc_DI(a, b, device_name="/GPU:0", shots_n=10000):
 
     Parameters
     ----------
-    a : `numpy.ndarray`
+    a : :class:`numpy.ndarray`
         First point - shape = (latent space dimension,)
-    b : `numpy.ndarray`
+    b : :class:`numpy.ndarray`
         First point - shape = (latent space dimension,)
     device_name : str
         Name of device for executing a simulation of quantum circuit.
@@ -40,7 +40,7 @@ def DistCalc_DI(a, b, device_name="/GPU:0", shots_n=10000):
 
     Returns
     -------
-    (float, `Circuit`)
+    (float, :class:`qibo.models.Circuit`)
         (distance, quantum circuit)
 
     """

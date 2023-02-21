@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-import layers
+import qad.autoencoder.layers as layers
 
 
 class ParticleAutoencoder(tf.keras.Model):
@@ -9,11 +9,11 @@ class ParticleAutoencoder(tf.keras.Model):
 
     Attributes
     ----------
-    input_shape: tuple, optional
+    input_shape: `tuple`, optional
         shape of input, default (100,3)
     latent_dim: int, optional
         size of the latent dimension, default 6
-    x_mean_stdev: tuple, optional
+    x_mean_stdev: `tuple`, optional
         mean and standard deviation of inputs, default (0,1)
     kernel_n: int, optional
         number of kernels, default 16
@@ -21,25 +21,8 @@ class ParticleAutoencoder(tf.keras.Model):
         kernel size, default 3
     activation: string, optional
         activation function, default "elu"
-    activation_latent: tf.keras.activations, optional
-        activation before bottleneck, default tf.keras.activations.linear
-
-    Methods
-    ----------
-    build_encoder(mean=float, stddev=float)
-        build the encoder part
-    build decoder(mean=float, stddev=float)
-        build the decoder part
-    load(path=string)
-        load trained model from path
-    compile(optimizer=tf.keras.Optimizer, reco_loss=Callable)
-        compile the model with an optimizer and a reconstruction loss function
-    call(x=np.ndarray)
-        calls model on inputs x
-    train_step(x=np.ndarray)
-        execute one training step
-    test_step(x=np.ndarray)
-        execute one test step
+    activation_latent: :class:`tensorflow.keras.activations`, optional
+        activation before bottleneck, default :class:tensorflow.keras.activations.linear`
     """
 
     def __init__(
@@ -68,18 +51,18 @@ class ParticleAutoencoder(tf.keras.Model):
 
     def build_encoder(self, mean, stdev):
         """Builds encoder model
-        
+
         Parameters
         ----------
         mean : float
-            mean of data.
+            Mean of data.
         stdev : float
-            stdev of data
+            Standard deviation of data.
 
         Returns
         -------
-        tf.keras.Model
-            the encoder
+        :class:`tensorflow.keras.Model`
+            encoder
         """
 
         inputs = tf.keras.layers.Input(
@@ -158,18 +141,18 @@ class ParticleAutoencoder(tf.keras.Model):
 
     def build_decoder(self, mean, stdev):
         """Builds decoder model
-        
+
         Parameters
         ----------
         mean : float
-            mean of data.
+            Mean of data.
         stdev : float
-            stdev of data
+            Standard deviation of data.
 
         Returns
         -------
-        tf.keras.Model
-            the decoder
+        :class:`tensorflow.keras.Model`
+            decoder
         """
         latent_inputs = tf.keras.layers.Input(shape=(self.latent_dim,), name="z")
         # Dense * 3
@@ -236,17 +219,17 @@ class ParticleAutoencoder(tf.keras.Model):
 
     @classmethod
     def load(cls, path):
-        """loads autoencoder
-        
+        """Loads autoencoder.
+
         Parameters
         ----------
-        path : string
-            model path.
+        path : str
+            Model path.
 
         Returns
         -------
-        tf.keras.Model
-            the autoencoder
+        :class:`tensorflow.keras.Model`
+            autoencoder
         """
         custom_objects = {
             "Conv1DTranspose": layers.Conv1DTranspose,
@@ -269,13 +252,13 @@ class ParticleAutoencoder(tf.keras.Model):
         return encoder, decoder, model
 
     def compile(self, optimizer, reco_loss):
-        """compiles the autoencoder
-        
+        """Compiles the autoencoder - set model's configuration.
+
         Parameters
         ----------
-        optimizer : tf.keras.Optimizer
-            the optimizer.
-        reco_loss : Callable
+        optimizer : :class:`tensorflow.keras.Optimizer`
+            optimizer.
+        reco_loss : `Callable`
             reconstruction loss function
 
         """
@@ -284,16 +267,16 @@ class ParticleAutoencoder(tf.keras.Model):
         self.reco_loss = reco_loss
 
     def call(self, x):
-        """calls the model
-        
+        """Calls the model.
+
         Parameters
         ----------
-        x : np.ndarray
+        x : :class:`numpy.ndarray`
             inputs
 
         Returns
         -------
-        np.ndarray
+        :class:`numpy.ndarray`
             outputs
         """
         encoded = self.encoder(x)
@@ -301,11 +284,11 @@ class ParticleAutoencoder(tf.keras.Model):
         return decoded
 
     def train_step(self, x):
-        """training step
-        
+        """Training step.
+
         Parameters
         ----------
-        x : np.ndarray
+        x : :class:`numpy.ndarray`
             inputs
 
         Returns
@@ -326,11 +309,11 @@ class ParticleAutoencoder(tf.keras.Model):
         return {"loss": loss}
 
     def test_step(self, x):
-        """inference step
-        
+        """Inference step.
+
         Parameters
         ----------
-        x : np.ndarray
+        x : :class:`numpy.ndarray`
             inputs
 
         Returns

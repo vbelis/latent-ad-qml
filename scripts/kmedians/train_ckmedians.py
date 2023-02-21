@@ -1,10 +1,8 @@
 import argparse
 import numpy as np
-import math
 import h5py
 
-import kmedians as KMed
-import utils as u
+import qad.algorithms.kmedians.classical.c_kmedians as KMed
 
 
 def train_kmedians(

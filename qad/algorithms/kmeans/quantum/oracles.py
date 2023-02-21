@@ -8,7 +8,7 @@ from qiskit.quantum_info.operators import Operator, Pauli
 
 
 def create_threshold_oracle_operator(nn, idcs_to_mark):
-    """Threshold oracle operator for Grover circuit
+    """Threshold oracle operator for Grover circuit.
 
     Parameters
     ----------
@@ -19,7 +19,7 @@ def create_threshold_oracle_operator(nn, idcs_to_mark):
 
     Returns
     -------
-    Operator
+    :class:`qiskit.quantum_info.operators.Operator`
         Threshold oracle.
     """
 
@@ -32,18 +32,18 @@ def create_threshold_oracle_operator(nn, idcs_to_mark):
 
 
 def get_indices_to_mark(dist_arr, threshold):
-    """utility function that finds indices to be marked
+    """Utility function that finds indices to be marked.
 
     Parameters
     ----------
-    dist_arr : np.ndarray
+    dist_arr : :class:`numpy.ndarray`
         array of distances.
     threshold: float
         current threshold
 
     Returns
     -------
-    np.ndarray
+    :class:`numpy.ndarray`
         the marked indices
     """
     (idx,) = np.nonzero(dist_arr < threshold)
@@ -53,17 +53,17 @@ def get_indices_to_mark(dist_arr, threshold):
 
 
 def create_threshold_oracle_set(dist_arr):
-    """Create set of threshold oracles for linear combination
+    """Create set of threshold oracles for linear combination.
 
     Parameters
     ----------
-    dist_arr : np.ndarray
+    dist_arr : :class:`numpy.ndarray`
         array of distances.
 
     Returns
     -------
     List
-        List of threshold oracle Operators
+        List of threshold oracle `Operators`
     """
 
     cluster_n = len(dist_arr)
@@ -80,23 +80,22 @@ def create_threshold_oracle_set(dist_arr):
 
 
 def create_oracle_lincombi(threshold, dist_arr, oracles):
-    """Create linear combination of threshold oracles for Grover circuit
+    """Create linear combination of threshold oracles for Grover circuit.
 
     Parameters
     ----------
     threshold : float
         current threshold value
-    dist_arr : np.ndarray
+    dist_arr : :class:`numpy.ndarray`
         array of distances.
     oracles: List
-        list of oracle Operators
+        list of oracle `Operators`
 
     Returns
     -------
-    QuantumCircuit
+    :class:`qiskit.circuit.QuantumCircuit`
         The linear combination threshold oracle circuit.
     """
-
 
     idx = np.where(dist_arr == threshold)[0][0]
     delta_coeff = signal.unit_impulse(len(dist_arr), idx)

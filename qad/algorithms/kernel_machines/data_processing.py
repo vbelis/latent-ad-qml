@@ -5,7 +5,7 @@ import h5py
 import numpy as np
 from typing import Tuple, Union
 
-from terminal_enhancer import tcols
+from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
 
 def get_data(args: dict) -> Tuple:
@@ -20,9 +20,9 @@ def get_data(args: dict) -> Tuple:
     Returns
     -------
     Tuple
-        train_loader: Tuple[np.ndarray, np.ndarray]
+        train_loader: Tuple[:class:`numpy.ndarray`, :class:`numpy.ndarray`]
             Contains the training data vector and label pairs.
-        test_loader: Tuple[np.ndarray, np.ndarray]
+        test_loader: Tuple[:class:`numpy.ndarray`, :class:`numpy.ndarray`]
             Contains the testing data vector and label pairs.
     """
     print(tcols.BOLD + "\nPreparing training and testing datasets... " + tcols.ENDC)
@@ -60,8 +60,8 @@ def h5_to_ml_ready_numpy(file_path: str) -> np.ndarray:
 
     Returns
     -------
-        latent_rep_flat: np.ndarray
-            Flattened data array.
+    :class:`numpy.ndarray`
+        Flattened data array.
     """
     h5_file = h5py.File(file_path, "r")
     latent_rep = np.asarray(h5_file.get("latent_space"))
@@ -76,12 +76,12 @@ def reshaper(array: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    array : np.ndarray
+    array : :class:`numpy.ndarray`
         Data array to reshape. The expected initial shape is (n, 2, latent_dim).
 
     Returns
     -------
-    array: np.ndarray
+    :class:`numpy.ndarray`
         Reshaped array of shape (n, 2*latent_dim). Where n is the total number
         of events in the file.
     """
@@ -104,9 +104,9 @@ def get_train_dataset(
 
     Parameters
     ----------
-    sig : np.ndarray
+    sig : :class:`numpy.ndarray`
         Array containing all the signal events needed for the training.
-    bkg : np.ndarray
+    bkg : :class:`numpy.ndarray`
         Array containing all the background events needed for the training.
     ntrain : int
         Desired training size.
@@ -116,7 +116,7 @@ def get_train_dataset(
 
     Returns
     -------
-    Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, None]]
+    Union[Tuple[:class:`numpy.ndarray`, :class:`numpy.ndarray`], Tuple[:class:`numpy.ndarray`, `None`]]
         The training data and the corresponding labels. In the unsupervised
         case the latter is `None`.
     """
@@ -151,9 +151,9 @@ def get_test_dataset(
 
     Parameters
     ----------
-    sig : np.ndarray
+    sig : :class:`numpy.ndarray`
         Array containing all the signal events needed for the training.
-    bkg_test : np.ndarray
+    bkg_test : :class:`numpy.ndarray`
         Array containing all the background events needed for the training.
     ntest : int
         Number of requested testing samples in total (sig+bkg).
@@ -163,9 +163,10 @@ def get_test_dataset(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
-        The testing data and the corresponding labels. In the unsupervised
-        case the latter is `None`.
+    :class:`numpy.ndarray`
+        The testing data
+    :class:`numpy.ndarray`
+        The corresponding labels. In the unsupervised case = `None`.
     """
     if is_unsup:
         sig = sig[: int(ntest * 0.05)]
@@ -208,9 +209,9 @@ def get_kfold_data(
 
     Parameters
     ----------
-    test_data : np.ndarray
+    test_data : :class:`numpy.ndarray`
         Array of the testing data.
-    y_target : np.ndarray
+    y_target : :class:`numpy.ndarray`
         Array of targets/labels of the testing data.
     kfolds : int, optional
         _description_, by default 5
@@ -222,11 +223,10 @@ def get_kfold_data(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
-        folded_test: np.ndarray
-            k-folds of of the test dataset
-        folded_labels: np.ndarray
-            Truth labels for the folds.
+    :class:`numpy.ndarray`
+        k-folds of of the test dataset
+    :class:`numpy.ndarray`
+        Truth labels for the folds.
     """
     sig_test, bkg_test, sig_target, bkg_target = split_sig_bkg(test_data, y_target)
     folded_sig = np.array(np.split(sig_test, kfolds))
@@ -260,14 +260,14 @@ def split_sig_bkg(
 
     Parameters
     ----------
-    data : np.ndarray
+    data : :class:`numpy.ndarray`
         Array cointaing the data.
-    target : np.ndarray
+    target : :class:`numpy.ndarray`
         Target array.
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    Tuple[:class:`numpy.ndarray`, :class:`numpy.ndarray`, :class:`numpy.ndarray`, :class:`numpy.ndarray`]
         A tuple containing the numpy array of signal events and a numpy array
         containing the background events, along with their corresponding targets.
     """

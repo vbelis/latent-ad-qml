@@ -6,29 +6,19 @@ import re
 import json
 import numpy as np
 from time import perf_counter
-from typing import Tuple, Union, Callable
-from qiskit import IBMQ
-from qiskit import Aer
-from qiskit.utils import QuantumInstance
-from qiskit.providers.exceptions import QiskitBackendNotFoundError
-from qiskit.providers.aer.noise import NoiseModel
-from qiskit.providers.aer.backends import AerSimulator
-from qiskit.providers import Backend
-from qiskit.providers.ibmq import IBMQBackend
+from typing import Tuple, Union
 from sklearn.svm import SVC
 from sklearn.svm import OneClassSVM
 from sklearn.metrics import roc_curve
-from sklearn.metrics import recall_score
-from sklearn.metrics import precision_score
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
 import matplotlib.pyplot as plt
 
-from qsvm import QSVM
-from one_class_svm import CustomOneClassSVM
-from one_class_qsvm import OneClassQSVM
-from terminal_enhancer import tcols
+from qad.algorithms.kernel_machines.qsvm import QSVM
+from qad.algorithms.kernel_machines.one_class_svm import CustomOneClassSVM
+from qad.algorithms.kernel_machines.one_class_qsvm import OneClassQSVM
+from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
 
 def print_accuracy_scores(test_acc: float, train_acc: float, is_unsup: bool):
@@ -59,7 +49,7 @@ def create_output_folder(
     ----------
     args : dict
         Arparse configuration arguments dictionary.
-    model : Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]
+    model : Union[:class:`sklearn.svm.SVC`, `QSVM`, `CustomOneClassSVM`, `OneClassQSVM`]
         Kernel machine, classical or quantum.
 
     Returns
@@ -89,7 +79,7 @@ def save_model(model: Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM], path: s
 
     Parameters
     ----------
-    model : Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]
+    model : Union[:class:`sklearn.svm.SVC`, `QSVM`, `CustomOneClassSVM`, `OneClassQSVM`]
         Kernel machine that we want to save.
     path : str
         Path to save the model in.
@@ -114,7 +104,7 @@ def load_model(path: str) -> Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM]:
 
     Returns
     -------
-    Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM]
+    Union[`QSVM`, :class:`sklearn.svm.SVC`, `CustomOneClassSVM`, `OneClassQSVM`]
         Joblib object of the trained model.
     """
     return joblib.load(path)
@@ -126,7 +116,7 @@ def print_model_info(model: Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]):
 
     Parameters
     ----------
-    model : Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]
+    model : Union[:class:`sklearn.svm.SVC`, `QSVM`, `CustomOneClassSVM`, `OneClassQSVM`]
         The trained kernel machine.
     """
     print("\n-------------------------------------------")
@@ -141,235 +131,11 @@ def print_model_info(model: Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]):
     print("-------------------------------------------\n")
 
 
-def connect_quantum_computer(ibmq_api_config: dict, backend_name: str) -> IBMQBackend:
-    """Load a IBMQ-experience backend using a token (IBM-CERN hub credentials)
-    This backend (i.e. quantum computer) can either be used for running on
-    the real device or to load the calibration (noise/error info). With the
-    latter data we can do a simulation of the hardware behaviour.
-
-    Parameters
-    ----------
-    ibmq_api_config : dict
-        Configuration file for the IBMQ API token and provider information.
-    backend_name : str
-        Quantum computer name
-
-    Returns
-    -------
-    IBMQBackend
-        Backend object used for executing the quantum models in `qiskit`.
-
-    Raises
-    ------
-    AttributeError
-        When a quantum computer name that doesn't exist is given.
-    """
-    print("Enabling IBMQ account using provided token...", end="")
-    IBMQ.enable_account(ibmq_api_config["token"])
-    provider = IBMQ.get_provider(
-        hub=ibmq_api_config["hub"],
-        group=ibmq_api_config["group"],
-        project=ibmq_api_config["project"],
-    )
-    try:
-        quantum_computer_backend = provider.get_backend(backend_name)
-    except QiskitBackendNotFoundError:
-        raise AttributeError(
-            tcols.FAIL + "Backend name not found in provider's" " list" + tcols.ENDC
-        )
-    print(tcols.OKGREEN + " Loaded IBMQ backend: " + backend_name + "." + tcols.ENDC)
-    return quantum_computer_backend
-
-
-def get_backend_configuration(backend: Backend) -> Tuple:
-    """Gather backend configuration and properties from the calibration data.
-    The output is used to build a noise model using the qiskit aer_simulator.
-
-    Parameters
-    ----------
-    backend : Backend
-        IBMQBackend object representing a a real quantum computer.
-
-    Returns
-    -------
-    Tuple
-        noise_model:  From the 1-gate, 2-gate (CX) errors, thermal relaxation,
-            etc.
-        coupling_map: list
-            Connectivity of the physical qubits.
-        basis_gates: list
-            Gates that are physically implemented on the hardware.
-            the transpiler decomposes the generic/abstract circuit to these
-            physical basis gates, taking into acount also the coupling_map.
-    """
-    noise_model = NoiseModel.from_backend(backend)
-    coupling_map = backend.configuration().coupling_map
-    basis_gates = noise_model.basis_gates
-    return noise_model, coupling_map, basis_gates
-
-
-def ideal_simulation(**kwargs) -> QuantumInstance:
-    """Defines QuantumInstance for an ideal (statevector) simulation (no noise, no
-    sampling statistics uncertainties).
-
-    Returns
-    -------
-    QuantumInstance
-        Object used for the execution of quantum kernel machines  using qiskit.
-    """
-    print(tcols.BOLD + "\nInitialising ideal (statevector) simulation." + tcols.ENDC)
-    quantum_instance = QuantumInstance(
-        backend=Aer.get_backend("aer_simulator_statevector"), **kwargs
-    )
-    # None needed to specify that no backend device is loaded for ideal sim.
-    return quantum_instance, None
-
-
-def noisy_simulation(
-    ibmq_api_config: dict, backend_name: str, **kwargs
-) -> Tuple[QuantumInstance, Backend]:
-    """Prepare a QuantumInstance object for simulation with noise based on the
-    real quantum computer calibration data.
-
-    Parameters
-    ----------
-    ibmq_api_config : dict
-        Configuration file with API token and private configuration for IBMQ connection.
-    backend_name : str
-        Name of the quantum computer, form ibm(q)_<city_name>.
-    kwargs:
-        Keyword arguments for the QuantumInstance.
-
-    Returns
-    -------
-    Tuple
-        quantum_instance: QuantumInstance
-            Quantum instance object need to execute the quantum models in qiskit.
-        quantum_computer_backend: Backend
-            Backend object representing a quantum computer from which a noisy
-            simulation is based.
-    """
-    print(tcols.BOLD + "\nInitialising noisy simulation." + tcols.ENDC)
-    quantum_computer_backend = connect_quantum_computer(ibmq_api_config, backend_name)
-    backend = AerSimulator.from_backend(quantum_computer_backend)
-
-    quantum_instance = QuantumInstance(backend=backend, **kwargs)
-    return quantum_instance, quantum_computer_backend
-
-
-def hardware_run(
-    backend_name: str, ibmq_api_config: dict, **kwargs
-) -> Tuple[QuantumInstance, Backend]:
-    """Configure QuantumInstance based on a quantum computer. The circuits will
-    be sent as jobs to be exececuted on the specified device in IBMQ.
-
-    Parameters
-    ----------
-    backend_name : str
-        Name of the quantum computer, form ibmq_<city_name>.
-    ibmq_api_config : dict
-        Configuration file for the IBMQ API token and provider information.
-
-    Returns
-    -------
-    Tuple[QuantumInstance, Backend]
-        quantum_instance: QuantumInstance
-            Object with quantum computer backend.
-        backend: Bakend
-            The quantum computer backend object.
-    """
-    print(tcols.BOLD + "\nInitialising run on a quantum computer." + tcols.ENDC)
-    quantum_computer_backend = connect_quantum_computer(ibmq_api_config, backend_name)
-    quantum_instance = QuantumInstance(backend=quantum_computer_backend, **kwargs)
-    return quantum_instance, quantum_computer_backend
-
-
-def configure_quantum_instance(
-    ibmq_api_config: dict, run_type: str, backend_name: str = None, **kwargs
-) -> Tuple[QuantumInstance, Backend]:
-    """Gives the QuantumInstance object required for running the Quantum kernel.
-    The quantum instance can be configured for a simulation of a backend with
-    noise, an ideal (statevector) simulation or running on a real quantum
-    device.
-
-    Parameters
-    ----------
-    ibmq_api_config : dict
-        Configuration file for the IBMQ API token and provider information.
-    run_type : str
-        Takes values the possible values {ideal,noisy, hardware} to specify
-        what type of backend will be provided to the quantum instance object.
-    backend_name : str, optional
-        Name of the quantum computer to run or base the noisy simulation on.
-        For ideal runs it can be set to "none"., by default None.
-    kwargs:
-        Dictionary of keyword arguments for the QuantumInstance.
-    Returns
-    -------
-    Tuple[QuantumInstance, Backend]
-        quantum_instance: QuantumInstance
-            Object with quantum computer backend.
-        backend: Bakend
-            The quantum computer backend object.
-
-    Raises
-    ------
-    TypeError
-        When `run_type` is not in {ideal, noisy, hardware}.
-    """
-
-    if (run_type == "noisy" or run_type == "hardware") and (backend_name is None):
-        raise TypeError(
-            tcols.FAIL + "Need to specify backend name ('ibmq_<city_name>')"
-            " when running a noisy simulation or running on hardware!" + tcols.ENDC
-        )
-
-    switcher = {
-        "ideal": lambda: ideal_simulation(**kwargs),
-        "noisy": lambda: noisy_simulation(
-            ibmq_api_config=ibmq_api_config, backend_name=backend_name, **kwargs
-        ),
-        "hardware": lambda: hardware_run(
-            backend_name=backend_name, ibmq_api_config=ibmq_api_config, **kwargs
-        ),
-    }
-
-    quantum_instance, backend = switcher.get(run_type, lambda: None)()
-    if quantum_instance is None:
-        raise TypeError(
-            tcols.FAIL + "Specified programme run type does not" "exist!" + tcols.ENDC
-        )
-    return quantum_instance, backend
-
-
-def time_and_exec(func: Callable, *args) -> float:
-    """Executes the given function with its arguments, times and returns the
-    execution time. Typically used for timing training, and testing tasks
-    of the models.
-
-    Parameters
-    ----------
-    func : Callable
-        Function to execute.
-    args: Arguments of the function.
-
-    Returns
-    -------
-    float
-        The runtime.
-    """
-    train_time_init = perf_counter()
-    func(*args)
-    train_time_fina = perf_counter()
-    exec_time = train_time_fina - train_time_init
-    return exec_time
-
-
 def init_kernel_machine(
     args: dict,
 ) -> Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]:
     """Initialises the kernel machine. Depending on the flag, this will be
-    a SVM or a QSVM.
+    a `SVM` or a `QSVM`.
 
     Parameters
     ----------
@@ -378,7 +144,7 @@ def init_kernel_machine(
 
     Returns
     -------
-    Union[SVC, QSVM, CustomOneClassSVM, OneClassQSVM]
+    Union[:class:`sklearn.svm.SVC`, `QSVM`, `CustomOneClassSVM`, `OneClassQSVM`]
         The kernel machine model.
     """
     if args["quantum"]:
@@ -423,15 +189,15 @@ def eval_metrics(
 
     Parameters
     ----------
-    model : Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM]
+    model : Union[`QSVM`, :class:`sklearn.svm.SVC`, `CustomOneClassSVM`, `OneClassQSVM`]
         Trained kernel machine model.
-    train_data : np.ndarray
+    train_data : :class:`numpy.ndarray`
         Training data array.
-    train_labels : np.ndarray
+    train_labels : :class:`numpy.ndarray`
         Training data labels.
-    test_data : np.ndarray
+    test_data : :class:`numpy.ndarray`
         Testing data array.
-    test_labels : np.ndarray
+    test_labels : :class:`numpy.ndarray`
         Testing data array.
     out_path : str
         Output path to saved the figures in.
@@ -480,9 +246,9 @@ def plot_score_distributions(y_score: np.ndarray, y_label: np.ndarray, out_path:
 
     Parameters
     ----------
-    y_score : np.ndarray
+    y_score : :class:`numpy.ndarray`
         Output score of a model.
-    y_label : np.ndarray
+    y_label : :class:`numpy.ndarray`
         True labels.
     out_path : str
         Output path to save the plot in.
@@ -526,13 +292,13 @@ def compute_roc_pr_curves(
 
     Parameters
     ----------
-    test_labels : np.ndarray
+    test_labels : :class:`numpy.ndarray`
         Testing data truth labels.
-    y_score : np.ndarray
+    y_score : :class:`numpy.ndarray`
         Output model scores on the testing dataset.
     out_path : str
         Path to save plot.
-    model : Union[SVC, QSVM, OneClassQSVM, CustomOneClassSVM]
+    model : Union[:class:`sklearn.svm.SVC`, `QSVM`, `OneClassQSVM`, `CustomOneClassSVM`]
         Kernel machine model.
     """
 
@@ -544,7 +310,7 @@ def compute_roc_pr_curves(
 
         Parameters
         ----------
-        model : Union[SVC, QSVM, OneClassQSVM, CustomOneClassSVM]
+        model : Union[:class:`sklearn.svm.SVC`, `QSVM`, `OneClassQSVM`, `CustomOneClassSVM`]
             Kernel machine model.
 
         Returns
@@ -599,9 +365,9 @@ def get_fpr_around_tpr_point(
 
     Parameters
     ----------
-    fpr : np.ndarray
+    fpr : :class:`numpy.ndarray`
         False positive rate of the model on the test dataset.
-    tpr : np.ndarray
+    tpr : :class:`numpy.ndarray`
         True positive rate of the model on the test dataset.
     tpr_working_point : float, optional
         Working point of TPR (signal efficiency), by default 0.8
@@ -641,7 +407,7 @@ def export_hyperparameters(
 
     Parameters
     ----------
-    model : Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM]
+    model : Union[`QSVM`, :class:`sklearn.svm.SVC`, `CustomOneClassSVM`, `OneClassQSVM`]
        Kernel machine model.
     outdir : str
         Output directory, where the json file is saved.

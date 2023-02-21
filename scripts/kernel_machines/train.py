@@ -2,23 +2,22 @@
 # The model is instantiated with some parameters, the data encoding circuit is built,
 # it is trained on a data set, and is saved in a folder.
 
-
 import argparse
 import json
 from time import perf_counter
 from typing import Callable
 from qiskit.utils import algorithm_globals
-from qiskit.utils.mitigation import CompleteMeasFitter
 
-import util
-import data_processing
-from terminal_enhancer import tcols
+import qad.algorithms.kernel_machines.util as util
+import qad.algorithms.kernel_machines.data_processing as data_processing
+from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
 seed = 12345
 algorithm_globals.random_seed = seed
 
 
 def main(args: dict):
+    """Trains and saves qsvm model."""
     train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
@@ -40,7 +39,7 @@ def time_and_train(fit: Callable, *args):
 
     Parameters
     ----------
-    fit : Callable
+    fit : `Callable`
         Fitting function of the corresponding model.
     args: dict
         Arguments of the fit function.
@@ -198,4 +197,5 @@ def get_arguments() -> dict:
 
 
 if __name__ == "__main__":
+    args = get_arguments()
     main(args)

@@ -3,15 +3,15 @@
 
 from time import perf_counter
 import numpy as np
-
-import util
 import argparse
-import data_processing
-from terminal_enhancer import tcols
 import json
+import qad.algorithms.kernel_machines.util as util
+import qad.algorithms.kernel_machines.backend_config as bc
+import qad.algorithms.kernel_machines.data_processing as data_processing
+from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 from qiskit_machine_learning.kernels import QuantumKernel
 
-from one_class_qsvm import OneClassQSVM
+from qad.algorithms.kernel_machines.one_class_qsvm import OneClassQSVM
 
 
 def main(args: dict):
@@ -50,7 +50,7 @@ def main(args: dict):
                 "seed_transpiler": seed,
                 "shots": 10000,
             }
-            model._quantum_instance, model._backend = util.configure_quantum_instance(
+            model._quantum_instance, model._backend = bc.configure_quantum_instance(
                 ibmq_api_config=private_configuration["IBMQ"],
                 run_type="hardware",
                 backend_name="ibmq_toronto",

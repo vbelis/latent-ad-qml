@@ -1,13 +1,11 @@
 import argparse
 import numpy as np
-import math
 import h5py
 import qibo
 
 qibo.set_backend("tensorflow")
 
-import qkmedians as qkmed
-import utils as u
+import qad.algorithms.kmedians.quantum.qkmedians as qkmed
 
 
 def train_qkmedians(

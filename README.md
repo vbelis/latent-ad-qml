@@ -1,76 +1,28 @@
-# Quantum anomaly detection in the latent space of proton collision events at the LHC
+# Anomaly detection with quantum machine learning for particle physics data
 
-Unsupervised anomaly detection in the latent space of high energy physics events with quantum machine learning
+This repository has the code we developed for the paper _"Quantum anomaly detection in the latent space of proton collision events at the LHC"_ [[1]](https://arxiv.org/abs/2301.10780). In this work, we investigate unsupervised quantum machine learning algorithms for anomaly detection tasks in particle physics data. 
 
-## Plotting
-You can get the plots by running in a jupyter notebook the following. The convention for the `.h5` file paths maybe you needs to be change depending on file type.
+The `qad` package associated with this work was created for reproducibility of the results and ease-of-use in future studies.
+<p align="center">
+<img src="https://github.com/vbelis/latent-ad-qml/blob/docs-reformat/docs/Pipeline_QML.png?raw=true" alt="Sublime's custom image"/>
+Quantum-classical pipeline for detecting new-physics events in proton collisions at the LHC. Taken from [1].
+</p>
 
-### The 3 different signals for 8 latent dimensions and n_train=600, n_test=100k, k=5 folds
-Firstly, load the score values from the saved files using our convention
+## Documentation 
+The documentation for can be consulted in the readthedocs page: **TODO**
+
+## How to install
+The package can be installed with Python's `pip` package manager. We recommend installing the dependencies and the package within a dedicated environment. 
+**TODO**: try directly `pip install .zip` after the repo is made public. 
 ```
-import h5py
-import sys
-sys.path.append("..")
-
-import numpy as np
-import plotting as pl
-%load_ext autoreload
-%autoreload 2
-
-read_dir='path_to_file'
-n_folds = 5
-latent_dim = '8'
-n_samples_train=600
-mass=['35', '15', '35']
-br_na=['NA', 'BR', ''] # narrow (NA) or broad (BR)
-signal_name=['RSGraviton_WW', 'RSGraviton_WW', 'AtoHZ_to_ZZZ'] # type of signal
-
-q_loss_qcd=[]; q_loss_sig=[]; c_loss_qcd=[]; c_loss_sig=[]
-for i in range(len(signal_name)):
-    with h5py.File(f'{read_dir}/Latent_{latent_dim}_trainsize_{n_samples_train}_{signal_name[i]}{mass[i]}{br_na[i]}_n100k_kfold{n_folds}.h5', 'r') as file:
-        q_loss_qcd.append(file['quantum_loss_qcd'][:])
-        q_loss_sig.append(file['quantum_loss_sig'][:])
-        c_loss_qcd.append(file['classic_loss_qcd'][:])
-        c_loss_sig.append(file['classic_loss_sig'][:])
+git clone https://github.com/vbelis/latent-ad-qml.git
+cd latent-ad-qml
+pip install .
 ```
 
-Then plot the results like so, making sure the `save_dir` exists.
+## Usage
+Examples on how to run the code and use `qad` to reproduce results and plots from the paper can be found in the [scripts](https://github.com/vbelis/latent-ad-qml/tree/main/scripts).
 
-```
-legend_signal_names=['Narrow 'r'G $\to$ WW 3.5 TeV', 'Broad 'r'G $\to$ WW 1.5 TeV', r'A $\to$ HZ $\to$ ZZZ 3.5 TeV']
-pl.plot_ROC_kfold_mean(q_loss_qcd, q_loss_sig, c_loss_qcd, c_loss_sig, legend_signal_names, n_folds,\
-                title=r'testlat=8', save_dir='../jupyter_plots', pic_id='test')
-```
-Example for the unsupervised kernel machine:
 
-<img width="450" alt="image" src="https://user-images.githubusercontent.com/48251467/196224459-c9e18b6a-12e1-4a5f-8e66-e6ae979e27ef.png">
-
-### The 4, 8, 16 latent dimension plot with n_train=600, n_test=40k, k=5 folds, for AtoHZ
-Likewise, load the scores,
-```
-read_dir='path_to_file'
-n_folds = 5
-latent_dim = ['4', '8', '16']
-n_samples_train=600
-mass='35'
-br_na=''
-signal_name='AtoHZ_to_ZZZ'
-n_test = ['40k', '40k', '40k']
-
-q_loss_qcd=[]; q_loss_sig=[]; c_loss_qcd=[]; c_loss_sig=[]
-for i in range(len(latent_dim)):
-    with h5py.File(f'{read_dir}/lat{latent_dim[i]}/unsupervised/Latent_{latent_dim[i]}_trainsize_{n_samples_train}_{signal_name}{mass}{br_na}_n{n_test[i]}_kfold{n_folds}.h5', 'r') as file:
-        q_loss_qcd.append(file['quantum_loss_qcd'][:])
-        q_loss_sig.append(file['quantum_loss_sig'][:])
-        c_loss_qcd.append(file['classic_loss_qcd'][:])
-        c_loss_sig.append(file['classic_loss_sig'][:])
-```
-and plot:
-```
-legend_signal_names=['lat4', 'lat8', 'lat16']
-pl.plot_ROC_kfold_mean(q_loss_qcd, q_loss_sig, c_loss_qcd, c_loss_sig, legend_signal_names, n_folds,\
-                title=r'test A $\to$ HZ $\to$ ZZZ', save_dir='../jupyter_plots', pic_id='test')
-```
-Example for the unsupervised QSVM in lat=4, 8, 16:
-
-<img width="450" alt="image" src="https://user-images.githubusercontent.com/48251467/196227976-63ed8cae-9709-4697-879b-f64cf579a197.png">
+# References
+[1] K. A. Woźniak<sup>\*</sup>, V. Belis<sup>\*</sup>, E. Puljak<sup>\*</sup>, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , _Quantum anomaly detection in the latent space of proton collision events at the LHC_, [arXiv:2301.10780](https://arxiv.org/abs/2301.10780). 

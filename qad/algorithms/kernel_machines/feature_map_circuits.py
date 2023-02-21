@@ -20,7 +20,7 @@ def u_dense_encoding(nqubits: int = 8, reps: int = 3) -> QuantumCircuit:
 
     Returns
     -------
-    `QuantumCircuit`
+    :class:`qiskit.circuit.QuantumCircuit`
         Quantum circuit to be used as a feature map for quantum the kernel machine.
     """
     nfeatures = 2 * nqubits
@@ -52,7 +52,7 @@ def u_dense_encoding_all(nqubits: int = 8, reps: int = 3) -> QuantumCircuit:
 
     Returns
     -------
-    QuantumCircuit
+    :class:`qiskit.circuit.QuantumCircuit`
         Quantum circuit to be used as a feature map for quantum the kernel machine.
     """
     nfeatures = 2 * nqubits
@@ -86,7 +86,7 @@ def u_dense_encoding_no_ent(
 
     Returns
     -------
-    QuantumCircuit
+    :class:`qiskit.circuit.QuantumCircuit`
         Quantum circuit to be used as a feature map for quantum the kernel machine.
     """
     nfeatures = 2 * nqubits
