@@ -1,3 +1,17 @@
+# Usage
+The following are some examples on how to use the `qad` package to train and test quantum models, and reproduce results from the paper.
+## Training the unsupervised quantum kernel machine
+The training and testing of the unsupervised kernel machine is done using the `train.py` and `test.py` in `scripts/kernel_machines/`, respectively.  The configuration parameters of the model, e.g., quantum or classical version, feature map, number of training samples, backend used for the quantum computation, etc, are defined through the arguments of the `train.py` and `test.py` scripts. 
+For instance, to train the model:
+```python
+python train.py --sig_path /path/to/signal/data --bkg_path /path/to/background/data --test_bkg_path /path/to/test_background/data --unsup --nqubits 8 --feature_map u_dense_encoding --run_type ideal --output_folder quantum_test --nu_param 0.01 --ntrain 600 --quantum
+```
+For details regarding different arguments check the documentation: **TODO READTHEDOCS**.
+To test the same model:
+```python
+python test.py --sig_path /path/to/signal/data --bkg_path /path/to/background/data --test_bkg_path /path/to/test_background/data --model trained_qsvms/quantum_test_nu\=0.01_ideal/
+```
+
 # Producing figures
 After the unsuperised quantum and classical kernel machines have been trained and test scores have been saved, one can summarise their performance with a ROC curve plot. Firstly, following our convention the test scores are prepared for plotting using [`scripts/kernel_machines/scripts/prepare_plot_scores.py`](https://github.com/vbelis/latent-ad-qml/blob/docs-reformat/scripts/kernel_machines/prepare_plot_scores.py), and by running
 ```python
