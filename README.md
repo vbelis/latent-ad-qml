@@ -21,7 +21,7 @@ pip install .
 ```
 
 ## Usage
-Examples on how to run the code and use the `qad` to reproduce results and plots from the paper can be found in the [scripts](https://github.com/vbelis/latent-ad-qml/tree/main/scripts).
+Examples on how to run the code and use `qad` to reproduce results and plots from the paper can be found in the [scripts](https://github.com/vbelis/latent-ad-qml/tree/main/scripts).
 
 
 # References
