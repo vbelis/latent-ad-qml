@@ -1,0 +1,14 @@
+version: 1
+
+build:
+  image: v1.0.0
+
+python:
+  version: 3.8
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
+
+formats: []
