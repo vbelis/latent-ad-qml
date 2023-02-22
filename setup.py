@@ -36,6 +36,7 @@ setup(
     extra_requires={
         "docs": [
             "sphinx>=3.0",
+            "nbsphinx>=0.8.12"
         ]
     },
 )
