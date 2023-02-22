@@ -3,12 +3,15 @@ version: 1
 build:
   image: latest
 
-python:
-  version: 3.8
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
+sphinx:
+    builder: html
+    configuration: docs/source/conf.py
+    fail_on_warning: true
 
-formats: []
+python:
+    install:
+        - method: pip
+          path: .
+          extra_requirements:
+              - docs
+    system_packages: true
