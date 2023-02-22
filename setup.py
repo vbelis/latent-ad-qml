@@ -1,9 +1,15 @@
 from setuptools import setup, find_packages
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "readme.md").read_text()
 
 setup(
     name="qad",
     version="1.0",
     description="Quantum anomaly detection in the latent space of proton collision events",
+    long_description = long_description,
+    long_description_content_type="text/markdown",
+    url="https://latent-ad-qml.readthedocs.io/en/latest/",
     author="Vasilis Belis, Ema Puljak, Kinga Anna Wozniak",
     packages=find_packages(exclude=["scripts"]),
     classifiers=[

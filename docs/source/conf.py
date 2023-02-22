@@ -22,9 +22,10 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.autosectionlabel"
 ]
-master_doc = "contents"
-html_additional_pages = {'index': 'index.html'}
+master_doc = "index"
+#html_additional_pages = {'index': 'index.html'}
 
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
