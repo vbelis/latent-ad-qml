@@ -22,7 +22,6 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "nbsphinx"
 ]
 master_doc = "contents"
 html_additional_pages = {'index': 'index.html'}
@@ -31,8 +30,8 @@ napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
 autodoc_member_order = 'bysource'
-nbsphinx_allow_errors = True
-nbsphinx_execute = 'never'
+# nbsphinx_allow_errors = True
+# nbsphinx_execute = 'never'
 html_show_sourcelink = True
 add_module_names = False
 
