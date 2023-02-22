@@ -4,10 +4,10 @@ Anomaly detection with quantum machine learning for particle physics data
 This repository has the code we developed for the paper **Quantum anomaly detection in the latent space of proton collision events at the LHC** `[1] <https://arxiv.org/abs/2301.10780>`. In this work, we investigate unsupervised quantum machine learning algorithms for anomaly detection tasks in particle physics data. 
 
 The `qad` package associated with this work was created for reproducibility of the results and ease-of-use in future studies.
-.. image:: https://github.com/vbelis/latent-ad-qml/blob/main/docs/Pipeline_QML.png
+.. image:: ./docs/Pipeline_QML.png
     :width: 800px
 
-The figure above, taken from `[1] <https://arxiv.org/abs/2301.10780>`_, depicts the _quantum\-classical pipeline for detecting (anomalous) new-physics events in proton collisions at the LHC. Our strategy, implemented in `qad`, combines a data compression scheme with unsupervised quantum machine learning models to assist in scientific discovery at high energy physics experiments.
+The figure above, taken from `[1] <https://arxiv.org/abs/2301.10780>_, depicts the _quantum\-classical pipeline for detecting (anomalous) new-physics events in proton collisions at the LHC. Our strategy, implemented in `qad`, combines a data compression scheme with unsupervised quantum machine learning models to assist in scientific discovery at high energy physics experiments.
 
 Documentation
 =============
@@ -31,25 +31,21 @@ or by first cloning the repo locally and then installing the package:
 
 Usage
 =====
-Examples on how to run the code and use `qad` to reproduce results and plots from the paper can be found in the `scripts <https://github.com/vbelis/latent-ad-qml/tree/main/scripts>`_.
+Examples on how to run the code and use ``qad`` to reproduce results and plots from the paper can be found in the `scripts <https://github.com/vbelis/latent-ad-qml/tree/main/scripts>`_.
 
 
 References
 ==========
-**[1]** K. A. Woźniak, V. Belis, E. Puljak, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`.
+**[1]** K. A. Woźniak, V. Belis, E. Puljak, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`_.
 
 
 
-Dimensionality Reduction
-------------------------
 .. toctree::
    :maxdepth: 1
    :caption: Dimensionality Reduction
 
    autoencoder
 
-Algorithms
-----------
 .. toctree::
    :maxdepth: 1
    :caption: Algorithms
@@ -58,8 +54,6 @@ Algorithms
    kmedians
    kmeans
 
-Analysis
---------
 .. toctree::
    :maxdepth: 1
    :caption: Analysis
