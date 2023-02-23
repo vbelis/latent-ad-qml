@@ -22,7 +22,6 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "sphinx.ext.autosectionlabel"
 ]
 #master_doc = "index"
 #html_additional_pages = {'index': 'index.html'}
@@ -37,7 +36,7 @@ html_show_sourcelink = True
 add_module_names = False
 
 templates_path = ['_templates']
-exclude_patterns = ['Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
 
 
 
