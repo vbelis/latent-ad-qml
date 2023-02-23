@@ -15,8 +15,7 @@ The `qad` package associated with this work was created for reproducibility of t
 The figure above, taken from [[1]](https://arxiv.org/abs/2301.10780), depicts the _quantum\-classical pipeline_ for detecting (anomalous) new-physics events in proton collisions at the LHC. Our strategy, implemented in `qad`, combines a data compression scheme with unsupervised quantum machine learning models to assist in scientific discovery at high energy physics experiments.
 
 ## Documentation 
-The documentation for can be consulted in the readthedocs page: **TODO**
-
+The documentation for can be consulted in the readthedocs [page](https://latent-ad-qml.readthedocs.io/en/latest/).
 ## How to install
 The package can be installed with Python's `pip` package manager. We recommend installing the dependencies and the package within a dedicated environment. 
 You can directly install `qad` by running:
