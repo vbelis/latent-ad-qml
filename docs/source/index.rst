@@ -1,7 +1,7 @@
 Anomaly detection with quantum machine learning for particle physics data
 *************************************************************************
 
-This repository has the code we developed for the paper **Quantum anomaly detection in the latent space of proton collision events at the LHC** `**[1]** <https://arxiv.org/abs/2301.10780>`_. In this work, we investigate unsupervised quantum machine learning algorithms for anomaly detection tasks in particle physics data. 
+This repository has the code we developed for the paper **Quantum anomaly detection in the latent space of proton collision events at the LHC** `[1] <https://arxiv.org/abs/2301.10780>`_. In this work, we investigate unsupervised quantum machine learning algorithms for anomaly detection tasks in particle physics data. 
 
 The `qad` package associated with this work was created for reproducibility of the results and ease-of-use in future studies.
 
@@ -9,7 +9,7 @@ The `qad` package associated with this work was created for reproducibility of t
     :width: 800px
     :align: center
 
-The figure above, taken from `**[1]** <https://arxiv.org/abs/2301.10780>`_, depicts the quantum\-classical pipeline for detecting (anomalous) new-physics events in proton collisions at the LHC. Our strategy, implemented in ``qad``, combines a data compression scheme with unsupervised quantum machine learning models to assist in scientific discovery at high energy physics experiments.
+The figure above, taken from `[1] <https://arxiv.org/abs/2301.10780>`_, depicts the quantum\-classical pipeline for detecting (anomalous) new-physics events in proton collisions at the LHC. Our strategy, implemented in ``qad``, combines a data compression scheme with unsupervised quantum machine learning models to assist in scientific discovery at high energy physics experiments.
 
 Documentation
 =============
