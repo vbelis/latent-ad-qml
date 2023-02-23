@@ -42,6 +42,9 @@ setup(
     extra_requires={
         "docs": [
             "sphinx>=3.0",
+            "sphinx-autoapi",
+            "numpy>=1.21",
+            "pandas>=1.4.0"
         ]
     },
 )
