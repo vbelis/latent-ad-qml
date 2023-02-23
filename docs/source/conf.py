@@ -37,7 +37,7 @@ html_show_sourcelink = True
 add_module_names = False
 
 templates_path = ['_templates']
-exclude_patterns = ['build', 'Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
+exclude_patterns = ['Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
 
 
 

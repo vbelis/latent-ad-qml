@@ -23,10 +23,6 @@ The ``qad`` package associated with this work was created for reproducibility of
 
 The figure above, taken from `[1] <https://arxiv.org/abs/2301.10780>`_, depicts the quantum\-classical pipeline for detecting (anomalous) new-physics events in proton collisions at the LHC. Our strategy, implemented in ``qad``, combines a data compression scheme with unsupervised quantum machine learning models to assist in scientific discovery at high energy physics experiments.
 
-Documentation
-=============
-The documentation for is available on `readthedocs <https://latent-ad-qml.readthedocs.io/en/latest/>`_
-
 How to install
 ==============
 The package can be installed with Python's ``pip`` package manager. We recommend installing the dependencies and the package within a dedicated environment. 
@@ -37,8 +33,10 @@ You can directly install ``qad`` by running:
     pip install https://github.com/vbelis/latent-ad-qml/archive/main.zip
 
 or by first cloning the repo locally and then installing the package:
+
 .. code-block:: bash
 
+    #!/bin/bash
     git clone https://github.com/vbelis/latent-ad-qml.git
     cd latent-ad-qml
     pip install .
@@ -50,7 +48,7 @@ Examples on how to run the code and use ``qad`` to reproduce results and plots f
 
 References
 ==========
-**[1]** K. A. Woźniak, V. Belis, E. Puljak, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`_.
+**[1]** V. Belis, E. Puljak, K. A. Woźniak, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`_.
 
 
 
@@ -60,15 +58,15 @@ References
    :maxdepth: 2
    :caption: Dimensionality Reduction
 
-   autoencoder
+   autoencoder <autoencoder.rst>
 
 .. toctree::
    :maxdepth: 2
    :caption: Algorithms
 
-   kernel_machines
-   kmedians
-   kmeans
+   kernel_machines <kernel_machines.rst>
+   kmedians <kmedians.rst>
+   kmeans <kmeans.rst>
 
 .. toctree::
    :maxdepth: 2
