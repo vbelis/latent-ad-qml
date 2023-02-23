@@ -35,7 +35,7 @@ setup(
         "qiskit-ignis==0.7.1",
         "qiskit-machine-learning==0.4.0",
         "qiskit-terra==0.20.2",
-        "triple_e @ git+https://github.com/vbelis/triple_e/tree/master",
+        "triple_e==0.1.3,
         "tensorflow>=2.6",
         "pylatexenc==2.10",
     ],
@@ -47,4 +47,7 @@ setup(
             "pandas>=1.4.0"
         ]
     },
+    dependency_links=[
+        'git+https://github.com/vbelis/triple_e/tree/master#egg=triple_e-0.1.3'
+    ]
 )
