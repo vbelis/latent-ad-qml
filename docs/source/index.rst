@@ -45,6 +45,9 @@ Usage
 =====
 Examples on how to run the code and use ``qad`` to reproduce results and plots from the paper can be found in the `scripts <https://github.com/vbelis/latent-ad-qml/tree/main/scripts>`_.
 
+References
+==========
+**[1]** K. A. Woźniak, V. Belis, E. Puljak, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`_.
 
 
 **Structure**
@@ -53,15 +56,15 @@ Examples on how to run the code and use ``qad`` to reproduce results and plots f
    :maxdepth: 2
    :caption: Dimensionality Reduction
 
-   autoencoder <autoencoder.rst>
+   autoencoder
 
 .. toctree::
    :maxdepth: 2
    :caption: Algorithms
 
-   kernel_machines <kernel_machines.rst>
-   kmedians <kmedians.rst>
-   kmeans <kmeans.rst>
+   kernel_machines
+   kmedians
+   kmeans
 
 .. toctree::
    :maxdepth: 2
