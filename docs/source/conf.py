@@ -24,7 +24,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.autosectionlabel"
 ]
-master_doc = "index"
+#master_doc = "index"
 #html_additional_pages = {'index': 'index.html'}
 
 napoleon_google_docstring = False
