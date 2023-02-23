@@ -2,7 +2,8 @@ from setuptools import setup, find_packages
 from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
-
+import os
+os.system('pip install git+https://github.com/vbelis/triple_e.git@master')
 setup(
     name="qad",
     version="1.0",
@@ -35,7 +36,6 @@ setup(
         "qiskit-ignis==0.7.1",
         "qiskit-machine-learning==0.4.0",
         "qiskit-terra==0.20.2",
-        "triple_e==0.1.3",
         "tensorflow>=2.6",
         "pylatexenc==2.10",
     ],
@@ -46,8 +46,5 @@ setup(
             "numpy>=1.21",
             "pandas>=1.4.0"
         ]
-    },
-    dependency_links=[
-        'git+https://github.com/vbelis/triple_e.git#egg=triple_e-0.1.3'
-    ]
+    }
 )
