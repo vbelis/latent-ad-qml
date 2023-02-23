@@ -46,11 +46,6 @@ Usage
 Examples on how to run the code and use ``qad`` to reproduce results and plots from the paper can be found in the `scripts <https://github.com/vbelis/latent-ad-qml/tree/main/scripts>`_.
 
 
-References
-==========
-**[1]** V. Belis, E. Puljak, K. A. Woźniak, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`_.
-
-
 
 **Structure**
 =============
