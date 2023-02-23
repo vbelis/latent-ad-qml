@@ -48,6 +48,6 @@ setup(
         ]
     },
     dependency_links=[
-        'git+https://github.com/vbelis/triple_e/tree/master#egg=triple_e-0.1.3'
+        'git+https://github.com/vbelis/triple_e/archive/master.zip#egg=triple_e-0.1.3'
     ]
 )
