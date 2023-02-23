@@ -54,8 +54,8 @@ References
 
 
 
-Structure
-=========
+**Structure**
+=============
 .. toctree::
    :maxdepth: 2
    :caption: Dimensionality Reduction
