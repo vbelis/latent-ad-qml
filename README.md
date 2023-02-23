@@ -1,4 +1,4 @@
-# Anomaly detection with quantum machine learning for particle physics data
+# Quantum anomaly detection in the latent space of proton collision events at the LHC
 
 [![Email: vasilis](https://img.shields.io/badge/email-vasileios.belis%40cern.ch-blue?style=flat-square&logo=minutemailer)](mailto:vbelis@phys.ethz.ch)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-black?style=flat-square&logo=black)](https://github.com/psf/black)
@@ -35,4 +35,5 @@ Examples on how to run the code and use `qad` to reproduce results and plots fro
 
 
 # References
-[1] K. A. Woźniak<sup>\*</sup>, V. Belis<sup>\*</sup>, E. Puljak<sup>\*</sup>, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , _Quantum anomaly detection in the latent space of proton collision events at the LHC_, [arXiv:2301.10780](https://arxiv.org/abs/2301.10780). 
+[1] K. A. Woźniak<sup>\*</sup>, V. Belis<sup>\*</sup>, E. Puljak<sup>\*</sup>, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , _Quantum anomaly detection in the latent space of proton collision events at the LHC_, [arXiv:2301.10780](https://arxiv.org/abs/2301.10780). <br>
+\* equal contribution
