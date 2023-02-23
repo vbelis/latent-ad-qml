@@ -1,5 +1,17 @@
 Anomaly detection with quantum machine learning for particle physics data
 *************************************************************************
+.. image:: https://img.shields.io/badge/email-vasileios.belis%40cern.ch-blue?style=flat-square&logo=minutemailer
+    :target: mailto:vbelis@phys.ethz.ch
+    :alt: Email: vasilis
+.. image:: https://img.shields.io/badge/code%20style-black-black?style=flat-square&logo=black
+    :target: https://github.com/psf/black
+    :alt: Code style: black
+.. image:: https://img.shields.io/badge/python-3.8-blue?style=flat-square&logo=python
+    :target: https://www.python.org/downloads/
+    :alt: Python: version
+.. image:: https://img.shields.io/badge/license-MIT-purple?style=flat-square
+    :target: https://github.com/QML-HEP/ae_qml/blob/main/LICENSE
+    :alt: License: version
 
 This repository has the code we developed for the paper **Quantum anomaly detection in the latent space of proton collision events at the LHC** `[1] <https://arxiv.org/abs/2301.10780>`_. In this work, we investigate unsupervised quantum machine learning algorithms for anomaly detection tasks in particle physics data. 
 
