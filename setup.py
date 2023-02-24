@@ -2,8 +2,7 @@ from setuptools import setup, find_packages
 from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
-import os
-os.system('pip install git+https://github.com/vbelis/triple_e.git@master')
+
 setup(
     name="qad",
     version="1.0",
@@ -38,6 +37,7 @@ setup(
         "qiskit-terra==0.20.2",
         "tensorflow>=2.6",
         "pylatexenc==2.10",
+        "triple_e @ https://github.com/vbelis/triple_e/archive/master.zip"
     ],
     extra_requires={
         "docs": [
