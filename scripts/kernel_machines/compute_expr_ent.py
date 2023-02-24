@@ -11,8 +11,8 @@ import argparse
 from typing import Tuple, List, Union
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Statevector
-from triple_e import expressibility
-from triple_e import entanglement_capability
+#from triple_e import expressibility
+#from triple_e import entanglement_capability
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
 from qiskit_machine_learning.kernels import QuantumKernel

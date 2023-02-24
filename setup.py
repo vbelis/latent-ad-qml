@@ -37,7 +37,7 @@ setup(
         "qiskit-terra==0.20.2",
         "tensorflow>=2.6",
         "pylatexenc==2.10",
-        "triple_e @ https://github.com/vbelis/triple_e/archive/master.zip"
+        #"triple_e @ https://github.com/vbelis/triple_e/archive/master.zip"
     ],
     extra_requires={
         "docs": [
