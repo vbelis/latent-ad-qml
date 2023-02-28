@@ -39,7 +39,7 @@ setup(
         "pylatexenc==2.10",
         #"triple_e @ https://github.com/vbelis/triple_e/archive/master.zip"
     ],
-    extra_requires={
+    extras_require={
         "docs": [
             "sphinx>=3.0",
             "sphinx-autoapi",
