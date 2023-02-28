@@ -30,7 +30,7 @@ setup(
         "scipy>=1.9",
         "qibo==0.1.10",
         "qiskit==0.36.2",
-        "qiskit-aer==0.10.4",
+        "qiskit-aer>=0.10.4",
         "qiskit-ibmq-provider==0.19.1",
         "qiskit-ignis==0.7.1",
         "qiskit-machine-learning==0.4.0",
