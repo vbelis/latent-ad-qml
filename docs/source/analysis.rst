@@ -90,6 +90,12 @@ anomalies:
 
    </p>
 
+Kernel Analysis
+^^^^^^^^^^^^^
+.. automodule:: scripts.kernel_machines.compute_expr_ent
+   :members:
+   :undoc-members:
+
 
 Visualization
 ^^^^^^^^^^^^^
