@@ -22,3 +22,6 @@ docs/build/
 
 *egg-info*
 build
+
+# IDE
+*.idea*
