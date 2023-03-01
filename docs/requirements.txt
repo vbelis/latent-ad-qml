@@ -7,7 +7,7 @@ mplhep-data==0.0.3
 numpy>=1.21
 pandas>=1.3.5
 scikit-learn>=1.0.2
-scipy>=1.9
+scipy>=1.7.3
 qibo==0.1.10
 qiskit==0.36.2
 qiskit-aer>=0.10.4
