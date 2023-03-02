@@ -24,22 +24,21 @@ def main(args: dict):
     Parameters
     ----------
     args : dict
-        Configuration arguments.
-        sig_path: str
-            Path to the signal/anomaly dataset (.h5 format).
-        bkg_path: str
-            Path to the QCD background dataset (.h5 format).
-        test_bkg_path: str
-            Path to the background testing dataset (.h5 format).
-        model: str
-            The folder path of the QSVM model.
-        ntest: int 
-            The number of the testing events required for a crosscheck. 
-        kfolds: int
-            Number of k-validation/test folds used.
-        mod_quantum_instance: bool
-            Reconfigure the quantum " "instance and backend.
-
+        Configuration dictionary, with the following arguments.
+    sig_path: str
+        Path to the signal/anomaly dataset (.h5 format).
+    bkg_path: str
+        Path to the QCD background dataset (.h5 format).
+    test_bkg_path: str
+        Path to the background testing dataset (.h5 format).
+    model: str
+        The folder path of the QSVM model.
+    ntest: int 
+        The number of the testing events required for a crosscheck. 
+    kfolds: int
+        Number of k-validation/test folds used.
+    mod_quantum_instance: bool
+        Reconfigure the quantum " "instance and backend.
     """
     _, test_loader = data_processing.get_data(args)
     test_features, test_labels = test_loader[0], test_loader[1]

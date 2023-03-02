@@ -49,8 +49,9 @@ Examples on how to run the code and use ``qad`` to reproduce results and plots f
 
 References
 ==========
-**[1]** K. A. Woźniak, V. Belis, E. Puljak, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`_.
+**[1]** K. A. Woźniak\*, V. Belis\*, E. Puljak\*, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`_.
 
+\* equal contribution
 
 **Structure**
 =============
