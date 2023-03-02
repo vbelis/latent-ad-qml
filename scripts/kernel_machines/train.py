@@ -57,11 +57,31 @@ def time_and_train(fit: Callable, *args):
 
 def get_arguments() -> dict:
     """Parses command line arguments and gives back a dictionary.
+    Args:
+        sig_path: str
+            Path to the signal/anomaly dataset (.h5 format).
+        bkg_path: str
+            Path to the QCD background dataset (.h5 format).
+        test_bkg_path: str
+            Path to the background testing dataset (.h5 format).
+        unsup: bool
+            Flag to choose between unsupervised and supervised models.
+        nqubits: int
+            Number of qubits for quantum feature map circuit.
+        feature_map: str
+            Feature map circuit for the QSVM or classical kernel name.
+        backend_name: str
+            Name of the IBMQ quantum computer if running on hardware or noisy
+            simulation.
+        run_type: str
+            Choose way to run the QSVM: Ideal computation, noisy simulation 
+            or on real quantum hardware. choices=["ideal", "noisy", "hardware"].
+        output_folder: str
 
     Returns
     -------
     dict
-        Dictionary with the arguments.
+        Dictionary with the configuration arguments arguments.
     """
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
