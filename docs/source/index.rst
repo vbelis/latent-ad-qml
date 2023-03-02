@@ -1,7 +1,9 @@
 Anomaly detection with quantum machine learning for particle physics data
 *************************************************************************
+.. image:: https://zenodo.org/badge/494404586.svg
+    :target: https://zenodo.org/badge/latestdoi/494404586
 .. image:: https://img.shields.io/badge/email-vasileios.belis%40cern.ch-blue?style=flat-square&logo=minutemailer
-    :target: mailto:vbelis@phys.ethz.ch
+    :target: mailto:vasileios.belis@cern.ch
     :alt: Email: vasilis
 .. image:: https://img.shields.io/badge/code%20style-black-black?style=flat-square&logo=black
     :target: https://github.com/psf/black
