@@ -19,8 +19,6 @@ sphinx:
 # formats:
 #    - pdf
 
-dependencies:
-  - python=3.8
   
 # Optionally declare the Python requirements required to build your docs
 python:
