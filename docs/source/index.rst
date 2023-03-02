@@ -73,4 +73,4 @@ References
    :maxdepth: 2
    :caption: Usage
 
-   analysis
+   usage
