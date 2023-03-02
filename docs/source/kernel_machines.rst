@@ -31,14 +31,6 @@ Quantum SVM
    :members:
    :show-inheritance:
 
-Train
------
-.. autofunction:: scripts.kernel_machines.train.main
-
-Test
-----
-.. autofunction:: scripts.kernel_machines.test.main
-
 Functions
 -------------
 

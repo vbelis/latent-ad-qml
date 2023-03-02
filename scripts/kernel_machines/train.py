@@ -17,7 +17,45 @@ algorithm_globals.random_seed = seed
 
 
 def main(args: dict):
-    """Trains and saves qsvm model."""
+    """Trains and saves qsvm model. The following parameters are given through
+    `argparse` and passed in a dictionary format (`args`) to the function.
+    
+    Parameters
+    ----------
+    args : dict
+        Configuration arguments:
+        sig_path: str
+            Path to the signal/anomaly dataset (.h5 format).
+        bkg_path: str
+            Path to the QCD background dataset (.h5 format).
+        test_bkg_path: str
+            Path to the background testing dataset (.h5 format).
+        unsup: bool
+            Flag to choose between unsupervised and supervised models.
+        nqubits: int
+            Number of qubits for quantum feature map circuit.
+        feature_map: str
+            Feature map circuit for the QSVM or classical kernel name.
+        backend_name: str
+            Name of the IBMQ quantum computer if running on hardware or noisy
+            simulation.
+        run_type: str
+            Choose way to run the QSVM: Ideal computation, noisy simulation 
+            or on real quantum hardware. choices=["ideal", "noisy", "hardware"].
+        output_folder: str
+            The name of the model to be saved.
+        c_param: float
+            The C parameter of the SVM.
+        nu_param: float
+            The nu parameter of the unsupervised kernel machine.
+        gamma: float
+            Gamma parameter of the classical SVM with RBF kernel.
+        ntrain: int
+            The number of training events.
+        ntest: int 
+            The number of the testing events required for a crosscheck. 
+            
+    """
     train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]
     test_features, test_labels = test_loader[0], test_loader[1]
@@ -57,26 +95,6 @@ def time_and_train(fit: Callable, *args):
 
 def get_arguments() -> dict:
     """Parses command line arguments and gives back a dictionary.
-    Args:
-        sig_path: str
-            Path to the signal/anomaly dataset (.h5 format).
-        bkg_path: str
-            Path to the QCD background dataset (.h5 format).
-        test_bkg_path: str
-            Path to the background testing dataset (.h5 format).
-        unsup: bool
-            Flag to choose between unsupervised and supervised models.
-        nqubits: int
-            Number of qubits for quantum feature map circuit.
-        feature_map: str
-            Feature map circuit for the QSVM or classical kernel name.
-        backend_name: str
-            Name of the IBMQ quantum computer if running on hardware or noisy
-            simulation.
-        run_type: str
-            Choose way to run the QSVM: Ideal computation, noisy simulation 
-            or on real quantum hardware. choices=["ideal", "noisy", "hardware"].
-        output_folder: str
 
     Returns
     -------

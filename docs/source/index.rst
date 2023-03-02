@@ -70,6 +70,6 @@ References
 
 .. toctree::
    :maxdepth: 2
-   :caption: Analysis
+   :caption: Usage
 
    analysis
