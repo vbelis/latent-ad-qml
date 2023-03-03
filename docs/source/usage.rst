@@ -106,12 +106,25 @@ anomalies:
 Expressibility and entanglement capability analysis
 ===================================================
 
+.. image:: ../appendix_plots.png
+   :align: center
+
+The metrics are calculated via sampling the circuit parameters from three different 
+distributions as depicted in the legends: the uniform distribution in [0,2π], 
+the QCD background data distribution, and the signal (anomaly) scalar boson data 
+distribution. (a) The expressibility (Expr) as a function of the 
+different circuit architectures. (b) The entanglement capability of the 
+data encoding circuit (:math:`\langle \mathrm{Q} \rangle`) as a function of the different 
+circuit architectures. (c) The expressibility of the data encoding circuit 
+as a function of the number of qubits :math:`(\mathrm{n_q})`. (d) The variance of 
+the kernel :math:`\mathrm{Var}_{z, z'}k(z,z')` as a function of the number of qubits, where 
+:math:`k(z,z')` is the kernel corresponding to the data encoding circuit , z and z' 
+are data feature vectors sampled from the signal or background distributions.
+
 Given a data encoding quantum circuit we can compute its expressibility and entanglement
 capability. Additionaly, we can also compute, as function of the
 number of qubits, the variance of the quantum kernel that is
-constructed from the given quantum circuit.
-
-The different properties of the quantum feature map and the
+constructed from the given quantum circuit. The different properties of the quantum feature map and the
 corresponding  quantum kernel can be computed using the script ``compute_expr_ent.py``.
 The desired computation can be chosen using the ``argparse`` argument ``compute``.
 
