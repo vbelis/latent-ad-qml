@@ -7,6 +7,7 @@ from collections import namedtuple
 import optparse
 import h5py
 
+
 def map_to_latent_space(data_sample, model) -> np.ndarray:  # [N x Z]
     """Autoencoder mapping input space to latent representation.
 
@@ -41,7 +42,9 @@ def map_to_latent_space(data_sample, model) -> np.ndarray:  # [N x Z]
 if __name__ == "__main__":
 
     parser = optparse.OptionParser()
-    parser.add_option("-read_data_path", dest="read_data_path", help="path to data file")
+    parser.add_option(
+        "-read_data_path", dest="read_data_path", help="path to data file"
+    )
     parser.add_option("-batch_size", dest="batch_size", help="batch_size")
     parser.add_option("-model_path", dest="path", help="path to model file")
     (options, args) = parser.parse_args()
@@ -50,9 +53,11 @@ if __name__ == "__main__":
     with h5py.File(options.read_data_path, "r") as file:
         data_sample = file["test_data"]
         data_sample = np.asarray(data_sample[:])
-    
-    test_ds = train_ds = tf.data.Dataset.from_tensor_slices(data_sample).batch(options.batch_size)
-    
+
+    test_ds = train_ds = tf.data.Dataset.from_tensor_slices(data_sample).batch(
+        options.batch_size
+    )
+
     ae_model = tf.saved_model.load(options.model_path)
 
     latent_coords = map_to_latent_space(test_ds, ae_model)

@@ -33,8 +33,8 @@ def main(args: dict):
         Path to the background testing dataset (.h5 format).
     model: str
         The folder path of the QSVM model.
-    ntest: int 
-        The number of the testing events required for a crosscheck. 
+    ntest: int
+        The number of the testing events required for a crosscheck.
     kfolds: int
         Number of k-validation/test folds used.
     mod_quantum_instance: bool

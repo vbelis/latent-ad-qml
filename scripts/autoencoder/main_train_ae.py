@@ -39,10 +39,14 @@ def train(
     """
 
     # data to tf.Dataset
-    train_valid_split = int(len(data_sample)*0.8)
-    train_ds = tf.data.Dataset.from_tensor_slices(data_sample[:train_valid_split]).batch(batch_size, drop_remainder=True)
-    valid_ds = tf.data.Dataset.from_tensor_slices(data_sample[train_valid_split:]).batch(batch_size, drop_remainder=True)
-    
+    train_valid_split = int(len(data_sample) * 0.8)
+    train_ds = tf.data.Dataset.from_tensor_slices(
+        data_sample[:train_valid_split]
+    ).batch(batch_size, drop_remainder=True)
+    valid_ds = tf.data.Dataset.from_tensor_slices(
+        data_sample[train_valid_split:]
+    ).batch(batch_size, drop_remainder=True)
+
     model = auen.ParticleAutoencoder(
         input_shape=input_shape,
         latent_dim=latent_dim,
@@ -74,22 +78,31 @@ def train(
 if __name__ == "__main__":
 
     parser = optparse.OptionParser()
-    parser.add_option("-read_data_path", dest="read_data_path", help="path to data file")
+    parser.add_option(
+        "-read_data_path", dest="read_data_path", help="path to data file"
+    )
     parser.add_option("-input_shape", dest="input_shape", help="input shape")
     parser.add_option("-batch_size", dest="batch_size", help="input shape")
     parser.add_option("-ld", dest="ld", help="latent_dim")
     parser.add_option("-ep", dest="ep", help="epochs")
     parser.add_option("-al", dest="al", help="latent activation")
-    parser.add_option("-model_path", dest="model_path", help="path for saving the model")
+    parser.add_option(
+        "-model_path", dest="model_path", help="path for saving the model"
+    )
     (options, args) = parser.parse_args()
 
     # read in data
     with h5py.File(options.read_data_path, "r") as file:
         data_sample = file["inputs"]
         data_sample = np.asarray(data_sample[:])
-    
+
     ae_model = train(
-        data_sample, options.input_shape, options.batch_size, options.ld, options.ep, options.al
+        data_sample,
+        options.input_shape,
+        options.batch_size,
+        options.ld,
+        options.ep,
+        options.al,
     )
 
     # model save

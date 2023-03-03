@@ -19,7 +19,7 @@ algorithm_globals.random_seed = seed
 def main(args: dict):
     """Trains and saves qsvm model. The following parameters are given through
     `argparse` and passed in a dictionary format (`args`) to the function.
-    
+
     Parameters
     ----------
     args : dict
@@ -40,7 +40,7 @@ def main(args: dict):
         Name of the IBMQ quantum computer if running on hardware or noisy
         simulation.
     run_type: str
-        Choose way to run the QSVM: Ideal computation, noisy simulation 
+        Choose way to run the QSVM: Ideal computation, noisy simulation
         or on real quantum hardware. choices=["ideal", "noisy", "hardware"].
     output_folder: str
         The name of the model to be saved.
@@ -52,9 +52,9 @@ def main(args: dict):
         Gamma parameter of the classical SVM with RBF kernel.
     ntrain: int
         The number of training events.
-    ntest: int 
-        The number of the testing events required for a crosscheck. 
-            
+    ntest: int
+        The number of the testing events required for a crosscheck.
+
     """
     train_loader, test_loader = data_processing.get_data(args)
     train_features, train_labels = train_loader[0], train_loader[1]

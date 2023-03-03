@@ -4,7 +4,4 @@ from .autoencoder import (
 
 from .layers import Conv1DTranspose, StdNormalization, StdUnnormalization
 
-from .util import(
-    get_mean,
-    get_std
-)
+from .util import get_mean, get_std
