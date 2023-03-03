@@ -1,6 +1,8 @@
 # Quantum anomaly detection in the latent space of proton collision events at the LHC
-
+   	
+https://doi.org/
 [![DOI](https://zenodo.org/badge/494404586.svg)](https://zenodo.org/badge/latestdoi/494404586)
+[![DOI:10.48550/arXiv.2301.10780](http://img.shields.io/badge/DOI-10.48550/arXiv.2301.10780.svg)](https://doi.org/10.48550/arXiv.2301.10780)
 [![Email: vasilis](https://img.shields.io/badge/email-vasileios.belis%40cern.ch-blue?style=flat-square&logo=minutemailer)](mailto:vasileios.belis@cern.ch)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-black?style=flat-square&logo=black)](https://github.com/psf/black)
 [![Python: version](https://img.shields.io/badge/python-3.8-blue?style=flat-square&logo=python)](https://www.python.org/downloads/)
