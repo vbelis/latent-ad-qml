@@ -3,6 +3,7 @@
 [![DOI](https://zenodo.org/badge/494404586.svg)](https://zenodo.org/badge/latestdoi/494404586)
 [![DOI:10.48550/arXiv.2301.10780](http://img.shields.io/badge/DOI-10.48550/arXiv.2301.10780-B31B1B.svg)](https://doi.org/10.48550/arXiv.2301.10780)
 [![Email: vasilis](https://img.shields.io/badge/email-vasileios.belis%40cern.ch-blue?style=flat-square&logo=minutemailer)](mailto:vasileios.belis@cern.ch)
+[![Made at CERN!](https://img.shields.io/badge/CERN-QTI-lightseagreen)](https://quantum.cern/our-governance)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-black?style=flat-square&logo=black)](https://github.com/psf/black)
 [![Python: version](https://img.shields.io/badge/python-3.8-blue?style=flat-square&logo=python)](https://www.python.org/downloads/)
 [![License: version](https://img.shields.io/badge/license-MIT-purple?style=flat-square)](https://github.com/QML-HEP/ae_qml/blob/main/LICENSE)
