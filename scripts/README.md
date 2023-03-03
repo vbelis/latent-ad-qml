@@ -68,6 +68,8 @@ Example for the unsupervised kernel machine performance on different anomalies:
 
 # Expressibility and entanglement capability analysis
 
+![appendix_plots](https://user-images.githubusercontent.com/48251467/222736371-a2d74ee1-fe1b-4eaf-bfa8-0a494c382ca5.png)
+
 The metrics are calculated via sampling the circuit parameters from
 three different distributions as depicted in the legends: the uniform
 distribution in \[0,2π\], the QCD background data distribution, and the
