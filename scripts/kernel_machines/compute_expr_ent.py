@@ -11,8 +11,8 @@ import argparse
 from typing import Tuple, List, Union
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Statevector
-#from triple_e import expressibility
-#from triple_e import entanglement_capability
+from triple_e import expressibility
+from triple_e import entanglement_capability
 from qiskit import Aer
 from qiskit.utils import QuantumInstance
 from qiskit_machine_learning.kernels import QuantumKernel
@@ -30,7 +30,43 @@ seed = 42
 np.random.seed(seed)
 
 
-def main(args):
+def main(args: dict):
+    """Computes the different metrics of the given encoding quantum circuit based
+    on the `argparse` options below.
+
+    Parameters
+    ----------
+    args : dict
+        Configuration dictionary with the following parameters.
+    n_qubits: int
+        Number of qubits for the feature map circuit.
+    n_shots: int
+        How many fidelity samples to generate per expressibility and entanglement
+        capability evaluation.
+    n_exp: int
+        Number of evaluations ('experiments') of the expressibility and
+        entanglement capability. To estimate the mean and std of around
+        the true value.
+    out_path: str
+        Output dataframe to be used for plotting.
+    data_path: str
+        Path to signal dataset (background or signal .h5 file) to be used in
+        expr. calculation. Multiple datasets can also be given for the `expr_vs_qubit`
+        data-dependent computation.
+    compute: str
+        Run different calculations: compute expressibility and entanglement
+        capability of different circuits, compute expressibility as a function of the "
+        number of qubits, and variance of the kernel as a function of qubits.
+        choices=["expr_ent_vs_circ", "expr_vs_nqubits", "var_kernel_vs_nqubits"]
+    data_dependent: bool
+        Compute the expressibility as a data-dependent quantity.
+
+    Raises
+    ------
+    TypeError
+        If the given computation type is not one from:
+        ["expr_ent_vs_circ", "expr_vs_nqubits", "var_kernel_vs_nqubits"].
+    """
     circuit_list_expr_ent, circuit_labels = prepare_circs(args)
     data = None
     if args["data_dependent"]:
@@ -473,7 +509,7 @@ def get_arguments() -> dict:
     Returns
     -------
     dict
-        Dictionary with the arguments
+        Dictionary with the argparse arguments.
     """
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter

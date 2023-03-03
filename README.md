@@ -15,8 +15,27 @@ The `qad` package associated with this work was created for reproducibility of t
 
 The figure above, taken from [[1]](https://arxiv.org/abs/2301.10780), depicts the _quantum\-classical pipeline_ for detecting (anomalous) new-physics events in proton collisions at the LHC. Our strategy, implemented in `qad`, combines a data compression scheme with unsupervised quantum machine learning models to assist in scientific discovery at high energy physics experiments.
 
+## Citation
+Please cite our work if you found it useful in your own research.
+```
+@article{wozniak_belis_puljak2023,
+  doi = {10.48550/ARXIV.2301.10780},
+  
+  url = {https://arxiv.org/abs/2301.10780},
+  
+  author = {Woźniak, Kinga Anna and Belis, Vasilis and Puljak, Ema and Barkoutsos, Panagiotis and Dissertori, Günther and Grossi, Michele and Pierini, Maurizio and Reiter, Florentin and Tavernelli, Ivano and Vallecorsa, Sofia},
+  
+  keywords = {Quantum Physics (quant-ph), Machine Learning (cs.LG), High Energy Physics - Experiment (hep-ex), FOS: Physical sciences, FOS: Physical sciences, FOS: Computer and information sciences, FOS: Computer and information sciences},
+  
+  title = {Quantum anomaly detection in the latent space of proton collision events at the LHC},
+  publisher = {arXiv},
+  year = {2023},
+  copyright = {Creative Commons Attribution 4.0 International}
+}
+```
+
 ## Documentation 
-The documentation for can be consulted in the readthedocs [page](https://latent-ad-qml.readthedocs.io/en/latest/).
+The documentation can be consulted in the readthedocs [page](https://latent-ad-qml.readthedocs.io/en/latest/).
 ## How to install
 The package can be installed with Python's `pip` package manager. We recommend installing the dependencies and the package within a dedicated environment. 
 You can directly install `qad` by running:
@@ -32,7 +51,7 @@ pip install .
 ```
 
 ## Usage
-Examples on how to run the code and use `qad` to reproduce results and plots from the paper can be found in the [scripts](https://github.com/vbelis/latent-ad-qml/tree/main/scripts).
+Examples on how to run the code and use `qad` to reproduce results and plots from the paper can be found in the [scripts](https://github.com/vbelis/latent-ad-qml/tree/main/scripts). Check also the corresponding documentation page.
 
 
 # References

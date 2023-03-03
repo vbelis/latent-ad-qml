@@ -1,6 +1,3 @@
-Usage
------
-
 The following are some examples on how to use the ``qad`` package to
 train and test quantum models, and reproduce results from the paper. 
 
@@ -101,14 +98,13 @@ anomalies:
 
    </p>
 
-Visualization
-^^^^^^^^^^^^^
 .. automodule:: qad.plot
    :members:
    :undoc-members:
 
 Expressibility and entanglement capability analysis
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===================================================
+
 .. automodule:: scripts.kernel_machines.compute_expr_ent
    :members:
    :undoc-members:

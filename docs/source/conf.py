@@ -22,7 +22,12 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.autosectionlabel",
 ]
+
+# Make sure the target is unique
+autosectionlabel_prefix_document = True
+
 #master_doc = "index"
 #html_additional_pages = {'index': 'index.html'}
 
