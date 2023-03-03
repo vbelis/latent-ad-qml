@@ -104,6 +104,19 @@ anomalies:
 
 Expressibility and entanglement capability analysis
 ===================================================
+Given a data encoding quantum circuit we can compute its expressibility and entanglement
+capability. These metrics along with the variance of the quantum kernel that is
+constructed from the given quantum circuit can also be computed as function of the
+number of qubits. 
+
+These different computations of properties of the quantum feature map and the
+corresponted quantu kernel can be computed using the script ``compute_expr_ent.py``.
+The desired computation can be chosen using the ``argparse`` argument ``compute``.
+
+.. code:: bash
+   
+   python compute_expr_ent.py --n_qubits 8 --n_shots 100000 --n_exp 20 --out_path test --compute expr_vs_qubits --data_path ../data/mpp_collab/journal_data/latent/lat8/latentrep_AtoHZ_to_ZZZ_35.h5 ../data/mpp_collab/journal_data/latent/lat16/latentrep_AtoHZ_to_ZZZ_35.h5 --data_dependent
+   
 
 .. automodule:: scripts.kernel_machines.compute_expr_ent
    :members:

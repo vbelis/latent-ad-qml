@@ -88,6 +88,9 @@ def main(args: dict):
 
 def prepare_circs(args: dict) -> Tuple[List, List]:
     """Prepares the list of circuit needed for evaluation along with their names.
+    Following the convention of the paper:
+    
+    circuit_names = ["NE_0", "NE_1", "L=1", "L=2", "L=3", "L=4", "L=5", "L=6", "FE"]
 
     Parameters
     ----------

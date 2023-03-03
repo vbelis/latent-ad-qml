@@ -34,13 +34,9 @@ Please cite our work if you found it useful in your own research.
 
     @article{wozniak_belis_puljak2023,
     doi = {10.48550/ARXIV.2301.10780},
-    
     url = {https://arxiv.org/abs/2301.10780},
-    
     author = {Woźniak, Kinga Anna and Belis, Vasilis and Puljak, Ema and Barkoutsos, Panagiotis and Dissertori, Günther and Grossi, Michele and Pierini, Maurizio and Reiter, Florentin and Tavernelli, Ivano and Vallecorsa, Sofia},
-    
     keywords = {Quantum Physics (quant-ph), Machine Learning (cs.LG), High Energy Physics - Experiment (hep-ex), FOS: Physical sciences, FOS: Physical sciences, FOS: Computer and information sciences, FOS: Computer and information sciences},
-    
     title = {Quantum anomaly detection in the latent space of proton collision events at the LHC},
     publisher = {arXiv},
     year = {2023},
@@ -67,8 +63,9 @@ or by first cloning the repo locally and then installing the package:
 
 Usage
 =====
-Examples on how to run the code and use ``qad`` to reproduce results and plots from the paper can be found in the `scripts <https://github.com/vbelis/latent-ad-qml/tree/main/scripts>`_.
-**TODO**: add links to the correct docs page.
+Examples on how to run the code and use ``qad`` to reproduce results and plots 
+from the paper can be found in the :doc:`usage <usage>_` page or in the github
+`repo <https://github.com/vbelis/latent-ad-qml/tree/main/scripts>`_.
 
 References
 ==========
@@ -78,8 +75,8 @@ References
 **[1]** K. A. Woźniak\*, V. Belis\*, E. Puljak\*, P. Barkoutsos, G. Dissertori, M. Grossi, M. Pierini, F. Reiter, I. Tavernelli, S. Vallecorsa , *Quantum anomaly detection in the latent space of proton collision events at the LHC*, `arXiv:2301.10780 <https://arxiv.org/abs/2301.10780>`_. :raw-html:`<br />`
 \* equal contribution
 
-**Contents**
-=============
+Contents
+========
 .. toctree::
    :maxdepth: 2
    :caption: Dimensionality Reduction
