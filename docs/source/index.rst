@@ -64,7 +64,7 @@ or by first cloning the repo locally and then installing the package:
 Usage
 =====
 Examples on how to run the code and use ``qad`` to reproduce results and plots 
-from the paper can be found in the :doc:`usage <usage>_` page or in the github
+from the paper can be found in the :doc:`usage` page or in the github
 `repo <https://github.com/vbelis/latent-ad-qml/tree/main/scripts>`_.
 
 References

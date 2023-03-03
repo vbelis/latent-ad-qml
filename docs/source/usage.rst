@@ -102,8 +102,10 @@ anomalies:
    :members:
    :undoc-members:
 
+
 Expressibility and entanglement capability analysis
 ===================================================
+
 Given a data encoding quantum circuit we can compute its expressibility and entanglement
 capability. These metrics along with the variance of the quantum kernel that is
 constructed from the given quantum circuit can also be computed as function of the
