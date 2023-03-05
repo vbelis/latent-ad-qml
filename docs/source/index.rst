@@ -2,9 +2,14 @@ Anomaly detection with quantum machine learning for particle physics data
 *************************************************************************
 .. image:: https://zenodo.org/badge/494404586.svg
     :target: https://zenodo.org/badge/latestdoi/494404586
+.. image:: http://img.shields.io/badge/DOI-10.48550/arXiv.2301.10780-B31B1B.svg
+    :target: https://doi.org/10.48550/arXiv.2301.10780
+    :alt: DOI:10.48550/arXiv.2301.10780
 .. image:: https://img.shields.io/badge/email-vasileios.belis%40cern.ch-blue?style=flat-square&logo=minutemailer
     :target: mailto:vasileios.belis@cern.ch
     :alt: Email: vasilis
+.. image:: https://img.shields.io/badge/CERN-QTI-lightseagreen
+    :target: https://quantum.cern/our-governance
 .. image:: https://img.shields.io/badge/code%20style-black-black?style=flat-square&logo=black
     :target: https://github.com/psf/black
     :alt: Code style: black
@@ -14,7 +19,7 @@ Anomaly detection with quantum machine learning for particle physics data
 .. image:: https://img.shields.io/badge/license-MIT-purple?style=flat-square
     :target: https://github.com/QML-HEP/ae_qml/blob/main/LICENSE
     :alt: License: version
-
+    
 This repository has the code we developed for the paper **Quantum anomaly detection in the latent space of proton collision events at the LHC** `[1] <https://arxiv.org/abs/2301.10780>`_. In this work, we investigate unsupervised quantum machine learning algorithms for anomaly detection tasks in particle physics data. 
 
 The ``qad`` package associated with this work was created for reproducibility of the results and ease-of-use in future studies.
