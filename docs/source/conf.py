@@ -75,4 +75,5 @@ def linkcode_resolve(domain, info):
     if not info['module']:
         return None
     filename = info['module'].replace('.', '/')
-    return "https://github.com/vbelis/latent-ad-qml/%s.py" % filename
+    return "https://github.com/vbelis/latent-ad-qml/blob/main/%s.py" % filename
+            
