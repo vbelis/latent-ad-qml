@@ -49,6 +49,7 @@ git clone https://github.com/vbelis/latent-ad-qml.git
 cd latent-ad-qml
 pip install .
 ```
+The installation is expected to take a couple of minutes.
 
 ## Usage
 Examples on how to run the code and use `qad` to reproduce results and plots from the paper can be found in the [scripts](https://github.com/vbelis/latent-ad-qml/tree/main/scripts). Check also the corresponding documentation page.

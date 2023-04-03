@@ -21,6 +21,7 @@ To test the saved model:
 python test.py --sig_path /path/to/signal/data --bkg_path /path/to/background/data --test_bkg_path /path/to/test_background/data --model trained_qsvms/quantum_test_nu\=0.01_ideal/
 ```
 
+For a small scale demo that can be run on a normal personal computer, in a reasonable amount of time (5-10 minutes), consider using `ntrain` at the order of 50 to 200 data points for the `train.py` script, and `ntest` at around 1000 to 10000 data points for the `test.py` script.
 # Producing figures
 
 After the unsuperised quantum and classical kernel machines have been trained and test scores have been saved, one can summarise their performance with a ROC curve plot. Firstly, following our convention the test scores are prepared for plotting using [`scripts/kernel_machines/scripts/prepare_plot_scores.py`](https://github.com/vbelis/latent-ad-qml/blob/docs-reformat/scripts/kernel_machines/prepare_plot_scores.py), and by running

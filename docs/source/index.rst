@@ -65,6 +65,7 @@ or by first cloning the repo locally and then installing the package:
     git clone https://github.com/vbelis/latent-ad-qml.git
     cd latent-ad-qml
     pip install .
+The installation is expected to take a couple of minutes.
 
 Usage
 =====

@@ -22,6 +22,8 @@ To test the saved model:
 
    python test.py --sig_path /path/to/signal/data --bkg_path /path/to/background/data --test_bkg_path /path/to/test_background/data --model trained_qsvms/quantum_test_nu\=0.01_ideal/
 
+For a small scale demo that can be run on a normal personal computer, in a reasonable amount of time (5-10 minutes), consider using `ntrain` at the order of 50 to 200 data points for the `train.py` script, and `ntest` at around 1000 to 10000 data points for the `test.py` script.
+
 For details regarding different arguments of the ``train.py`` and ``test.py`` scripts
 see below.
 
