@@ -2,7 +2,7 @@
 The following are some examples on how to use the `qad` package to train and test quantum models, and reproduce results from the paper.
 
 # Unsupervised quantum kernel machine
-
+The data used for training and testing all the quantum machine learning models is published in [zenodo](https://zenodo.org/record/7673769).
 The training and testing of the unsupervised kernel machine is
 accomplished using the `train.py` and `test.py` in
 `scripts/kernel_machines/`. The

@@ -3,7 +3,8 @@ train and test quantum models, and reproduce results from the paper.
 
 Unsupervised quantum kernel machine
 ===================================
-
+The dataset used for training and testing all the quantum machine learning models is 
+published in `zenodo <https://zenodo.org/record/7673769>`_.
 The training and testing of the unsupervised kernel machine is accomplished using the
 ``train.py`` and ``test.py`` in ``scripts/kernel_machines/``,
 respectively (see in the `repo <https://github.com/vbelis/latent-ad-qml/tree/main/scripts>`_). The configuration parameters of the model, e.g., quantum
