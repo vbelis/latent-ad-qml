@@ -26,7 +26,7 @@ def load_clustering_test_data(
     mass="35",
     br_na=None,
     around_peak=None,
-    read_dir="/eos/user/e/epuljak/private/epuljak/public/diJet",
+    read_dir="~",
 ):
     """Load data for evaluation/testing.
 
