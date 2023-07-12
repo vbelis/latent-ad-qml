@@ -50,8 +50,14 @@ Please cite our work if you found it useful in your own research.
 
 How to install
 ==============
-The package can be installed with Python's ``pip`` package manager. We recommend installing the dependencies and the package within a dedicated environment. 
-You can directly install ``qad`` by running:
+The package can be installed with Python's `pip` package manager. We recommend installing the dependencies and the package within a dedicated environment. For instance, we use `conda` to create a `python` environment:
+
+.. code-block:: bash
+    
+    conda create -n my_env python=3.8
+    conda activate my_env
+
+In this environment you can directly install `qad` by running:
 
 .. code-block:: bash
 
