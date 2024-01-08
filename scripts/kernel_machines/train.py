@@ -36,6 +36,8 @@ def main(args: dict):
         Number of qubits for quantum feature map circuit.
     feature_map: str
         Feature map circuit for the QSVM or classical kernel name.
+    reps: int
+        Repetitions of the chosen feature map.
     backend_name: str
         Name of the IBMQ quantum computer if running on hardware or noisy
         simulation.
@@ -139,6 +141,12 @@ def get_arguments() -> dict:
         help="Feature map circuit for the QSVM or classical (!) kernel name.",
     )
     parser.add_argument(
+        "--reps",
+        type=int,
+        default=3,
+        help="Repetitions of the chosen feature map."
+    )
+    parser.add_argument(
         "--backend_name",
         type=str,
         help="The IBM backend. Could be a simulator"
@@ -223,6 +231,7 @@ def get_arguments() -> dict:
         "unsup": args.unsup,
         "nqubits": args.nqubits,
         "feature_map": args.feature_map,
+        "reps": args.reps,
         "backend_name": args.backend_name,
         "ibmq_api_config": private_configuration["IBMQ"],
         "run_type": args.run_type,
