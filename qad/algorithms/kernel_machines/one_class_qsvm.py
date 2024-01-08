@@ -32,6 +32,8 @@ class OneClassQSVM(OneClassSVM):
         Number of qubits of the data encoding circuit.
     _feature_map_name: str
         Name of the designed quantum circuit. As defined in :class:`qad.algorithms.kernel_machines.feature_map_circuits`
+    _feature_map_reps: int
+        Repetitions of the chosen feature map.
     _backend_config: dict
         Configuration of the IBMQ backend, e.g. number of shots, qubit layout.
     _quantum_instance: :class:`qiskit.utils.QuantumInstance`
@@ -62,10 +64,12 @@ class OneClassQSVM(OneClassSVM):
 
         self._nqubits = hpars["nqubits"]
         self._feature_map_name = hpars["feature_map"]
+        self._reps = hpars["reps"]
         exec(
             "self._feature_map = fm."
             + self._feature_map_name
-            + "(nqubits=self._nqubits)"
+            + "(nqubits=self._nqubits, "
+            + "reps=self._reps)"
         )
 
         self._backend_config = hpars["config"]
