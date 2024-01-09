@@ -25,7 +25,7 @@ setup(
         "mplhep>=0.3.26",
         "mplhep-data==0.0.3",
         "numpy>=1.21",
-        "pandas>=1.4.0",
+        "pandas==1.4.0",
         "scikit-learn==1.1.1",
         "scipy>=1.9",
         "qibo==0.1.10",

@@ -338,10 +338,10 @@ def create_table_for_fixed_TPR(
             )
             for window in tpr_windows:
                 f_q = get_FPR_for_fixed_TPR(
-                    window, np.array(fq), np.array(tq), true_q, pred_q, tolerance
+                    window, np.array(fq), np.array(tq), tolerance
                 )
                 f_c = get_FPR_for_fixed_TPR(
-                    window, np.array(fc), np.array(tc), true_c, pred_c, tolerance
+                    window, np.array(fc), np.array(tc), tolerance
                 )
                 fpr_q[f"{window}"].append(f_q)
                 fpr_c[f"{window}"].append(f_c)
