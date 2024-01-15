@@ -5,6 +5,7 @@ from time import perf_counter
 import numpy as np
 import argparse
 import json
+from concurrent.futures import ProcessPoolExecutor
 import qad.algorithms.kernel_machines.util as util
 import qad.algorithms.kernel_machines.backend_config as bc
 import qad.algorithms.kernel_machines.data_processing as data_processing
@@ -86,9 +87,17 @@ def main(args: dict):
         scores_time_fina = perf_counter()
     else:
         print(f"Multiple k={args['kfolds']} folds...")
-        score_sig = np.array([model.decision_function(fold) for fold in sig_fold])
-        score_bkg = np.array([model.decision_function(fold) for fold in bkg_fold])
-        scores_all = model.decision_function(test_features)
+        
+        def get_scores(model, data):
+            return model.decision_function(data)
+
+        with ProcessPoolExecutor() as executor:
+            sig_workers = [executor.submit(get_scores, model, fold) for fold in sig_fold]
+            bkg_workers = [executor.submit(get_scores, model, fold) for fold in bkg_fold]
+            score_sig = np.array([worker.result() for worker in sig_workers])
+            score_bkg = np.array([worker.result() for worker in bkg_workers])
+        scores_all = np.concatenate((score_sig.flatten(), score_bkg.flatten()))
+
         print(
             f"Saving the signal and background k-fold scores in the folder: "
             + tcols.OKCYAN
