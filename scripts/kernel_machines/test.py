@@ -39,6 +39,8 @@ def main(args: dict):
         Number of k-validation/test folds used.
     mod_quantum_instance: bool
         Reconfigure the quantum " "instance and backend.
+    config_file: str
+        Private configuration file for IBMQ API token
     """
     _, test_loader = data_processing.get_data(args)
     test_features, test_labels = test_loader[0], test_loader[1]
@@ -49,8 +51,12 @@ def main(args: dict):
     model = util.load_model(output_path + "model")
     initial_layout = [5, 8, 11, 14, 13, 12, 10, 7]
     seed = 12345
-    with open("private_config_vasilis.json") as pconfig:
-        private_configuration = json.load(pconfig)
+    if args["config_file"] is not None:
+        with open(args["config_file"]) as pconfig:
+            private_configuration = json.load(pconfig)
+            ibmq_config = private_configuration["IBMQ"]
+    else:
+        ibmq_config = None
 
     print("Computing model scores... ", end="")
     scores_time_init = perf_counter()
@@ -65,7 +71,7 @@ def main(args: dict):
                 "shots": 10000,
             }
             model._quantum_instance, model._backend = bc.configure_quantum_instance(
-                ibmq_api_config=private_configuration["IBMQ"],
+                ibmq_api_config=ibmq_config,
                 run_type="hardware",
                 backend_name="ibmq_toronto",
                 **model._backend_config,
@@ -155,6 +161,11 @@ def get_arguments() -> dict:
         action="store_true",
         help="Reconfigure the quantum " "instance and backend.",
     )
+    parser.add_argument(
+        '--config_file',
+        type=str,
+        help="Private configuation file for IBMQ API token"
+    )
     args = parser.parse_args()
 
     args = {
@@ -165,6 +176,7 @@ def get_arguments() -> dict:
         "ntest": args.ntest,
         "kfolds": args.kfolds,
         "mod_quantum_instance": args.mod_quantum_instance,
+        "config_file": args.config_file,
     }
     return args
 
