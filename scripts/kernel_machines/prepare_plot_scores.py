@@ -10,7 +10,8 @@ from qad.algorithms.kernel_machines.terminal_enhancer import tcols
 
 
 def save_scores_h5(
-    classical_path: str, quantum_path: str, out_path: str, name_suffix: str
+    classical_path: str, quantum_path: str, out_path: str, name_suffix: str,
+    name_suffix_classical: str = None
 ):
     """Save the scores of a model to an .h5 file following the following convention.
     Data frame with keys 'classic_loss_qcd', 'classic_loss_sig' for the classical
@@ -29,6 +30,10 @@ def save_scores_h5(
         Path to the generated .h5 file.
     name_suffix : str
         Flag in the file names to distinguish different test runs.
+    name_suffix_classical : str
+        Flag in the file names to distinguish different test runs when classical and
+        quantum models have different suffixes. If left `None` the same name suffix
+        between quantum and classical models is assumed.
     """
     print(
         "Loading scores of the quantum model: "
@@ -45,10 +50,10 @@ def save_scores_h5(
         + tcols.ENDC
     )
     classical_sig = np.load(
-        args.classical_folder + "sig_scores_" + name_suffix + ".npy"
+        args.classical_folder + "sig_scores_" + (name_suffix_classical if name_suffix_classical else name_suffix) + ".npy"
     )
     classical_bkg = np.load(
-        args.classical_folder + "bkg_scores_" + name_suffix + ".npy"
+        args.classical_folder + "bkg_scores_" + (name_suffix_classical if name_suffix_classical else name_suffix) + ".npy"
     )
 
     h5f = h5py.File(args.out_path, "w")
@@ -94,7 +99,14 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="String to append at the end of the sig_scores_<name_suffix>.npy and "
-        "bkg_score<name_suffix>.npy output files.",
+        "bkg_score<name_suffix>.npy output files for both classical and quantum models.",
+    )
+    parser.add_argument(
+        "--name_suffix_classical",
+        type=str,
+        help="String to append at the end of the sig_scores_<name_suffix>.npy and "
+        "bkg_score<name_suffix>.npy output files for the classical model. If left empty "
+        "the same name suffix is assumed.",
     )
     args = parser.parse_args()
 
@@ -103,4 +115,5 @@ if __name__ == "__main__":
         args.quantum_folder,
         args.out_path,
         args.name_suffix,
+        args.name_suffix_classical
     )
