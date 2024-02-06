@@ -5,6 +5,8 @@ from time import perf_counter
 import numpy as np
 import argparse
 import json
+from tqdm import tqdm
+
 import qad.algorithms.kernel_machines.util as util
 import qad.algorithms.kernel_machines.backend_config as bc
 import qad.algorithms.kernel_machines.data_processing as data_processing
@@ -80,9 +82,9 @@ def main(args: dict):
         scores_time_fina = perf_counter()
     else:
         print(f"Multiple k={args['kfolds']} folds...")
-        score_sig = np.array([model.decision_function(fold) for fold in sig_fold])
-        score_bkg = np.array([model.decision_function(fold) for fold in bkg_fold])
-        scores_all = model.decision_function(test_features)
+        score_sig = np.array([model.decision_function(fold) for fold in tqdm(sig_fold)])
+        score_bkg = np.array([model.decision_function(fold) for fold in tqdm(bkg_fold)])
+        #scores_all = model.decision_function(test_features)
         print(
             f"Saving the signal and background k-fold scores in the folder: "
             + tcols.OKCYAN
@@ -97,7 +99,6 @@ def main(args: dict):
             output_path + f"bkg_scores_n{args['ntest']}_k{args['kfolds']}.npy",
             score_bkg,
         )
-
         if isinstance(model, OneClassQSVM):
             np.save(output_path + f"kernel_matrix_test.npy", model._kernel_matrix_test)
         scores_time_fina = perf_counter()

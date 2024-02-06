@@ -400,7 +400,7 @@ def get_fpr_around_tpr_point(
 
 
 def export_hyperparameters(
-    model: Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM], outdir: str
+    model: Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM], outdir: str, args: dict,
 ):
     """Saves the hyperparameters of the model to a json file. QSVM and SVM have
     different hyperparameters.
@@ -423,5 +423,6 @@ def export_hyperparameters(
     else:
         hp = {"C": model.C}
     params_file = open(file_path, "w")
-    json.dump(hp, params_file)
+    hp.update(args) # add all run parameters to output.
+    json.dump(hp, params_file, indent=4)
     params_file.close()
