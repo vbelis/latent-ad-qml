@@ -64,6 +64,8 @@ def create_output_folder(
         out_path = args["output_folder"] + f"_c={model.C}"
     if args["quantum"]:
         out_path = out_path + f"_reps{args['reps']}" + f"_{args['run_type']}"
+        if args["run_type"] != "ideal": 
+            out_path = out_path + f"_shots{args['config']['shots']}"
         if args["backend_name"] is not None and args["backend_name"] != "none":
             # For briefness remove the "ibmq" prefix for the output folder:
             backend_name = re.sub("ibmq?_", "", args["backend_name"])
