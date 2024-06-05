@@ -6,6 +6,7 @@ from time import perf_counter
 import numpy as np
 import pandas as pd
 import h5py
+from tqdm import tqdm
 from itertools import combinations
 import argparse
 from typing import Tuple, List, Union
@@ -90,7 +91,7 @@ def prepare_circs(args: dict) -> Tuple[List, List]:
     """Prepares the list of circuit needed for evaluation along with their names.
     Following the convention of the paper:
 
-    circuit_names = ["NE_0", "NE_1", "L=1", "L=2", "L=3", "L=4", "L=5", "L=6", "FE"]
+    circuit_names = ["NE_0", "NE_1", "L=1", "L=2", "L=3", "L=4", "L=5", "L=6"]
 
     Parameters
     ----------
@@ -105,34 +106,15 @@ def prepare_circs(args: dict) -> Tuple[List, List]:
         circuit_labels: `List`
             Corresponding labels as defined in the paper.
     """
-    circuit_labels = [
-        r"NE$_0$",
-        r"NE$_1$",
-        "L=1",
-        "L=2",
-        "L=3",
-        "L=4",
-        "L=5",
-        "L=6",
-        "FE",
-    ]
+    circuit_labels = [r"NE$_0$"] + [f"{L}" for L in range(1,14)]
 
     circuit_list_expr_ent = [
         lambda x, rep=rep: u_dense_encoding(x, nqubits=args["n_qubits"], reps=rep)
-        for rep in range(1, 7)
+        for rep in range(1, 14)
     ]
-    # Add the two no-entanglement circuits (NE_0, NE_1) at the beginning of the list
-    circuit_list_expr_ent.insert(
-        0,
-        lambda x: u_dense_encoding_no_ent(x, nqubits=args["n_qubits"], reps=1, type=1),
-    )
     circuit_list_expr_ent.insert(
         0,
         lambda x: u_dense_encoding_no_ent(x, nqubits=args["n_qubits"], reps=1, type=0),
-    )
-    # Add the all-to-all CNOT rep3
-    circuit_list_expr_ent.append(
-        lambda x: u_dense_encoding_all(x, nqubits=args["n_qubits"], reps=3)
     )
     return circuit_list_expr_ent, circuit_labels
 
@@ -178,7 +160,7 @@ def compute_expr_ent_vs_circuit(
 
     # Expr. and Ent. as a function of the circuit depth and amount of CNOT gates
     train_time_init = perf_counter()
-    for i, circuit in enumerate(circuits):
+    for i, circuit in enumerate(tqdm(circuits)):
         print(f"\nFor circuit {circuit_labels[i]}...")
         expr = []
         # Compute entanglement cap. only once, it fluctuates less than 0.1%
@@ -192,26 +174,28 @@ def compute_expr_ent_vs_circuit(
                 n_shots=1000 if args["n_shots"] > 1000 else args["n_shots"],
                 data=data,
             )
-
-        for _ in range(args["n_exp"]):
-            val_ex = expressibility(
-                circuit,
-                n_params,
-                method="full",
-                n_shots=args["n_shots"],
-                n_bins=75,
-                data=data,
-            )
-            expr.append(val_ex)
-        expr = np.array(expr)
+        if args["only_entanglement"]: 
+            expr = None
+        else:
+            for _ in range(args["n_exp"]):
+                val_ex = expressibility(
+                    circuit,
+                    n_params,
+                    method="full",
+                    n_shots=args["n_shots"],
+                    n_bins=75,
+                    data=data,
+                )
+                expr.append(val_ex)
+            expr = np.array(expr)
+            print(f"expr = {np.mean(expr)} ± {np.std(expr)}")
         ent = np.array(val_ent)
-        print(f"expr = {np.mean(expr)} ± {np.std(expr)}")
         print(f"ent = {np.mean(ent)} ± {np.std(ent)}")
 
         d = {
             "circuit": circuit_labels[i],
-            "expr": np.mean(expr),
-            "expr_err": np.std(expr),
+            "expr": np.mean(expr) if expr else None,
+            "expr_err": np.std(expr) if expr else None,
             "ent": np.mean(ent),
             "ent_err": np.std(ent),
         }
@@ -303,7 +287,7 @@ def expr_vs_nqubits(
     return df_expr
 
 
-def var_kernel_vs_nqubits(args: dict, data: np.ndarray, rep: int = 3) -> pd.DataFrame():
+def var_kernel_vs_nqubits(args: dict, data: np.ndarray, rep: int = 3) -> pd.DataFrame:
     """Computes the variance of the quantum kernel matrix as a function of the number
     of qubits.
 
@@ -565,6 +549,11 @@ def get_arguments() -> dict:
         action="store_true",
         help="Compute the expressibility as a data-dependent quantity",
     )
+    parser.add_argument(
+        "--only_entanglement",
+        action="store_true",
+        help="Compute only entanglement as a function of the circuit depth.",
+    )
     args = parser.parse_args()
     args = {
         "n_qubits": args.n_qubits,
@@ -574,6 +563,7 @@ def get_arguments() -> dict:
         "data_path": args.data_path,
         "compute": args.compute,
         "data_dependent": args.data_dependent,
+        "only_entanglement": args.only_entanglement
     }
 
     return args

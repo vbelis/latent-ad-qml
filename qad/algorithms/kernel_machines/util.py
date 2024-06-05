@@ -64,6 +64,8 @@ def create_output_folder(
         out_path = args["output_folder"] + f"_c={model.C}"
     if args["quantum"]:
         out_path = out_path + f"_reps{args['reps']}" + f"_{args['run_type']}"
+        if args["run_type"] != "ideal": 
+            out_path = out_path + f"_shots{args['config']['shots']}"
         if args["backend_name"] is not None and args["backend_name"] != "none":
             # For briefness remove the "ibmq" prefix for the output folder:
             backend_name = re.sub("ibmq?_", "", args["backend_name"])
@@ -400,7 +402,7 @@ def get_fpr_around_tpr_point(
 
 
 def export_hyperparameters(
-    model: Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM], outdir: str
+    model: Union[QSVM, SVC, CustomOneClassSVM, OneClassQSVM], outdir: str, args: dict,
 ):
     """Saves the hyperparameters of the model to a json file. QSVM and SVM have
     different hyperparameters.
@@ -423,5 +425,6 @@ def export_hyperparameters(
     else:
         hp = {"C": model.C}
     params_file = open(file_path, "w")
-    json.dump(hp, params_file)
+    hp.update(args) # add all run parameters to output.
+    json.dump(hp, params_file, indent=4)
     params_file.close()

@@ -6,6 +6,8 @@ import numpy as np
 import argparse
 import json
 from concurrent.futures import ProcessPoolExecutor
+from tqdm import tqdm
+
 import qad.algorithms.kernel_machines.util as util
 import qad.algorithms.kernel_machines.backend_config as bc
 import qad.algorithms.kernel_machines.data_processing as data_processing
@@ -97,7 +99,8 @@ def main(args: dict):
             score_sig = np.array([worker.result() for worker in sig_workers])
             score_bkg = np.array([worker.result() for worker in bkg_workers])
         scores_all = np.concatenate((score_sig.flatten(), score_bkg.flatten()))
-
+        
+        
         print(
             f"Saving the signal and background k-fold scores in the folder: "
             + tcols.OKCYAN
@@ -112,7 +115,6 @@ def main(args: dict):
             output_path + f"bkg_scores_n{args['ntest']}_k{args['kfolds']}.npy",
             score_bkg,
         )
-
         if isinstance(model, OneClassQSVM):
             np.save(output_path + f"kernel_matrix_test.npy", model._kernel_matrix_test)
         scores_time_fina = perf_counter()

@@ -41,8 +41,8 @@ def save_scores_h5(
         + f"{quantum_path}"
         + tcols.ENDC
     )
-    quantum_sig = np.load(args.quantum_folder + "sig_scores_" + name_suffix + ".npy")
-    quantum_bkg = np.load(args.quantum_folder + "bkg_scores_" + name_suffix + ".npy")
+    quantum_sig = np.load(quantum_path + "sig_scores_" + name_suffix + ".npy")
+    quantum_bkg = np.load(quantum_path + "bkg_scores_" + name_suffix + ".npy")
     print(
         "Loading scores of the classical model: "
         + tcols.OKBLUE
@@ -50,13 +50,13 @@ def save_scores_h5(
         + tcols.ENDC
     )
     classical_sig = np.load(
-        args.classical_folder + "sig_scores_" + (name_suffix_classical if name_suffix_classical else name_suffix) + ".npy"
+        classical_path + "sig_scores_" + (name_suffix_classical if name_suffix_classical else name_suffix) + ".npy"
     )
     classical_bkg = np.load(
-        args.classical_folder + "bkg_scores_" + (name_suffix_classical if name_suffix_classical else name_suffix) + ".npy"
+        classical_path + "bkg_scores_" + (name_suffix_classical if name_suffix_classical else name_suffix) + ".npy"
     )
 
-    h5f = h5py.File(args.out_path, "w")
+    h5f = h5py.File(out_path, "w")
     h5f.create_dataset("quantum_loss_qcd", data=quantum_bkg)
     h5f.create_dataset("quantum_loss_sig", data=quantum_sig)
     h5f.create_dataset("classic_loss_qcd", data=classical_bkg)

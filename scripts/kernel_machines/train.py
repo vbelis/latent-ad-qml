@@ -4,6 +4,7 @@
 
 import argparse
 import json
+import psutil
 from time import perf_counter
 from typing import Callable
 from qiskit.utils import algorithm_globals
@@ -63,15 +64,17 @@ def main(args: dict):
     test_features, test_labels = test_loader[0], test_loader[1]
     model = util.init_kernel_machine(args)
     out_path = util.create_output_folder(args, model)
+    print(f"Is statevector: {model.quantum_instance.is_statevector}")
 
     time_and_train(model.fit, train_features, train_labels)
     util.print_model_info(model)
-    util.export_hyperparameters(model, out_path)
+    util.export_hyperparameters(model, out_path, args)
     if args["run_type"] != "hardware":
         util.eval_metrics(
             model, train_features, train_labels, test_features, test_labels, out_path
         )
     util.save_model(model, out_path)
+    return out_path + "/"
 
 
 def time_and_train(fit: Callable, *args):
@@ -87,6 +90,7 @@ def time_and_train(fit: Callable, *args):
     print("Training the QSVM... ", end="")
     train_time_init = perf_counter()
     fit(*args)
+    print(f"Memory used: {psutil.virtual_memory()[3]/1024**3:.2f} GB.")
     train_time_fina = perf_counter()
     exec_time = train_time_fina - train_time_init
     print(
@@ -209,9 +213,9 @@ def get_arguments() -> dict:
     initial_layout = [5, 8, 11, 14, 16, 19, 22, 25]  # for Toronto
     seed = 12345
     config_noisy = {
-        "optimization_level": 3,
-        "initial_layout": initial_layout,
-        "seed_transpiler": seed,
+        #"optimization_level": 3,
+        #"initial_layout": initial_layout,
+        #"seed_transpiler": seed,
         "seed_simulator": seed,
         "shots": 5000,
     }
