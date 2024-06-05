@@ -188,13 +188,25 @@ def get_arguments() -> dict:
         help="Number of training events for the QSVM.",
     )
     parser.add_argument(
-        "--ntest", type=int, default=720, help="Number of test events for the QSVM."
+        "--ntest",
+        type=int,
+        default=720,
+        help="Number of test events for the QSVM."
+    )
+    parser.add_argument(
+        '--config_file',
+        type=str,
+        help="Private configuation file for IBMQ API token"
     )
     args = parser.parse_args()
 
     # Load private configuration file for ibmq_api_token and provider details.
-    with open("private_config_vasilis.json") as pconfig:
-        private_configuration = json.load(pconfig)
+    if args.config_file is not None:
+        with open(args.config_file) as pconfig:
+            private_configuration = json.load(pconfig)
+            ibmq_config = private_configuration['IBMQ']
+    else:
+        ibmq_config = None
 
     # Different configuration keyword arguments for the QuantumInstance depending
     # on the run_type. They can be tweaked as desired before running.
@@ -237,7 +249,7 @@ def get_arguments() -> dict:
         "feature_map": args.feature_map,
         "reps": args.reps,
         "backend_name": args.backend_name,
-        "ibmq_api_config": private_configuration["IBMQ"],
+        "ibmq_api_config": ibmq_config,
         "run_type": args.run_type,
         "config": config,
         "ntrain": args.ntrain,
