@@ -64,6 +64,7 @@ def main(args: dict):
     test_features, test_labels = test_loader[0], test_loader[1]
     model = util.init_kernel_machine(args)
     out_path = util.create_output_folder(args, model)
+    print(f"Is statevector: {model.quantum_instance.is_statevector}")
 
     time_and_train(model.fit, train_features, train_labels)
     util.print_model_info(model)
@@ -200,9 +201,9 @@ def get_arguments() -> dict:
     initial_layout = [5, 8, 11, 14, 16, 19, 22, 25]  # for Toronto
     seed = 12345
     config_noisy = {
-        "optimization_level": 3,
-        "initial_layout": initial_layout,
-        "seed_transpiler": seed,
+        #"optimization_level": 3,
+        #"initial_layout": initial_layout,
+        #"seed_transpiler": seed,
         "seed_simulator": seed,
         "shots": 5000,
     }
