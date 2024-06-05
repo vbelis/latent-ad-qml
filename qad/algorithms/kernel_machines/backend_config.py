@@ -54,8 +54,14 @@ def noisy_simulation(
             simulation is based.
     """
     print(tcols.BOLD + "\nInitialising noisy simulation." + tcols.ENDC)
-    quantum_computer_backend = connect_quantum_computer(ibmq_api_config, backend_name)
-    backend = AerSimulator.from_backend(quantum_computer_backend)
+    if backend_name is None: 
+        print("No backend name given, only shot noise is applied. "
+              f"Number of shots: {kwargs['shots']}.")
+        quantum_computer_backend = None
+        backend=Aer.get_backend("qasm_simulator")
+    else:
+        quantum_computer_backend = connect_quantum_computer(ibmq_api_config, backend_name)
+        backend = AerSimulator.from_backend(quantum_computer_backend)
 
     quantum_instance = QuantumInstance(backend=backend, **kwargs)
     return quantum_instance, quantum_computer_backend
@@ -134,7 +140,7 @@ def configure_quantum_instance(
         When `run_type` is not in {ideal, noisy, hardware}.
     """
 
-    if (run_type == "noisy" or run_type == "hardware") and (backend_name is None):
+    if (run_type == "hardware") and (backend_name is None):
         raise TypeError(
             tcols.FAIL + "Need to specify backend name ('ibmq_<city_name>')"
             " when running a noisy simulation or running on hardware!" + tcols.ENDC

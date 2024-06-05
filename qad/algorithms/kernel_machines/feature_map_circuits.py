@@ -72,7 +72,7 @@ def u_dense_encoding_all(nqubits: int = 8, reps: int = 3) -> QuantumCircuit:
 
 
 def u_dense_encoding_no_ent(
-    nqubits: int = 8, reps: int = 3, type: int = 0
+    nqubits: int = 8, reps: int = 1, type: int = 0
 ) -> QuantumCircuit:
     """Data encoding circuit without entanglement. The 'type' argument
     corresponds the two No-Entanglement (NE) circuits in the paper.

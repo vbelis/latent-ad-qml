@@ -292,6 +292,7 @@ def create_table_for_fixed_TPR(
     n_folds: int,
     tpr_windows: List[float] = [0.4, 0.6, 0.8],
     tolerance: float = 0.01,
+    terminal_print: bool = False,
 ) -> pd.DataFrame:
     """Compute mean and std of FPR @FPR working point.
 
@@ -315,6 +316,8 @@ def create_table_for_fixed_TPR(
         TPR working point, by default [0.4, 0.6, 0.8]
     tolerance : float
         Tolerance around working point, by default 0.01
+    terminal_print : bool
+        To print latex table of the values.
 
     Returns
     -------
@@ -327,15 +330,18 @@ def create_table_for_fixed_TPR(
     for i in range(len(ids)):  # for each latent space or train size
         fpr_q = {f"{tpr}": [] for tpr in tpr_windows}
         fpr_c = {f"{tpr}": [] for tpr in tpr_windows}
+        auc_q = []
         for j in range(n_folds):
             # quantum data
             fq, tq, _, true_q, pred_q = get_roc_data(
                 quantum_loss_qcd[i][j], quantum_loss_sig[i][j], fix_tpr=True
             )
-            # classic data
+            # classical data
             fc, tc, _, true_c, pred_c = get_roc_data(
                 classic_loss_qcd[i][j], classic_loss_sig[i][j], fix_tpr=True
             )
+            auc_q.append(auc(fq, tq))
+            
             for window in tpr_windows:
                 f_q = get_FPR_for_fixed_TPR(
                     window, np.array(fq), np.array(tq), tolerance
@@ -345,7 +351,7 @@ def create_table_for_fixed_TPR(
                 )
                 fpr_q[f"{window}"].append(f_q)
                 fpr_c[f"{window}"].append(f_c)
-
+        auc_data_q = get_mean_and_error(np.array(auc_q))
         for window in tpr_windows:
 
             fpr_data_q = get_mean_and_error(1.0 / np.array(fpr_q[f"{window}"]))
@@ -362,7 +368,6 @@ def create_table_for_fixed_TPR(
                 f"{fpr_over_data_c:.2f} +/- {fpr_over_error_c:.2f}",
             ]
             if window != 0.4:
-                # delta_qc = (fpr_over_data_q-fpr_over_data_c)/fpr_over_data_c
                 delta_qc = fpr_over_data_q / fpr_over_data_c
                 delta_qc_unc = math.sqrt(
                     (fpr_over_error_q / fpr_over_data_c) ** 2
@@ -373,13 +378,17 @@ def create_table_for_fixed_TPR(
                     "tpr": window,
                     "delta_qc": delta_qc,
                     "delta_qc_unc": delta_qc_unc,
+                    "auc": auc_data_q[0],
+                    "auc_unc": auc_data_q[1]
                 }
                 df_delta = df_delta.append(d, ignore_index=True)
-        print(
-            df_output.to_latex(
-                index=False,
-                caption=f"Latent space: {ids[i]}, TPR value +/- {tolerance*100}\%",
+        
+        if terminal_print:
+            print(
+                df_output.to_latex(
+                    index=False,
+                    caption=f"Latent space: {ids[i]}, TPR value +/- {tolerance*100}\%",
+                )
             )
-        )
 
     return df_delta
