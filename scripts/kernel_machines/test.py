@@ -5,6 +5,7 @@ from time import perf_counter
 import numpy as np
 import argparse
 import json
+import os
 from tqdm import tqdm
 
 import qad.algorithms.kernel_machines.util as util
@@ -48,7 +49,7 @@ def main(args: dict):
         test_features, test_labels, args["kfolds"]
     )
     output_path = args["model"]
-    model = util.load_model(output_path + "model")
+    model = util.load_model(os.path.join(output_path, "model"))
     initial_layout = [5, 8, 11, 14, 13, 12, 10, 7]
     seed = 12345
     with open("private_config_vasilis.json") as pconfig:
